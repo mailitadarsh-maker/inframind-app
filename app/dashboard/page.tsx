@@ -1,6 +1,8 @@
 'use client';
 
+
 import AddMonitorModal from '../components/AddMonitorModal';
+import EditMonitorModal from '../components/EditMonitorModal';
 import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
 
@@ -168,64 +170,66 @@ return ( <div className="min-h-screen bg-[#07090d] text-white">
       <div className="space-y-4">
 
         {monitors.map((monitor) => (
-          <div
-            key={monitor.id}
-            className="bg-[#0d1117] border border-white/10 rounded-xl p-5"
+  <div
+    key={monitor.id}
+    className="bg-[#0d1117] border border-white/10 rounded-xl p-5"
+  >
+    <div className="flex justify-between items-center">
+
+      <div>
+        <h3 className="text-lg font-bold">
+          {monitor.name}
+        </h3>
+
+        <p className="text-gray-400">
+          {monitor.target_url}
+        </p>
+
+        <p className="text-sm text-gray-500 mt-2">
+          Status: {monitor.status}
+        </p>
+      </div>
+
+      <div className="text-right">
+
+        <div
+          className={`font-bold ${
+            monitor.status === 'online'
+              ? 'text-green-500'
+              : 'text-red-500'
+          }`}
+        >
+          ● {monitor.status}
+        </div>
+
+        <div className="text-gray-400 text-sm mb-3">
+          {monitor.response_time || 0} ms
+        </div>
+
+        <div className="flex gap-2 justify-end">
+
+          <EditMonitorModal monitor={monitor} />
+
+          <button
+            onClick={() => deleteMonitor(monitor.id)}
+            className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded"
           >
-            <div className="flex justify-between items-center">
+            Delete
+          </button>
 
-              <div>
-                <h3 className="text-lg font-bold">
-                  {monitor.name}
-                </h3>
+        </div>
 
-                <p className="text-gray-400">
-                  {monitor.target_url}
-                </p>
+      </div>
 
-                <p className="text-sm text-gray-500 mt-2">
-                  Status: {monitor.status}
-                </p>
-              </div>
-
-              <div className="text-right">
-
-                <div
-                  className={`font-bold ${
-                    monitor.status === 'online'
-                      ? 'text-green-500'
-                      : 'text-red-500'
-                  }`}
-                >
-                  ● {monitor.status}
-                </div>
-
-                <div className="text-gray-400 text-sm mb-3">
-                  {monitor.response_time || 0} ms
-                </div>
-
-                <button
-                  onClick={() =>
-                    deleteMonitor(monitor.id)
-                  }
-                  className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded"
-                >
-                  Delete
-                </button>
-
-              </div>
-
-            </div>
-          </div>
-        ))}
-
+    </div>
+  </div>
+))}
       </div>
     )}
 
   </div>
 
 </div>
-
 
 );
 }
