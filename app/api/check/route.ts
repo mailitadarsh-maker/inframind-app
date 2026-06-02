@@ -8,7 +8,7 @@ const supabase = createClient(
 );
 
 export async function GET() {
-  console.log('API CHECK VERSION 4');
+ console.log('API CHECK VERSION 5 - INCIDENT DEBUG');
 
   const { data: monitors, error } = await supabase
     .from('monitors')
@@ -64,12 +64,27 @@ if (
     .maybeSingle();
 
   if (!existingIncident) {
-    await supabase
+    console.log(
+      'CREATING INCIDENT FOR:',
+      monitor.id
+    );
+
+    const { data, error } = await supabase
       .from('incidents')
       .insert({
         monitor_id: monitor.id,
         started_at: new Date().toISOString(),
-      });
+      })
+      .select();
+
+    console.log('INCIDENT DATA:', data);
+
+    if (error) {
+      console.error(
+        'INCIDENT ERROR:',
+        JSON.stringify(error, null, 2)
+      );
+    }
   }
 
   const emailResult = await resend.emails.send({
@@ -89,7 +104,6 @@ if (
     JSON.stringify(emailResult)
   );
 }
-
 // RECOVERY ALERT
 if (
   monitor.status === 'offline' &&
@@ -142,12 +156,12 @@ if (
   );
 }
 
-      await supabase
+  await supabase
   .from('monitors')
   .update({
-    status: 'offline',
+    status: newStatus,
     last_status: monitor.status,
-    response_time: 0,
+    response_time: responseTime,
     last_checked: new Date().toISOString(),
   })
   .eq('id', monitor.id);
