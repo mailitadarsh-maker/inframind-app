@@ -1,0 +1,83 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  * {
+    @apply m-0 p-0 box-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Instrument Serif', serif;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border-none transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-[#1ddb78] text-black font-semibold hover:bg-[#22f585] hover:shadow-[0_6px_20px_rgba(29,219,120,0.25)];
+  }
+
+  .btn-ghost {
+    @apply bg-[#131920] text-[#8a95a3] border border-white/[0.1] hover:text-[#eef1f6];
+  }
+
+  .btn-lg {
+    @apply px-7 py-3.5 text-base rounded-[10px];
+  }
+
+  .tag {
+    @apply inline-block text-xs font-medium px-2 py-0.75 rounded;
+  }
+
+  .tag-green {
+    @apply bg-[#1ddb78]/[0.06] text-[#1ddb78];
+  }
+
+  .section-title {
+    @apply font-serif text-4xl leading-[1.15] tracking-[-0.8px];
+  }
+
+  .section-subtitle {
+    @apply text-xs font-semibold uppercase tracking-[0.12em] text-[#1ddb78];
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s ease both;
+}
+
+.animate-blink {
+  animation: blink 2s infinite;
+}

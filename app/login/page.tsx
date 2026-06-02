@@ -1,0 +1,126 @@
+'use client';
+
+import { supabase } from "@/lib/supabase";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!email || !password) {
+    alert("Please enter email and password");
+    return;
+  }
+
+  setLoading(true);
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  setLoading(false);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  console.log("Logged in user:", data.user);
+
+  alert("LOGIN SUCCESS");
+router.replace("/dashboard");
+};
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6 relative">
+      {/* Glow background */}
+      <div
+        className="absolute w-96 h-96 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, rgba(29,219,120,0.06) 0%, transparent 70%)',
+        }}
+      />
+
+      {/* Auth box */}
+      <div className="bg-[#0d1117] border border-white/[0.1] rounded-[18px] p-9 w-full max-w-sm relative z-10 animate-fade-up">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2.5 mb-7">
+          <div className="w-7 h-7 bg-[#1ddb78] rounded-[7px] flex items-center justify-center">
+            <svg viewBox="0 0 14 14" fill="none" className="w-3.5 h-3.5">
+              <path
+                d="M2 7L6 11L12 3"
+                stroke="#000"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <span className="text-base font-semibold tracking-[-0.3px]">InfraMind</span>
+        </div>
+
+        {/* Title */}
+        <h1 className="font-serif text-2xl tracking-[-0.5px] mb-1.5 text-center">Welcome back</h1>
+        <p className="text-sm text-[#8a95a3] text-center mb-7">Sign in to your InfraMind account</p>
+
+        {/* Form */}
+        <form onSubmit={handleLogin}>
+          {/* Email */}
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-[#8a95a3] mb-1.5">Email</label>
+            <input
+              type="email"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-[#131920] border border-white/[0.1] rounded-lg py-2.75 px-3.5 text-sm text-white font-sans outline-none focus:border-[#1ddb78] placeholder:text-[#3d4f63]"
+            />
+          </div>
+
+          {/* Password */}
+          <div className="mb-1">
+            <label className="block text-xs font-medium text-[#8a95a3] mb-1.5">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-[#131920] border border-white/[0.1] rounded-lg py-2.75 px-3.5 text-sm text-white font-sans outline-none focus:border-[#1ddb78] placeholder:text-[#3d4f63]"
+            />
+          </div>
+
+          {/* Submit button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full btn btn-primary mt-1 justify-center py-2.75"
+          >
+            {loading ? 'Signing in...' : 'Sign in →'}
+          </button>
+        </form>
+
+        {/* Links */}
+        <div className="text-sm text-[#8a95a3] text-center mt-4">
+          Don't have an account?{' '}
+          <Link href="/signup" className="text-[#1ddb78] no-underline cursor-pointer font-medium">
+            Sign up free
+          </Link>
+        </div>
+
+        <div className="text-sm text-[#8a95a3] text-center mt-2">
+          <Link href="/" className="text-[#3d4f63] no-underline cursor-pointer hover:text-[#8a95a3]">
+            ← Back to home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
