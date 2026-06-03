@@ -75,7 +75,7 @@ export async function GET() {
             <h2>🚨 Website Down Alert</h2>
             <p><b>${monitor.name}</b> is currently offline.</p>
             <p>URL: ${monitor.target_url}</p>
-            <p>Detected At: ${new Date().toUTCString()} (UTC)</p>
+            <p>Detected At: ${new Date().toLocaleString()}</p>
           `,
         });
 
@@ -97,10 +97,15 @@ export async function GET() {
         if (incident) {
           const resolvedAt = new Date();
 
+          console.log('STARTED AT:', incident.started_at);
+          console.log('RESOLVED AT:', resolvedAt.toISOString());
+
           const durationSeconds = Math.floor(
-            (resolvedAt.getTime() - new Date(incident.started_at).getTime()) /
-              1000
+            (resolvedAt.getTime() -
+              new Date(incident.started_at).getTime()) / 1000
           );
+
+          console.log('DURATION SECONDS:', durationSeconds);
 
           const { error: resolveError } = await supabase
             .from('incidents')
@@ -131,7 +136,7 @@ export async function GET() {
             <p>Good news! Your website is responding normally again.</p>
             <p>URL: ${monitor.target_url}</p>
             <p>Response Time: ${responseTime} ms</p>
-            <p>Recovered At: ${new Date().toUTCString()} (UTC)</p>
+            <p>Recovered At: ${new Date().toLocaleString()}</p>
           `,
         });
 
