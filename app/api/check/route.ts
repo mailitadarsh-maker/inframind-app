@@ -114,7 +114,7 @@ if (
     .select('*')
     .eq('monitor_id', monitor.id)
     .is('resolved_at', null)
-    .single();
+    .maybeSingle()
 
   if (incident) {
     const resolvedAt = new Date();
@@ -126,14 +126,22 @@ if (
       ) / 1000
     );
 
-    await supabase
-      .from('incidents')
-      .update({
-        resolved_at: resolvedAt.toISOString(),
-        duration_seconds: durationSeconds,
-      })
-      .eq('id', incident.id);
-  }
+    const { data, error } = await supabase
+  .from('incidents')
+  .insert({
+    monitor_id: monitor.id,
+    started_at: new Date().toISOString(),
+  })
+  .select();
+
+console.log('CATCH INCIDENT DATA:', data);
+
+if (error) {
+  console.error(
+    'CATCH INCIDENT ERROR:',
+    JSON.stringify(error, null, 2)
+  );
+}
 
   console.log('✅ SENDING RECOVERY EMAIL');
 
