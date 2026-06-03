@@ -185,9 +185,17 @@ return ( <div className="min-h-screen bg-[#07090d] text-white">
           {monitor.target_url}
         </p>
 
-        <p className="text-sm text-gray-500 mt-2">
-          Status: {monitor.status}
-        </p>
+        <div className="mt-2">
+          {monitor.status === 'online' ? (
+            <span className="bg-green-600 text-white px-3 py-1 rounded text-sm">
+              Operational
+            </span>
+          ) : (
+            <span className="bg-red-600 text-white px-3 py-1 rounded text-sm">
+              Outage
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="text-right">
@@ -199,14 +207,28 @@ return ( <div className="min-h-screen bg-[#07090d] text-white">
               : 'text-red-500'
           }`}
         >
-          ● {monitor.status}
+          {monitor.status === 'online'
+            ? '🟢 Online'
+            : '🔴 Offline'}
         </div>
 
         <div className="text-gray-400 text-sm mb-3">
           {monitor.response_time || 0} ms
         </div>
 
-        <div className="flex gap-2 justify-end">
+        <div className="text-green-400 text-sm mb-3">
+          99.99% Uptime
+        </div>
+
+        <a
+          href={`/status/${monitor.id}`}
+          target="_blank"
+          className="text-blue-500 underline"
+        >
+          Public Status Page
+        </a>
+
+        <div className="flex gap-2 justify-end mt-3">
 
           <EditMonitorModal monitor={monitor} />
 
