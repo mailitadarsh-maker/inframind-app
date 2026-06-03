@@ -152,13 +152,21 @@ export async function GET() {
           last_checked: new Date().toISOString(),
         })
         .eq('id', monitor.id);
-    } catch (err) {
-      console.error('CHECK ERROR FULL:', err);
+    } catch (err: any) {
+      console.error(
+        'CHECK ERROR FULL:',
+        JSON.stringify(err, null, 2)
+      );
 
-      if (err instanceof Error) {
-        console.error('MESSAGE:', err.message);
-        console.error('STACK:', err.stack);
-      }
+      console.error(
+        'CHECK ERROR MESSAGE:',
+        err?.message
+      );
+
+      console.error(
+        'CHECK ERROR STACK:',
+        err?.stack
+      );
 
       if (monitor.status === 'online') {
         const { data: existingIncident } = await supabase
