@@ -105,16 +105,23 @@ if (
   );
 }
 // RECOVERY ALERT
+// RECOVERY ALERT
 if (
   monitor.status === 'offline' &&
   newStatus === 'online'
 ) {
-  const { data: incident } = await supabase
+  const {
+    data: incident,
+    error: incidentError,
+  } = await supabase
     .from('incidents')
     .select('*')
     .eq('monitor_id', monitor.id)
     .is('resolved_at', null)
-    .maybeSingle()
+    .maybeSingle();
+
+  console.log('OPEN INCIDENT:', incident);
+  console.log('OPEN INCIDENT ERROR:', incidentError);
 
   if (incident) {
     const resolvedAt = new Date();
@@ -126,22 +133,26 @@ if (
       ) / 1000
     );
 
-    const { data, error } = await supabase
-  .from('incidents')
-  .insert({
-    monitor_id: monitor.id,
-    started_at: new Date().toISOString(),
-  })
-  .select();
+    const { error: resolveError } = await supabase
+      .from('incidents')
+      .update({
+        resolved_at: resolvedAt.toISOString(),
+        duration_seconds: durationSeconds,
+      })
+      .eq('id', incident.id);
 
-console.log('CATCH INCIDENT DATA:', data);
+    if (resolveError) {
+      console.error(
+        'INCIDENT RESOLVE ERROR:',
+        JSON.stringify(resolveError, null, 2)
+      );
+    }
 
-if (error) {
-  console.error(
-    'CATCH INCIDENT ERROR:',
-    JSON.stringify(error, null, 2)
-  );
-}
+    console.log(
+      'INCIDENT RESOLVED:',
+      incident.id
+    );
+  }
 
   console.log('✅ SENDING RECOVERY EMAIL');
 
@@ -164,7 +175,7 @@ if (error) {
   );
 }
 
-  await supabase
+await supabase
   .from('monitors')
   .update({
     status: newStatus,
@@ -173,56 +184,56 @@ if (error) {
     last_checked: new Date().toISOString(),
   })
   .eq('id', monitor.id);
+  } catch (err) {
+  console.error('CHECK ERROR FULL:', err);
 
-    } catch (err) {
-      console.error('CHECK ERROR:', err);
+  if (err instanceof Error) {
+    console.error('MESSAGE:', err.message);
+    console.error('STACK:', err.stack);
+  }
 
-      if (monitor.status === 'online') {
-        const { data: existingIncident } = await supabase
-          .from('incidents')
-          .select('id')
-          .eq('monitor_id', monitor.id)
-          .is('resolved_at', null)
-          .maybeSingle();
+  if (monitor.status === 'online') {
+    const { data: existingIncident } = await supabase
+      .from('incidents')
+      .select('id')
+      .eq('monitor_id', monitor.id)
+      .is('resolved_at', null)
+      .maybeSingle();
 
-        if (!existingIncident) {
-          await supabase
-            .from('incidents')
-            .insert({
-              monitor_id: monitor.id,
-              started_at: new Date().toISOString(),
-            });
-        }
-
-        const emailResult = await resend.emails.send({
-          from: 'InfraMind <onboarding@resend.dev>',
-          to: monitor.alert_email,
-          subject: `🚨 ${monitor.name} is DOWN`,
-          html: `
-            <h2>🚨 Website Down Alert</h2>
-            <p><b>${monitor.name}</b> is currently offline.</p>
-            <p>URL: ${monitor.target_url}</p>
-            <p>Detected At: ${new Date().toLocaleString()}</p>
-          `,
-        });
-
-        console.log(
-          'DOWN EMAIL RESULT:',
-          JSON.stringify(emailResult)
-        );
-      }
-
+    if (!existingIncident) {
       await supabase
-        .from('monitors')
-        .update({
-          status: 'offline',
-          last_status: monitor.status,
-          response_time: 0,
-          last_checked: new Date().toISOString(),
-        })
-        .eq('id', monitor.id);
+        .from('incidents')
+        .insert({
+          monitor_id: monitor.id,
+          started_at: new Date().toISOString(),
+        });
     }
-  } // closes FOR LOOP
+
+    await resend.emails.send({
+      from: 'InfraMind <onboarding@resend.dev>',
+      to: monitor.alert_email,
+      subject: `🚨 ${monitor.name} is DOWN`,
+      html: `
+        <h2>🚨 Website Down Alert</h2>
+        <p><b>${monitor.name}</b> is currently offline.</p>
+        <p>URL: ${monitor.target_url}</p>
+        <p>Detected At: ${new Date().toLocaleString()}</p>
+      `,
+    });
+  }
+
+  await supabase
+    .from('monitors')
+    .update({
+      status: 'offline',
+      last_status: monitor.status,
+      response_time: 0,
+      last_checked: new Date().toISOString(),
+    })
+    .eq('id', monitor.id);
+}
+
+  } // closes for loop
 
   return NextResponse.json({
     success: true,
