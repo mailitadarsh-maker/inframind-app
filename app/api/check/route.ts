@@ -75,7 +75,7 @@ export async function GET() {
             <h2>🚨 Website Down Alert</h2>
             <p><b>${monitor.name}</b> is currently offline.</p>
             <p>URL: ${monitor.target_url}</p>
-            <p>Detected At: ${new Date().toLocaleString()}</p>
+            <p>Detected At: ${new Date().toUTCString()} (UTC)</p>
           `,
         });
 
@@ -131,7 +131,7 @@ export async function GET() {
             <p>Good news! Your website is responding normally again.</p>
             <p>URL: ${monitor.target_url}</p>
             <p>Response Time: ${responseTime} ms</p>
-            <p>Recovered At: ${new Date().toLocaleString()}</p>
+            <p>Recovered At: ${new Date().toUTCString()} (UTC)</p>
           `,
         });
 
