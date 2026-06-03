@@ -8,7 +8,7 @@ const supabase = createClient(
 );
 
 export async function GET() {
- console.log('API CHECK VERSION 5 - INCIDENT DEBUG');
+  console.log('API CHECK VERSION 5 - INCIDENT DEBUG');
 
   const { data: monitors, error } = await supabase
     .from('monitors')
@@ -45,194 +45,156 @@ export async function GET() {
 
       const responseTime = Date.now() - start;
 
-      const newStatus = response.ok
-        ? 'online'
-        : 'offline';
+      const newStatus = response.ok ? 'online' : 'offline';
 
-// DOWN ALERT
-if (
-  monitor.status === 'online' &&
-  newStatus === 'offline'
-) {
-  console.log('🚨 SENDING DOWN ALERT EMAIL');
+      // DOWN ALERT
+      if (monitor.status === 'online' && newStatus === 'offline') {
+        console.log('🚨 SENDING DOWN ALERT EMAIL');
 
-  const { data: existingIncident } = await supabase
-    .from('incidents')
-    .select('id')
-    .eq('monitor_id', monitor.id)
-    .is('resolved_at', null)
-    .maybeSingle();
+        const { data: existingIncident } = await supabase
+          .from('incidents')
+          .select('id')
+          .eq('monitor_id', monitor.id)
+          .is('resolved_at', null)
+          .maybeSingle();
 
-  if (!existingIncident) {
-    console.log(
-      'CREATING INCIDENT FOR:',
-      monitor.id
-    );
+        if (!existingIncident) {
+          await supabase
+            .from('incidents')
+            .insert({
+              monitor_id: monitor.id,
+              started_at: new Date().toISOString(),
+            });
+        }
 
-    const { data, error } = await supabase
-      .from('incidents')
-      .insert({
-        monitor_id: monitor.id,
-        started_at: new Date().toISOString(),
-      })
-      .select();
-
-    console.log('INCIDENT DATA:', data);
-
-    if (error) {
-      console.error(
-        'INCIDENT ERROR:',
-        JSON.stringify(error, null, 2)
-      );
-    }
-  }
-
-  const emailResult = await resend.emails.send({
-    from: 'InfraMind <onboarding@resend.dev>',
-    to: monitor.alert_email,
-    subject: `🚨 ${monitor.name} is DOWN`,
-    html: `
-      <h2>🚨 Website Down Alert</h2>
-      <p><b>${monitor.name}</b> is currently offline.</p>
-      <p>URL: ${monitor.target_url}</p>
-      <p>Detected At: ${new Date().toLocaleString()}</p>
-    `,
-  });
-
-  console.log(
-    'DOWN EMAIL RESULT:',
-    JSON.stringify(emailResult)
-  );
-}
-// RECOVERY ALERT
-// RECOVERY ALERT
-if (
-  monitor.status === 'offline' &&
-  newStatus === 'online'
-) {
-  const {
-    data: incident,
-    error: incidentError,
-  } = await supabase
-    .from('incidents')
-    .select('*')
-    .eq('monitor_id', monitor.id)
-    .is('resolved_at', null)
-    .maybeSingle();
-
-  console.log('OPEN INCIDENT:', incident);
-  console.log('OPEN INCIDENT ERROR:', incidentError);
-
-  if (incident) {
-    const resolvedAt = new Date();
-
-    const durationSeconds = Math.floor(
-      (
-        resolvedAt.getTime() -
-        new Date(incident.started_at).getTime()
-      ) / 1000
-    );
-
-    const { error: resolveError } = await supabase
-      .from('incidents')
-      .update({
-        resolved_at: resolvedAt.toISOString(),
-        duration_seconds: durationSeconds,
-      })
-      .eq('id', incident.id);
-
-    if (resolveError) {
-      console.error(
-        'INCIDENT RESOLVE ERROR:',
-        JSON.stringify(resolveError, null, 2)
-      );
-    }
-
-    console.log(
-      'INCIDENT RESOLVED:',
-      incident.id
-    );
-  }
-
-  console.log('✅ SENDING RECOVERY EMAIL');
-
-  const emailResult = await resend.emails.send({
-    from: 'InfraMind <onboarding@resend.dev>',
-    to: monitor.alert_email,
-    subject: `✅ ${monitor.name} is BACK ONLINE`,
-    html: `
-      <h2>✅ Website Back Online</h2>
-      <p>Good news! Your website is responding normally again.</p>
-      <p>URL: ${monitor.target_url}</p>
-      <p>Response Time: ${responseTime} ms</p>
-      <p>Recovered At: ${new Date().toLocaleString()}</p>
-    `,
-  });
-
-  console.log(
-    'RECOVERY EMAIL RESULT:',
-    JSON.stringify(emailResult)
-  );
-}
-
-await supabase
-  .from('monitors')
-  .update({
-    status: newStatus,
-    last_status: monitor.status,
-    response_time: responseTime,
-    last_checked: new Date().toISOString(),
-  })
-  .eq('id', monitor.id);
-  } catch (err) {
-  console.error('CHECK ERROR FULL:', err);
-
-  if (err instanceof Error) {
-    console.error('MESSAGE:', err.message);
-    console.error('STACK:', err.stack);
-  }
-
-  if (monitor.status === 'online') {
-    const { data: existingIncident } = await supabase
-      .from('incidents')
-      .select('id')
-      .eq('monitor_id', monitor.id)
-      .is('resolved_at', null)
-      .maybeSingle();
-
-    if (!existingIncident) {
-      await supabase
-        .from('incidents')
-        .insert({
-          monitor_id: monitor.id,
-          started_at: new Date().toISOString(),
+        const emailResult = await resend.emails.send({
+          from: 'InfraMind <onboarding@resend.dev>',
+          to: monitor.alert_email,
+          subject: `🚨 ${monitor.name} is DOWN`,
+          html: `
+            <h2>🚨 Website Down Alert</h2>
+            <p><b>${monitor.name}</b> is currently offline.</p>
+            <p>URL: ${monitor.target_url}</p>
+            <p>Detected At: ${new Date().toLocaleString()}</p>
+          `,
         });
-    }
 
-    await resend.emails.send({
-      from: 'InfraMind <onboarding@resend.dev>',
-      to: monitor.alert_email,
-      subject: `🚨 ${monitor.name} is DOWN`,
-      html: `
-        <h2>🚨 Website Down Alert</h2>
-        <p><b>${monitor.name}</b> is currently offline.</p>
-        <p>URL: ${monitor.target_url}</p>
-        <p>Detected At: ${new Date().toLocaleString()}</p>
-      `,
-    });
-  }
+        console.log('DOWN EMAIL RESULT:', JSON.stringify(emailResult));
+      }
 
-  await supabase
-    .from('monitors')
-    .update({
-      status: 'offline',
-      last_status: monitor.status,
-      response_time: 0,
-      last_checked: new Date().toISOString(),
-    })
-    .eq('id', monitor.id);
-}
+      // RECOVERY ALERT
+      if (monitor.status === 'offline' && newStatus === 'online') {
+        const { data: incident, error: incidentError } = await supabase
+          .from('incidents')
+          .select('*')
+          .eq('monitor_id', monitor.id)
+          .is('resolved_at', null)
+          .maybeSingle();
 
+        console.log('OPEN INCIDENT:', incident);
+        console.log('OPEN INCIDENT ERROR:', incidentError);
+
+        if (incident) {
+          const resolvedAt = new Date();
+
+          const durationSeconds = Math.floor(
+            (resolvedAt.getTime() - new Date(incident.started_at).getTime()) /
+              1000
+          );
+
+          const { error: resolveError } = await supabase
+            .from('incidents')
+            .update({
+              resolved_at: resolvedAt.toISOString(),
+              duration_seconds: durationSeconds,
+            })
+            .eq('id', incident.id);
+
+          if (resolveError) {
+            console.error(
+              'INCIDENT RESOLVE ERROR:',
+              JSON.stringify(resolveError, null, 2)
+            );
+          }
+
+          console.log('INCIDENT RESOLVED:', incident.id);
+        }
+
+        console.log('✅ SENDING RECOVERY EMAIL');
+
+        const emailResult = await resend.emails.send({
+          from: 'InfraMind <onboarding@resend.dev>',
+          to: monitor.alert_email,
+          subject: `✅ ${monitor.name} is BACK ONLINE`,
+          html: `
+            <h2>✅ Website Back Online</h2>
+            <p>Good news! Your website is responding normally again.</p>
+            <p>URL: ${monitor.target_url}</p>
+            <p>Response Time: ${responseTime} ms</p>
+            <p>Recovered At: ${new Date().toLocaleString()}</p>
+          `,
+        });
+
+        console.log('RECOVERY EMAIL RESULT:', JSON.stringify(emailResult));
+      }
+
+      await supabase
+        .from('monitors')
+        .update({
+          status: newStatus,
+          last_status: monitor.status,
+          response_time: responseTime,
+          last_checked: new Date().toISOString(),
+        })
+        .eq('id', monitor.id);
+    } catch (err) {
+      console.error('CHECK ERROR FULL:', err);
+
+      if (err instanceof Error) {
+        console.error('MESSAGE:', err.message);
+        console.error('STACK:', err.stack);
+      }
+
+      if (monitor.status === 'online') {
+        const { data: existingIncident } = await supabase
+          .from('incidents')
+          .select('id')
+          .eq('monitor_id', monitor.id)
+          .is('resolved_at', null)
+          .maybeSingle();
+
+        if (!existingIncident) {
+          await supabase
+            .from('incidents')
+            .insert({
+              monitor_id: monitor.id,
+              started_at: new Date().toISOString(),
+            });
+        }
+
+        await resend.emails.send({
+          from: 'InfraMind <onboarding@resend.dev>',
+          to: monitor.alert_email,
+          subject: `🚨 ${monitor.name} is DOWN`,
+          html: `
+            <h2>🚨 Website Down Alert</h2>
+            <p><b>${monitor.name}</b> is currently offline.</p>
+            <p>URL: ${monitor.target_url}</p>
+            <p>Detected At: ${new Date().toLocaleString()}</p>
+          `,
+        });
+      }
+
+      await supabase
+        .from('monitors')
+        .update({
+          status: 'offline',
+          last_status: monitor.status,
+          response_time: 0,
+          last_checked: new Date().toISOString(),
+        })
+        .eq('id', monitor.id);
+    } // closes catch
   } // closes for loop
 
   return NextResponse.json({
