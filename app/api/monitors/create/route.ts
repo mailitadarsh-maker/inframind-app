@@ -15,6 +15,8 @@ export async function POST(req: NextRequest) {
       name,
       target_url,
       alert_email,
+      type,
+      expected_status,
     } = body;
 
     const { data, error } = await supabaseAdmin
@@ -25,7 +27,8 @@ export async function POST(req: NextRequest) {
           name,
           target_url,
           alert_email,
-          type: 'website',
+          type: type || 'website',
+          expected_status: expected_status || 200,
           status: 'online',
           last_status: 'online',
           response_time: 0,

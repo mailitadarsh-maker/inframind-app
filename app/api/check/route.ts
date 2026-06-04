@@ -45,7 +45,38 @@ export async function GET() {
 
       const responseTime = Date.now() - start;
 
-      const newStatus = response.ok ? 'online' : 'offline';
+      let newStatus = 'offline';
+
+      if (monitor.type === 'website') {
+        newStatus = response.ok
+          ? 'online'
+          : 'offline';
+      }
+
+      if (monitor.type === 'api') {
+        newStatus =
+          response.status === monitor.expected_status
+            ? 'online'
+            : 'offline';
+      }
+
+      console.log(
+        monitor.name,
+        monitor.type,
+        response.status,
+        monitor.expected_status,
+        newStatus
+      );
+
+      let monitorLabel = 'Website';
+
+      if (monitor.type === 'api') {
+        monitorLabel = 'API';
+      }
+
+      if (monitor.type === 'ssl') {
+        monitorLabel = 'SSL';
+      }
 
       // DOWN ALERT
       if (monitor.status === 'online' && newStatus === 'offline') {
@@ -70,10 +101,11 @@ export async function GET() {
         const emailResult = await resend.emails.send({
           from: 'InfraMind <onboarding@resend.dev>',
           to: monitor.alert_email,
-          subject: `🚨 ${monitor.name} is DOWN`,
+          subject: `🚨 ${monitorLabel} Alert: ${monitor.name} is DOWN`,
           html: `
-            <h2>🚨 Website Down Alert</h2>
+            <h2>🚨 ${monitorLabel} Down Alert</h2>
             <p><b>${monitor.name}</b> is currently offline.</p>
+            <p>Type: ${monitorLabel}</p>
             <p>URL: ${monitor.target_url}</p>
             <p>Detected At: ${new Date().toLocaleString()}</p>
           `,
@@ -130,10 +162,10 @@ export async function GET() {
         const emailResult = await resend.emails.send({
           from: 'InfraMind <onboarding@resend.dev>',
           to: monitor.alert_email,
-          subject: `✅ ${monitor.name} is BACK ONLINE`,
+          subject: `✅ ${monitorLabel} Alert: ${monitor.name} is BACK ONLINE`,
           html: `
-            <h2>✅ Website Back Online</h2>
-            <p>Good news! Your website is responding normally again.</p>
+            <h2>✅ ${monitorLabel} Back Online</h2>
+            <p>Good news! Your ${monitorLabel} is responding normally again.</p>
             <p>URL: ${monitor.target_url}</p>
             <p>Response Time: ${responseTime} ms</p>
             <p>Recovered At: ${new Date().toLocaleString()}</p>
@@ -152,6 +184,7 @@ export async function GET() {
           last_checked: new Date().toISOString(),
         })
         .eq('id', monitor.id);
+
     } catch (err: any) {
       console.error(
         'CHECK ERROR FULL:',
@@ -169,6 +202,16 @@ export async function GET() {
       );
 
       if (monitor.status === 'online') {
+        let monitorLabel = 'Website';
+
+        if (monitor.type === 'api') {
+          monitorLabel = 'API';
+        }
+
+        if (monitor.type === 'ssl') {
+          monitorLabel = 'SSL';
+        }
+
         const { data: existingIncident } = await supabase
           .from('incidents')
           .select('id')
@@ -188,10 +231,11 @@ export async function GET() {
         await resend.emails.send({
           from: 'InfraMind <onboarding@resend.dev>',
           to: monitor.alert_email,
-          subject: `🚨 ${monitor.name} is DOWN`,
+          subject: `🚨 ${monitorLabel} Alert: ${monitor.name} is DOWN`,
           html: `
-            <h2>🚨 Website Down Alert</h2>
+            <h2>🚨 ${monitorLabel} Down Alert</h2>
             <p><b>${monitor.name}</b> is currently offline.</p>
+            <p>Type: ${monitorLabel}</p>
             <p>URL: ${monitor.target_url}</p>
             <p>Detected At: ${new Date().toLocaleString()}</p>
           `,
@@ -207,8 +251,8 @@ export async function GET() {
           last_checked: new Date().toISOString(),
         })
         .eq('id', monitor.id);
-    } // closes catch
-  } // closes for loop
+    }
+  }
 
   return NextResponse.json({
     success: true,

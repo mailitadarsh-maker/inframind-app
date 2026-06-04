@@ -9,6 +9,8 @@ export default function AddMonitorModal() {
   const [url, setUrl] = useState('');
   const [alertEmail, setAlertEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [type, setType] = useState('website');
+  const [expectedStatus, setExpectedStatus] = useState(200);
 
   const handleSubmit = async () => {
     if (!name || !url || !alertEmail) {
@@ -38,6 +40,8 @@ export default function AddMonitorModal() {
           name,
           target_url: url,
           alert_email: alertEmail,
+          type,
+          expected_status: expectedStatus,
         }),
       });
 
@@ -91,6 +95,15 @@ export default function AddMonitorModal() {
                 className="w-full px-4 py-3 rounded-lg bg-[#161b22] border border-white/10 text-white outline-none"
               />
 
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg bg-[#161b22] border border-white/10 text-white outline-none"
+              >
+                <option value="website">Website</option>
+                <option value="api">API</option>
+              </select>
+
               <input
                 type="url"
                 placeholder="https://example.com"
@@ -98,6 +111,18 @@ export default function AddMonitorModal() {
                 onChange={(e) => setUrl(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg bg-[#161b22] border border-white/10 text-white outline-none"
               />
+
+              {type === 'api' && (
+                <input
+                  type="number"
+                  placeholder="Expected Status Code"
+                  value={expectedStatus}
+                  onChange={(e) =>
+                    setExpectedStatus(Number(e.target.value))
+                  }
+                  className="w-full px-4 py-3 rounded-lg bg-[#161b22] border border-white/10 text-white outline-none"
+                />
+              )}
 
               <input
                 type="email"
