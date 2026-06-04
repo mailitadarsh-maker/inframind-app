@@ -4,18 +4,18 @@ export default function HowItWorks() {
       number: '01',
       title: 'Connect your app',
       description:
-        'Paste your URL and install a one-line agent. Works with any app — Node.js, Python, PHP, React. Takes 3 minutes.',
+        'Enter a website URL, API endpointor SSL certificate to monitor.',
     },
     {
       number: '02',
-      title: 'InfraMind watches it',
+      title: 'InfraMind checks availability',
       description:
-        'Every minute, InfraMind checks uptime, speed, security, and dependencies. Get instant alerts before customers notice anything.',
+        'Response times, and SSL health every few minutes.',
     },
     {
       number: '03',
-      title: 'Read the AI report',
-      description: "No jargon. Plain English explaining what's wrong, what's working, and exactly what to do next.",
+      title: 'Get notified',
+      description: "Receive email alerts instantly when services go down or recover.",
     },
   ];
 

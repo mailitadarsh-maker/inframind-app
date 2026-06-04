@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'InfraMind — Keep your apps running perfectly',
-  description: 'InfraMind monitors your apps, scans for problems, and explains everything in plain English — so you never get surprised by downtime again.',
+  description: 'Monitor websites, APIs, and SSL certificates. Get instant alerts, track incidents, and share public status pages from a single dashboard.',
 };
 
 export default function RootLayout({
