@@ -41,7 +41,7 @@ export default function SignupPage() {
   }
 
   alert(
-    "Account created successfully! Please check your email and verify your account."
+    "Account created successfully! You can now sign in."
   );
 
   console.log(data);
