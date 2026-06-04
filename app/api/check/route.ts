@@ -29,7 +29,6 @@ export async function GET() {
 
   for (const monitor of monitors || []) {
     try {
-
       if (monitor.type === 'ssl') {
         console.log('SSL MONITOR DETECTED:', monitor.name);
 
@@ -55,6 +54,146 @@ export async function GET() {
             ) /
             (1000 * 60 * 60 * 24)
           );
+
+          // --- SSL WARNING LOGIC ---
+
+          // 30 Day Alert
+          if (
+            daysRemaining <= 30 &&
+            daysRemaining > 14 &&
+            monitor.ssl_alert_stage !== 30
+          ) {
+            await resend.emails.send({
+              from: 'InfraMind <onboarding@resend.dev>',
+              to: monitor.alert_email,
+              subject: `⚠️ SSL Expiry Warning - ${monitor.name}`,
+              html: `
+                <h2>SSL Expiry Warning</h2>
+                <p><b>${monitor.name}</b></p>
+                <p>URL: ${monitor.target_url}</p>
+                <p>SSL expires in <b>${daysRemaining} days</b>.</p>
+                <p>Expiry Date: ${expiryDate.toLocaleDateString()}</p>
+              `,
+            });
+
+            await supabase
+              .from('monitors')
+              .update({
+                ssl_alert_stage: 30,
+              })
+              .eq('id', monitor.id);
+          }
+
+          // 14 Day Alert
+          if (
+            daysRemaining <= 14 &&
+            daysRemaining > 7 &&
+            monitor.ssl_alert_stage !== 14
+          ) {
+            await resend.emails.send({
+              from: 'InfraMind <onboarding@resend.dev>',
+              to: monitor.alert_email,
+              subject: `⚠️ SSL Expiry Warning - ${monitor.name}`,
+              html: `
+                <h2>SSL Expiry Warning</h2>
+                <p>SSL expires in <b>${daysRemaining} days</b>.</p>
+              `,
+            });
+
+            await supabase
+              .from('monitors')
+              .update({
+                ssl_alert_stage: 14,
+              })
+              .eq('id', monitor.id);
+          }
+
+          // 7 Day Alert
+          if (
+            daysRemaining <= 7 &&
+            daysRemaining > 1 &&
+            monitor.ssl_alert_stage !== 7
+          ) {
+            await resend.emails.send({
+              from: 'InfraMind <onboarding@resend.dev>',
+              to: monitor.alert_email,
+              subject: `⚠️ SSL Expiry Warning - ${monitor.name}`,
+              html: `
+                <h2>SSL Expiry Warning</h2>
+                <p>SSL expires in <b>${daysRemaining} days</b>.</p>
+              `,
+            });
+
+            await supabase
+              .from('monitors')
+              .update({
+                ssl_alert_stage: 7,
+              })
+              .eq('id', monitor.id);
+          }
+
+          // 1 Day Alert
+          if (
+            daysRemaining <= 1 &&
+            daysRemaining > 0 &&
+            monitor.ssl_alert_stage !== 1
+          ) {
+            await resend.emails.send({
+              from: 'InfraMind <onboarding@resend.dev>',
+              to: monitor.alert_email,
+              subject: `🚨 SSL Expiring Tomorrow - ${monitor.name}`,
+              html: `
+                <h2>SSL Expiring Soon</h2>
+                <p>Your SSL certificate expires in less than 24 hours.</p>
+              `,
+            });
+
+            await supabase
+              .from('monitors')
+              .update({
+                ssl_alert_stage: 1,
+              })
+              .eq('id', monitor.id);
+          }
+
+          // Expired Alert
+          if (
+            daysRemaining <= 0 &&
+            monitor.ssl_alert_stage !== 0
+          ) {
+            await resend.emails.send({
+              from: 'InfraMind <onboarding@resend.dev>',
+              to: monitor.alert_email,
+              subject: `🚨 SSL Certificate Expired - ${monitor.name}`,
+              html: `
+                <h2>SSL Certificate Expired</h2>
+                <p>Your SSL certificate has expired.</p>
+                <p>URL: ${monitor.target_url}</p>
+              `,
+            });
+
+            await supabase
+              .from('monitors')
+              .update({
+                ssl_alert_stage: 0,
+              })
+              .eq('id', monitor.id);
+          }
+
+          // Reset Logic (handles certificate renewals)
+          if (
+            daysRemaining > 30 &&
+            monitor.ssl_alert_stage !== null
+          ) {
+            await supabase
+              .from('monitors')
+              .update({
+                ssl_alert_stage: null,
+              })
+              .eq('id', monitor.id);
+          }
+
+          // --- END WARNING LOGIC ---
 
           await supabase
             .from('monitors')
