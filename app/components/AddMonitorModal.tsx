@@ -102,6 +102,7 @@ export default function AddMonitorModal() {
               >
                 <option value="website">Website</option>
                 <option value="api">API</option>
+                <option value="ssl">SSL Certificate</option>
               </select>
 
               <input
