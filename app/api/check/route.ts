@@ -11,18 +11,10 @@ const supabase = createClient(
 export async function GET() {
   console.log('API CHECK VERSION 6.0 EMAIL DEBUG');
 
-  // --- MANUAL TEST EMAIL BLOCK ---
-  console.log("TEST EMAIL START");
+ 
 
-  const result = await resend.emails.send({
-    from: 'InfraMind <onboarding@resend.dev>',
-    to: 'mailitadarsh@gmail.com',
-    subject: 'CHECK LOOP TEST',
-    html: '<h1>Loop reached here</h1>',
-  });
 
-  console.log("TEST EMAIL RESULT:", result);
-  // ---------------------------------
+
 
   const { data: monitors, error } = await supabase
     .from('monitors')
