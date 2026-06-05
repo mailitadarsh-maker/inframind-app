@@ -3,18 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 import { resend } from '@/lib/resend';
 import sslChecker from 'ssl-checker';
 
+// 🚨 FORCES NEXT.JS TO NEVER CACHE THIS ROUTE 🚨
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export async function GET() {
-  console.log('API CHECK VERSION 6.0 EMAIL DEBUG');
-
- 
-
-
-
+  console.log('API CHECK VERSION 7.0 - CACHE BUSTED & ENHANCED LOGGING');
 
   const { data: monitors, error } = await supabase
     .from('monitors')
@@ -53,9 +53,8 @@ export async function GET() {
 
           // --- SSL EXPIRY WATERMARK ALERTS ---
           
-          // 30 Day Alert
           if (daysRemaining <= 30 && daysRemaining > 14 && monitor.ssl_alert_stage !== 30) {
-            console.log("ABOUT TO SEND EMAIL");
+            console.log("ABOUT TO SEND EMAIL: 30 DAY WARNING");
             const emailResult = await resend.emails.send({
               from: 'InfraMind <onboarding@resend.dev>',
               to: monitor.alert_email,
@@ -72,9 +71,8 @@ export async function GET() {
             await supabase.from('monitors').update({ ssl_alert_stage: 30 }).eq('id', monitor.id);
           }
 
-          // 14 Day Alert
           if (daysRemaining <= 14 && daysRemaining > 7 && monitor.ssl_alert_stage !== 14) {
-            console.log("ABOUT TO SEND EMAIL");
+            console.log("ABOUT TO SEND EMAIL: 14 DAY WARNING");
             const emailResult = await resend.emails.send({
               from: 'InfraMind <onboarding@resend.dev>',
               to: monitor.alert_email,
@@ -89,9 +87,8 @@ export async function GET() {
             await supabase.from('monitors').update({ ssl_alert_stage: 14 }).eq('id', monitor.id);
           }
 
-          // 7 Day Alert
           if (daysRemaining <= 7 && daysRemaining > 1 && monitor.ssl_alert_stage !== 7) {
-            console.log("ABOUT TO SEND EMAIL");
+            console.log("ABOUT TO SEND EMAIL: 7 DAY WARNING");
             const emailResult = await resend.emails.send({
               from: 'InfraMind <onboarding@resend.dev>',
               to: monitor.alert_email,
@@ -106,9 +103,8 @@ export async function GET() {
             await supabase.from('monitors').update({ ssl_alert_stage: 7 }).eq('id', monitor.id);
           }
 
-          // 1 Day Alert
           if (daysRemaining <= 1 && daysRemaining > 0 && monitor.ssl_alert_stage !== 1) {
-            console.log("ABOUT TO SEND EMAIL");
+            console.log("ABOUT TO SEND EMAIL: 1 DAY WARNING");
             const emailResult = await resend.emails.send({
               from: 'InfraMind <onboarding@resend.dev>',
               to: monitor.alert_email,
@@ -123,9 +119,8 @@ export async function GET() {
             await supabase.from('monitors').update({ ssl_alert_stage: 1 }).eq('id', monitor.id);
           }
 
-          // Expired Alert
           if (daysRemaining <= 0 && monitor.ssl_alert_stage !== 0) {
-            console.log("ABOUT TO SEND EMAIL");
+            console.log("ABOUT TO SEND EMAIL: EXPIRED WARNING");
             const emailResult = await resend.emails.send({
               from: 'InfraMind <onboarding@resend.dev>',
               to: monitor.alert_email,
@@ -141,12 +136,9 @@ export async function GET() {
             await supabase.from('monitors').update({ ssl_alert_stage: 0 }).eq('id', monitor.id);
           }
 
-          // Reset Logic (handles successful certificate renewals automatically)
           if (daysRemaining > 30 && monitor.ssl_alert_stage !== null) {
             await supabase.from('monitors').update({ ssl_alert_stage: null }).eq('id', monitor.id);
           }
-
-          // --- END WARNING LOGIC ---
 
           await supabase
             .from('monitors')
@@ -164,23 +156,18 @@ export async function GET() {
         }
 
         console.log(
-          monitor.name,
-          "DB Status:",
-          monitor.status,
-          "New Status:",
-          newStatus
+          "COMPARE:", monitor.name,
+          "| DB Status:", monitor.status,
+          "| LAST Status:", monitor.last_status,
+          "| NEW Status:", newStatus
         );
 
         // UPTIME / DOWNTIME INCIDENT LOGIC
         if (newStatus !== monitor.status) {
-          console.log("STATUS CHANGED");
-          console.log("Monitor:", monitor.name);
-          console.log("Old:", monitor.status);
-          console.log("New:", newStatus);
-          console.log("Alert Email:", monitor.alert_email);
+          console.log("🟢 STATUS TRANSITION DETECTED:", monitor.name);
 
           if (newStatus === 'offline') {
-            console.log('🚨 SENDING SSL DOWN ALERT EMAIL');
+            console.log("🔻 ENTERED OFFLINE BLOCK");
 
             const { data: existingIncident } = await supabase
               .from('incidents')
@@ -196,7 +183,7 @@ export async function GET() {
               });
             }
 
-            console.log("ABOUT TO SEND EMAIL");
+            console.log("ABOUT TO SEND DOWN EMAIL TO:", monitor.alert_email);
             const emailResult = await resend.emails.send({
               from: 'InfraMind <onboarding@resend.dev>',
               to: monitor.alert_email,
@@ -209,9 +196,10 @@ export async function GET() {
                 <p>Detected At: ${new Date().toLocaleString()}</p>
               `,
             });
-            console.log("EMAIL RESULT:", emailResult);
+            console.log("✅ EMAIL RESULT SUCCESS:", emailResult);
 
           } else if (newStatus === 'online') {
+            console.log("🔺 ENTERED ONLINE (RECOVERY) BLOCK");
             const { data: incident } = await supabase
               .from('incidents')
               .select('*')
@@ -234,8 +222,7 @@ export async function GET() {
                 .eq('id', incident.id);
             }
 
-            console.log('✅ SENDING SSL RECOVERY EMAIL');
-            console.log("ABOUT TO SEND EMAIL");
+            console.log("ABOUT TO SEND RECOVERY EMAIL TO:", monitor.alert_email);
             const emailResult = await resend.emails.send({
               from: 'InfraMind <onboarding@resend.dev>',
               to: monitor.alert_email,
@@ -247,7 +234,7 @@ export async function GET() {
                 <p>Recovered At: ${new Date().toLocaleString()}</p>
               `,
             });
-            console.log("EMAIL RESULT:", emailResult);
+            console.log("✅ EMAIL RESULT SUCCESS:", emailResult);
           }
         }
 
@@ -289,23 +276,18 @@ export async function GET() {
         const monitorLabel = monitor.type === 'api' ? 'API' : 'Website';
 
         console.log(
-          monitor.name,
-          "DB Status:",
-          monitor.status,
-          "New Status:",
-          newStatus
+          "COMPARE:", monitor.name,
+          "| DB Status:", monitor.status,
+          "| LAST Status:", monitor.last_status,
+          "| NEW Status:", newStatus
         );
 
         // UPTIME / DOWNTIME INCIDENT LOGIC
         if (newStatus !== monitor.status) {
-          console.log("STATUS CHANGED");
-          console.log("Monitor:", monitor.name);
-          console.log("Old:", monitor.status);
-          console.log("New:", newStatus);
-          console.log("Alert Email:", monitor.alert_email);
+          console.log("🟢 STATUS TRANSITION DETECTED:", monitor.name);
 
           if (newStatus === 'offline') {
-            console.log(`🚨 SENDING ${monitorLabel.toUpperCase()} DOWN ALERT EMAIL`);
+            console.log("🔻 ENTERED OFFLINE BLOCK");
 
             const { data: existingIncident } = await supabase
               .from('incidents')
@@ -321,7 +303,7 @@ export async function GET() {
               });
             }
 
-            console.log("ABOUT TO SEND EMAIL");
+            console.log("ABOUT TO SEND DOWN EMAIL TO:", monitor.alert_email);
             const emailResult = await resend.emails.send({
               from: 'InfraMind <onboarding@resend.dev>',
               to: monitor.alert_email,
@@ -334,9 +316,11 @@ export async function GET() {
                 <p>Detected At: ${new Date().toLocaleString()}</p>
               `,
             });
-            console.log("EMAIL RESULT:", emailResult);
+            console.log("✅ EMAIL RESULT SUCCESS:", emailResult);
 
           } else if (newStatus === 'online') {
+            console.log("🔺 ENTERED ONLINE (RECOVERY) BLOCK");
+            
             const { data: incident } = await supabase
               .from('incidents')
               .select('*')
@@ -359,8 +343,7 @@ export async function GET() {
                 .eq('id', incident.id);
             }
 
-            console.log(`✅ SENDING ${monitorLabel.toUpperCase()} RECOVERY EMAIL`);
-            console.log("ABOUT TO SEND EMAIL");
+            console.log("ABOUT TO SEND RECOVERY EMAIL TO:", monitor.alert_email);
             const emailResult = await resend.emails.send({
               from: 'InfraMind <onboarding@resend.dev>',
               to: monitor.alert_email,
@@ -373,7 +356,7 @@ export async function GET() {
                 <p>Recovered At: ${new Date().toLocaleString()}</p>
               `,
             });
-            console.log("EMAIL RESULT:", emailResult);
+            console.log("✅ EMAIL RESULT SUCCESS:", emailResult);
           }
         }
 
@@ -392,31 +375,22 @@ export async function GET() {
       // ==========================================
       // 3. GLOBAL ERROR FALLBACK (TIMEOUTS/DNS FAILURES)
       // ==========================================
-      console.error(
-        "MONITOR FAILED:",
-        monitor.name,
-        err?.message,
-        err
-      );
-      console.error('CHECK ERROR FULL:', err?.message || err);
+      console.error("MONITOR FAILED:", monitor.name, err?.message, err);
       
       const newStatus = 'offline';
 
       console.log(
-        monitor.name,
-        "DB Status:",
-        monitor.status,
-        "New Status: offline (Error Fallback)"
+        "COMPARE [FALLBACK]:", monitor.name,
+        "| DB Status:", monitor.status,
+        "| LAST Status:", monitor.last_status,
+        "| NEW Status:", newStatus
       );
 
       if (newStatus !== monitor.status) {
-        const monitorLabel = monitor.type === 'api' ? 'API' : (monitor.type === 'ssl' ? 'SSL' : 'Website');
+        console.log("🟢 STATUS TRANSITION DETECTED (FALLBACK ERROR):", monitor.name);
+        console.log("🔻 ENTERED OFFLINE BLOCK");
 
-        console.log("STATUS CHANGED");
-        console.log("Monitor:", monitor.name);
-        console.log("Old:", monitor.status);
-        console.log("New:", newStatus);
-        console.log("Alert Email:", monitor.alert_email);
+        const monitorLabel = monitor.type === 'api' ? 'API' : (monitor.type === 'ssl' ? 'SSL' : 'Website');
 
         const { data: existingIncident } = await supabase
           .from('incidents')
@@ -433,7 +407,7 @@ export async function GET() {
         }
 
         try {
-          console.log("ABOUT TO SEND EMAIL");
+          console.log("ABOUT TO SEND DOWN EMAIL TO:", monitor.alert_email);
           const emailResult = await resend.emails.send({
             from: 'InfraMind <onboarding@resend.dev>',
             to: monitor.alert_email,
@@ -446,9 +420,9 @@ export async function GET() {
               <p>Detected At: ${new Date().toLocaleString()}</p>
             `,
           });
-          console.log("EMAIL RESULT:", emailResult);
+          console.log("✅ EMAIL RESULT SUCCESS:", emailResult);
         } catch (emailError) {
-          console.error("EMAIL FAILED:", emailError);
+          console.error("❌ EMAIL FAILED:", emailError);
         }
       }
 
