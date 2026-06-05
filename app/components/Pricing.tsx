@@ -1,109 +1,141 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+
+const freePlan = [
+  'Website monitoring',
+  'API monitoring',
+  'SSL monitoring',
+  'Email alerts',
+  'Incident tracking',
+  'Public status pages',
+];
+
+const comingSoon = [
+  'AI incident analysis',
+  'Team workspaces',
+  'Slack alerts',
+  'Custom branding',
+];
+
 export default function Pricing() {
-  const plans = [
-    {
-      name: 'Free',
-      price: '₹0',
-      period: 'while in beta',
-      features: [
-        'Website Monitoring',
-        'API Monitoring',
-        'SSL Monitoring',
-        'Email Alerts',
-        'Incident Tracking',
-        'Public Status Pages',
-      ],
-      cta: 'Start Free →',
-      primary: true,
-      featured: true,
-    },
-    {
-      name: 'Coming Soon',
-      price: '—',
-      period: 'future plans',
-      features: [
-        'AI Incident Analysis',
-        'Team Workspaces',
-        'Slack Alerts',
-        'Custom Branding',
-      ],
-      cta: 'Join Waitlist →',
-      primary: false,
-      featured: false, // Explicitly defined to prevent undefined behavior
-    },
-  ];
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.1 }
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
 
   return (
-    <section className="py-20 px-[5%] text-center" id="pricing">
-      <div className="text-sm font-semibold text-[#1ddb78] uppercase tracking-wider mb-4">
-        Pricing
-      </div>
-      <h2 className="text-4xl md:text-5xl font-bold mb-4">
-        Pay only for <em className="text-[#1ddb78] italic">what you use.</em>
-      </h2>
-      <p className="text-base text-[#8a95a3] max-w-lg mx-auto mb-12 leading-relaxed">
-        No subscriptions. No per-seat fees. Pay only when InfraMind does
-        something.
-      </p>
+    <section id="pricing" ref={ref} className="py-28 px-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div
+          className="text-center mb-14 transition-all duration-700"
+          style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)' }}
+        >
+          <p className="section-subtitle mb-3">Pricing</p>
+          <h2 className="section-title text-text">
+            Pay only for{' '}
+            <em className="text-green not-italic">what you use.</em>
+          </h2>
+          <p className="text-text-2 text-sm mt-3">
+            No subscriptions. No per-seat fees. Pay only when InfraMind does something.
+          </p>
+        </div>
 
-      {/* Changed to md:grid-cols-2 since there are only 2 plans */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {plans.map((plan) => (
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Free card */}
           <div
-            key={plan.name}
-            className={`rounded-2xl p-6 text-left relative ${
-              plan.featured
-                ? 'bg-gradient-to-br from-[#1ddb7810] to-[#0d1117] border-2 border-[#1ddb78]'
-                : 'bg-[#0d1117] border border-white/[0.05]'
-            }`}
+            className="relative rounded-2xl border-2 border-green/30 bg-[#0d1117] p-8 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
+            style={{
+              opacity: visible ? 1 : 0,
+              transform: visible ? 'translateY(0)' : 'translateY(28px)',
+              transitionDelay: '0.15s',
+              transitionDuration: '0.6s',
+              boxShadow: '0 0 60px rgba(29,219,120,0.06)',
+            }}
           >
-            {plan.featured && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#1ddb78] text-black text-xs font-bold px-3 py-1 rounded-full">
-                MOST POPULAR
-              </div>
-            )}
+            {/* Glow top */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-green/40 to-transparent" />
 
-            <div className="text-xs font-semibold text-[#8a95a3] uppercase mb-2">
-              {plan.featured ? (
-                <span className="text-[#1ddb78]">{plan.name} ✓</span>
-              ) : (
-                plan.name
-              )}
-            </div>
-
-            <div className="font-serif text-4xl tracking-tight leading-none mb-1">
-              <span className={plan.featured ? 'text-[#1ddb78]' : 'text-white'}>
-                {plan.price}
-              </span>
-            </div>
-
-            <div className="text-xs text-[#8a95a3] mb-6">{plan.period}</div>
-
-            <button
-              className={`w-full py-3 rounded-lg text-sm font-semibold mb-6 transition-all ${
-                plan.featured
-                  ? 'bg-[#1ddb78] hover:bg-[#19c76b] text-black' // Adjusted to ensure button works without a custom 'btn' class
-                  : 'bg-[#131920] text-[#8a95a3] border border-white/[0.1] hover:text-[#eef1f6]'
-              }`}
+            {/* Badge */}
+            <div
+              className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-green text-[#07090d] text-[10px] font-bold px-4 py-1 rounded-full tracking-widest uppercase"
+              style={{ animation: 'pulseBadge 2.5s ease-in-out infinite' }}
             >
-              {plan.cta}
+              Most Popular
+            </div>
+
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-green uppercase tracking-widest mb-3">Free ✓</p>
+              <div className="flex items-end gap-1 mb-1">
+                <span className="font-serif text-5xl text-text leading-none">₹0</span>
+              </div>
+              <p className="text-text-2 text-xs mt-1">while in beta</p>
+            </div>
+
+            <a
+              href="/dashboard"
+              className="btn btn-primary btn-lg w-full justify-center mb-7 relative overflow-hidden group"
+            >
+              <span className="relative z-10">Start Free →</span>
+              <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-200" />
+            </a>
+
+            <ul className="space-y-3">
+              {freePlan.map((item) => (
+                <li key={item} className="flex items-center gap-2.5 text-sm text-text-2">
+                  <span className="text-green text-xs">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Coming soon */}
+          <div
+            className="relative rounded-2xl border border-white/[0.07] bg-[#0d1117] p-8 hover:-translate-y-1.5 transition-all duration-300"
+            style={{
+              opacity: visible ? 1 : 0,
+              transform: visible ? 'translateY(0)' : 'translateY(28px)',
+              transitionDelay: '0.28s',
+              transitionDuration: '0.6s',
+            }}
+          >
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-text-2 uppercase tracking-widest mb-3">Coming soon</p>
+              <div className="flex items-end gap-1 mb-1">
+                <span className="font-serif text-5xl text-text-2 leading-none">—</span>
+              </div>
+              <p className="text-text-2 text-xs mt-1">future plans</p>
+            </div>
+
+            <button className="btn btn-ghost btn-lg w-full justify-center mb-7">
+              Join Waitlist →
             </button>
 
-            <div className="h-px bg-white/[0.05] my-6" />
-
-            <div className="space-y-3">
-              {plan.features.map((feature, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 text-sm text-[#8a95a3]"
-                >
-                  <span className="text-[#1ddb78] font-bold">✓</span>
-                  {feature}
-                </div>
+            <ul className="space-y-3">
+              {comingSoon.map((item) => (
+                <li key={item} className="flex items-center gap-2.5 text-sm text-text-2/60">
+                  <span className="text-text-2/40 text-xs">✓</span>
+                  {item}
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
-        ))}
+        </div>
       </div>
+
+      <style>{`
+        @keyframes pulseBadge { 0%,100%{box-shadow:0 0 0 0 rgba(29,219,120,0.3)} 50%{box-shadow:0 0 0 6px rgba(29,219,120,0)} }
+      `}</style>
     </section>
   );
 }

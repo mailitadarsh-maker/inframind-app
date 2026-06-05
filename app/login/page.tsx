@@ -1,126 +1,66 @@
 'use client';
 
-import { supabase } from "@/lib/supabase";
-import { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  if (!email || !password) {
-    alert("Please enter email and password");
-    return;
-  }
-
-  setLoading(true);
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  setLoading(false);
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  console.log("Logged in user:", data.user);
-
-  alert("LOGIN SUCCESS");
-router.replace("/dashboard");
-};
-
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 relative">
-      {/* Glow background */}
-      <div
-        className="absolute w-96 h-96 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+    <main className="min-h-screen flex items-center justify-center bg-[#07090d] relative overflow-hidden">
+      {/* Background Grid Animation */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-50"
         style={{
-          background: 'radial-gradient(circle, rgba(29,219,120,0.06) 0%, transparent 70%)',
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+          animation: 'gridDrift 8s linear infinite'
         }}
       />
-
-      {/* Auth box */}
-      <div className="bg-[#0d1117] border border-white/[0.1] rounded-[18px] p-9 w-full max-w-sm relative z-10 animate-fade-up">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2.5 mb-7">
-          <div className="w-7 h-7 bg-[#1ddb78] rounded-[7px] flex items-center justify-center">
-            <svg viewBox="0 0 14 14" fill="none" className="w-3.5 h-3.5">
-              <path
-                d="M2 7L6 11L12 3"
-                stroke="#000"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+      
+      <div className="relative z-10 w-full max-w-md p-8 bg-[#0d1117] border border-white/[0.05] rounded-2xl shadow-2xl animate-fade-up">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-10 h-10 mb-4 bg-green rounded-[10px] flex items-center justify-center shadow-[0_0_15px_rgba(29,219,120,0.4)]">
+            <svg width="20" height="20" viewBox="0 0 14 14" fill="none">
+              <polyline points="12 3 5.5 10 2 6.5" stroke="#07090d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <span className="text-base font-semibold tracking-[-0.3px]">InfraMind</span>
+          <h1 className="text-3xl font-serif text-text mb-2">Welcome back</h1>
+          <p className="text-sm text-text-2">Log in to your InfraMind dashboard</p>
         </div>
 
-        {/* Title */}
-        <h1 className="font-serif text-2xl tracking-[-0.5px] mb-1.5 text-center">Welcome back</h1>
-        <p className="text-sm text-[#8a95a3] text-center mb-7">Sign in to your InfraMind account</p>
-
-        {/* Form */}
-        <form onSubmit={handleLogin}>
-          {/* Email */}
-          <div className="mb-4">
-            <label className="block text-xs font-medium text-[#8a95a3] mb-1.5">Email</label>
-            <input
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#131920] border border-white/[0.1] rounded-lg py-2.75 px-3.5 text-sm text-white font-sans outline-none focus:border-[#1ddb78] placeholder:text-[#3d4f63]"
+        <form className="space-y-4 text-left" onSubmit={(e) => e.preventDefault()}>
+          <div>
+            <label className="block text-xs font-medium text-text-2 mb-1.5">Email address</label>
+            <input 
+              type="email" 
+              placeholder="you@company.com" 
+              className="w-full bg-[#131920] border border-white/[0.09] rounded-lg px-4 py-2.5 text-sm text-text focus:outline-none focus:border-green transition-colors"
             />
           </div>
-
-          {/* Password */}
-          <div className="mb-1">
-            <label className="block text-xs font-medium text-[#8a95a3] mb-1.5">Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#131920] border border-white/[0.1] rounded-lg py-2.75 px-3.5 text-sm text-white font-sans outline-none focus:border-[#1ddb78] placeholder:text-[#3d4f63]"
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-xs font-medium text-text-2">Password</label>
+              <a href="#" className="text-xs text-green hover:underline">Forgot?</a>
+            </div>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              className="w-full bg-[#131920] border border-white/[0.09] rounded-lg px-4 py-2.5 text-sm text-text focus:outline-none focus:border-green transition-colors"
             />
           </div>
-
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full btn btn-primary mt-1 justify-center py-2.75"
-          >
-            {loading ? 'Signing in...' : 'Sign in →'}
-          </button>
+          
+          <Link href="/dashboard">
+            <button type="submit" className="w-full btn-primary py-3 mt-6 text-sm rounded-lg flex items-center justify-center gap-2">
+              Log in →
+            </button>
+          </Link>
         </form>
 
-        {/* Links */}
-        <div className="text-sm text-[#8a95a3] text-center mt-4">
-          Don't have an account?{' '}
-          <Link href="/signup" className="text-[#1ddb78] no-underline cursor-pointer font-medium">
-            Sign up free
-          </Link>
-        </div>
-
-        <div className="text-sm text-[#8a95a3] text-center mt-2">
-          <Link href="/" className="text-[#3d4f63] no-underline cursor-pointer hover:text-[#8a95a3]">
-            ← Back to home
-          </Link>
+        <div className="mt-6 pt-6 border-t border-white/[0.05] text-center">
+          <p className="text-xs text-text-2">
+            Don't have an account? <Link href="/login" className="text-green hover:underline font-medium">Start for free</Link>
+          </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
