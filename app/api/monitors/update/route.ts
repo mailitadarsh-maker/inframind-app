@@ -1,45 +1,50 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseAdmin = createClient(
+// Using the service role key to bypass RLS, exactly like your create route
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY! 
 );
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const {
-      id,
-      name,
-      target_url,
-      alert_email,
-    } = await req.json();
+    const body = await req.json();
+    const { id, name, target_url, alert_email, type, expected_status } = body;
 
-    const { error } = await supabaseAdmin
+    // Basic validation
+    if (!id || !name || !target_url || !alert_email || !type) {
+      return NextResponse.json(
+        { error: 'Missing required fields.' }, 
+        { status: 400 }
+      );
+    }
+
+    // Update the existing monitor in Supabase
+    const { data, error } = await supabase
       .from('monitors')
       .update({
         name,
         target_url,
         alert_email,
+        type,
+        expected_status: type === 'api' ? expected_status : null,
       })
-      .eq('id', id);
+      .eq('id', id)
+      .select()
+      .single();
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
+      console.error('Supabase Update Error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-    });
+    return NextResponse.json({ success: true, monitor: data });
 
-  } catch (error) {
-    console.error(error);
-
+  } catch (error: any) {
+    console.error('Update Monitor Error:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error' }, 
       { status: 500 }
     );
   }
