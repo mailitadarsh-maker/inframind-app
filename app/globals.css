@@ -3,26 +3,34 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply m-0 p-0 box-border;
-  }
-
-  html {
+  /* Mobile-safe foundation */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    margin: 0;
+    padding: 0;
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%; /* Prevents font scaling issues on mobile */
   }
 
   body {
     font-family: 'DM Sans', sans-serif;
+    @apply bg-[#07090d] text-[#eef1f6] antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Instrument Serif', serif;
   }
+
+  /* Universal reset for touch targets */
+  * {
+    @apply box-border;
+  }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border-none transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border-none transition-all duration-200;
   }
 
   .btn-primary {
@@ -38,7 +46,7 @@
   }
 
   .tag {
-    @apply inline-block text-xs font-medium px-2 py-0.75 rounded;
+    @apply inline-block text-xs font-medium px-2 py-0.5 rounded;
   }
 
   .tag-green {
@@ -71,29 +79,9 @@
   50%       { transform: translateY(-5px); }
 }
 
-@keyframes gridDrift {
-  from { background-position: 0 0; }
-  to   { background-position: 48px 48px; }
-}
-
-@keyframes breathe {
-  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.6; }
-  50%       { transform: translateX(-50%) scale(1.3); opacity: 1; }
-}
-
-@keyframes orbitSpin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to   { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
 @keyframes scanBeam {
   0%   { left: -80px; }
   100% { left: 110%; }
-}
-
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes statusPop {
@@ -102,22 +90,13 @@
   100% { opacity: 1; transform: scale(1); }
 }
 
-@keyframes progressIn {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
-}
-
 @keyframes pulseBadge {
   0%, 100% { box-shadow: 0 0 0 0 rgba(29,219,120,0.3); }
   50%       { box-shadow: 0 0 0 6px rgba(29,219,120,0); }
-}
-
-@keyframes breatheCTA {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50%       { transform: scale(1.15); opacity: 1; }
 }
 
 /* Utility classes */
 .animate-fade-up  { animation: fadeUp 0.6s ease both; }
 .animate-blink    { animation: blink 2s infinite; }
 .animate-float    { animation: float 3s ease-in-out infinite; }
+.animate-pulse-badge { animation: pulseBadge 2s infinite; }
