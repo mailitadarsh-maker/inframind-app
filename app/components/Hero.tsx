@@ -107,8 +107,9 @@ export default function Hero() {
           className="flex items-center justify-center gap-3 mb-14"
           style={{ animation: 'fadeUp 0.6s 0.5s ease both', opacity: 0 }}
         >
+          {/* UPDATED: Changed href to /signup */}
           <a
-            href="/dashboard"
+            href="/signup"
             className="btn btn-primary btn-lg relative overflow-hidden group"
           >
             <span className="relative z-10">Get started free →</span>

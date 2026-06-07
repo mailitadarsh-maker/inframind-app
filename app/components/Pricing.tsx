@@ -81,11 +81,12 @@ export default function Pricing() {
               <p className="text-text-2 text-xs mt-1">while in beta</p>
             </div>
 
+            {/* UPDATED: Changed href to /signup and text to "Start free" */}
             <a
-              href="/dashboard"
+              href="/signup"
               className="btn btn-primary btn-lg w-full justify-center mb-7 relative overflow-hidden group"
             >
-              <span className="relative z-10">Start Free →</span>
+              <span className="relative z-10">Start free →</span>
               <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-200" />
             </a>
 

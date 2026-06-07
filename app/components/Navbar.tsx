@@ -48,7 +48,8 @@ export default function Navbar() {
         {/* CTA */}
         <div className="flex items-center gap-3">
           <Link href="/login" className="btn btn-ghost text-sm">Log in</Link>
-          <Link href="/dashboard" className="btn btn-primary text-sm">
+          {/* UPDATED: Changed href from /dashboard to /signup */}
+          <Link href="/signup" className="btn btn-primary text-sm">
             Start free <span className="ml-0.5">→</span>
           </Link>
         </div>
