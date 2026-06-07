@@ -36,6 +36,11 @@ export default function DashboardPage() {
     fetchMonitors();
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/login';
+  };
+
   const onlineCount = monitors.filter(m => m.status !== 'offline').length;
   const offlineCount = monitors.filter(m => m.status === 'offline').length;
 
@@ -46,26 +51,38 @@ export default function DashboardPage() {
       onClick={() => setOpenDropdown(null)}
     >
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-52 p-5" style={{ background: '#0d1117', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+      <aside className="hidden md:flex flex-col w-52 p-5 min-h-screen" style={{ background: '#0d1117', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="flex items-center gap-2 mb-8">
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
           <span style={{ fontWeight: 600, fontSize: 13 }}>InfraMind</span>
         </div>
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-1 flex-1">
           <Link href="/dashboard" style={{ padding: '7px 12px', borderRadius: 8, fontSize: 13, color: '#eef1f6', background: 'rgba(255,255,255,0.06)', fontWeight: 500, textDecoration: 'none' }}>Monitors</Link>
           <Link href="/incidents" style={{ padding: '7px 12px', borderRadius: 8, fontSize: 13, color: '#8a95a3', textDecoration: 'none' }}>Incidents</Link>
           <Link href="/settings" style={{ padding: '7px 12px', borderRadius: 8, fontSize: 13, color: '#8a95a3', textDecoration: 'none' }}>Settings</Link>
         </nav>
+        <button
+          onClick={handleLogout}
+          style={{ padding: '7px 12px', borderRadius: 8, fontSize: 13, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+        >
+          ↩ Logout
+        </button>
       </aside>
 
       {/* Main */}
       <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
 
         {/* Mobile Top Nav */}
-        <nav className="md:hidden flex gap-6 mb-6 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <nav className="md:hidden flex gap-6 mb-6 pb-4 items-center" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <Link href="/dashboard" style={{ fontSize: 13, fontWeight: 600, color: '#eef1f6', textDecoration: 'none', borderBottom: '1px solid #eef1f6', paddingBottom: 2 }}>Monitors</Link>
           <Link href="/incidents" style={{ fontSize: 13, color: '#8a95a3', textDecoration: 'none' }}>Incidents</Link>
           <Link href="/settings" style={{ fontSize: 13, color: '#8a95a3', textDecoration: 'none' }}>Settings</Link>
+          <button
+            onClick={handleLogout}
+            style={{ fontSize: 13, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto' }}
+          >
+            ↩ Logout
+          </button>
         </nav>
 
         {/* Header */}
@@ -92,9 +109,7 @@ export default function DashboardPage() {
               fontSize: 13,
             }}
           >
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>
-              ⚠️ Test Mode Active
-            </div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>⚠️ Test Mode Active</div>
             <div style={{ color: '#d1d5db' }}>
               Monitoring is active, but email incident alerts are disabled.
               Configure email settings to receive outage notifications.

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 function formatDuration(seconds: number | null) {
@@ -15,7 +16,7 @@ export default function IncidentsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('incidents')
         .select(`id, started_at, resolved_at, duration_seconds, monitors!incidents_monitor_id_fkey (name)`)
         .order('started_at', { ascending: false });
@@ -29,6 +30,27 @@ export default function IncidentsPage() {
   return (
     <div className="min-h-screen bg-[#07090d] text-[#eef1f6] p-4 md:p-8 font-sans">
       <div className="max-w-6xl mx-auto">
+
+        {/* Back Button */}
+        <Link
+          href="/dashboard"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
+            color: '#8a95a3',
+            textDecoration: 'none',
+            marginBottom: 20,
+            padding: '5px 10px',
+            borderRadius: 8,
+            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'rgba(255,255,255,0.02)',
+          }}
+        >
+          ← Back to Dashboard
+        </Link>
+
         <h1 className="font-serif text-2xl mb-2">Incident History</h1>
         <p className="text-sm text-[#8a95a3] mb-8">View the status and resolution timeline of all recorded incidents.</p>
 
@@ -89,6 +111,7 @@ export default function IncidentsPage() {
             </tbody>
           </table>
         </div>
+
       </div>
     </div>
   );
