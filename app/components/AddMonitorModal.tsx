@@ -16,6 +16,10 @@ export default function AddMonitorModal({ isOpen, onClose, onSuccess }: AddMonit
   const [type, setType] = useState('website');
   const [expectedStatus, setExpectedStatus] = useState(200);
 
+  const [requestMethod, setRequestMethod] = useState('GET');
+  const [authType, setAuthType] = useState('none');
+  const [authValue, setAuthValue] = useState('');
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,6 +55,10 @@ export default function AddMonitorModal({ isOpen, onClose, onSuccess }: AddMonit
           alert_email: alertEmail,
           type,
           expected_status: type === 'api' ? expectedStatus : null,
+
+          request_method: requestMethod,
+          auth_type: authType,
+          auth_value: authValue,
         }),
       });
 
@@ -65,6 +73,9 @@ export default function AddMonitorModal({ isOpen, onClose, onSuccess }: AddMonit
       setAlertEmail('');
       setType('website');
       setExpectedStatus(200);
+      setRequestMethod('GET');
+      setAuthType('none');
+      setAuthValue('');
 
       onSuccess();
       onClose();
@@ -131,6 +142,52 @@ export default function AddMonitorModal({ isOpen, onClose, onSuccess }: AddMonit
 
             {type === 'api' && (
               <div className="animate-in slide-in-from-top-2 duration-200">
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-[#8a95a3] mb-1.5">
+                    Request Method
+                  </label>
+                  <select
+                    value={requestMethod}
+                    onChange={(e) => setRequestMethod(e.target.value)}
+                    className="w-full rounded-lg border border-white/10 bg-[#161b22] px-4 py-2.5 text-sm text-[#eef1f6]"
+                  >
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-[#8a95a3] mb-1.5">
+                    Authentication
+                  </label>
+                  <select
+                    value={authType}
+                    onChange={(e) => setAuthType(e.target.value)}
+                    className="w-full rounded-lg border border-white/10 bg-[#161b22] px-4 py-2.5 text-sm text-[#eef1f6]"
+                  >
+                    <option value="none">None</option>
+                    <option value="bearer">Bearer Token</option>
+                    <option value="apikey">API Key</option>
+                  </select>
+                </div>
+
+                {authType !== 'none' && (
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-[#8a95a3] mb-1.5">
+                      {authType === 'bearer' ? 'Bearer Token' : 'API Key'}
+                    </label>
+                    <input
+                      type="text"
+                      value={authValue}
+                      onChange={(e) => setAuthValue(e.target.value)}
+                      placeholder="Enter authentication value"
+                      className="w-full rounded-lg border border-white/10 bg-[#161b22] px-4 py-2.5 text-sm text-[#eef1f6]"
+                    />
+                  </div>
+                )}
+
                 <label htmlFor="status" className="block text-xs font-medium text-[#8a95a3] mb-1.5">Expected Status Code</label>
                 <input
                   id="status"

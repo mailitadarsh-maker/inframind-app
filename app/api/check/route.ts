@@ -21,8 +21,27 @@ export async function GET() {
     console.log("--- Checking:", monitor.name, `(${monitor.type}) ---`);
 
     try {
-      const response = await fetch(monitor.target_url, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const headers: Record<string, string> = {};
+
+      // Bearer Token Support
+      if (monitor.auth_type === "bearer" && monitor.auth_value) {
+        headers["Authorization"] = `Bearer ${monitor.auth_value}`;
+      }
+
+      // API Key Support
+      if (monitor.auth_type === "apikey" && monitor.auth_value) {
+        headers["x-api-key"] = monitor.auth_value;
+      }
+
+      const response = await fetch(monitor.target_url, {
+        method: monitor.request_method || "GET",
+        headers,
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
       await supabase.from('monitors').update({
         status: 'online',

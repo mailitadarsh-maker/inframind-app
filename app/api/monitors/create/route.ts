@@ -1,15 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseAdmin = createClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY! 
 );
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const body = await req.json();
-
     const {
       user_id,
       name,
@@ -17,9 +16,19 @@ export async function POST(req: NextRequest) {
       alert_email,
       type,
       expected_status,
+      request_method,
+      auth_type,
+      auth_value
     } = body;
 
-    const { data, error } = await supabaseAdmin
+    if (!user_id || !name || !target_url || !alert_email || !type) {
+      return NextResponse.json(
+        { error: 'Missing required fields.' }, 
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabase
       .from('monitors')
       .insert([
         {
@@ -27,37 +36,32 @@ export async function POST(req: NextRequest) {
           name,
           target_url,
           alert_email,
-          type: type || 'website',
-          expected_status: expected_status || 200,
-          status: 'online',
-          last_status: 'online',
-          response_time: 0,
-        },
+          type,
+          expected_status: type === 'api' ? expected_status : null,
+
+          request_method: request_method || 'GET',
+          auth_type: auth_type || 'none',
+          auth_value: auth_value || null,
+
+          status: 'pending', 
+          last_checked: null
+        }
       ])
-      .select();
+      .select()
+      .single();
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
+      console.error('Supabase Insert Error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-      data,
-    });
+    return NextResponse.json({ success: true, monitor: data });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Create Monitor Error:', error);
-
     return NextResponse.json(
-      {
-        error: 'Internal Server Error',
-      },
-      {
-        status: 500,
-      }
+      { error: 'Internal Server Error' }, 
+      { status: 500 }
     );
   }
 }
