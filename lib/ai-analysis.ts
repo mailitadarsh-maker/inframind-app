@@ -17,31 +17,40 @@ export async function generateIncidentAnalysis(
   const context = typeContext[monitorType] ?? "infrastructure endpoint";
 
   const prompt = `
-Analyze this ${context} monitor failure:
+You are a senior SRE. Analyze this ${context} failure:
 Target: ${target}
-Monitor Type: ${monitorType.toUpperCase()}
 Status Code: ${statusCode > 0 ? statusCode : "N/A"}
 Error: ${errorMessage}
 
-Return ONLY raw JSON (no markdown, no backticks) in this exact format:
-{"cause": "concise reason for the failure", "action": "specific actionable fix", "severity": "low|medium|high|critical"}
+Instructions:
+1. Provide a deep, insightful analysis of WHY this failed. Explain the technical root cause in simple, plain English.
+2. Provide a 3-5 step numbered checklist of EXACTLY what to do to fix it. Each step must be on a new line.
+3. Be specific (e.g., mention DNS, SSL handshakes, server load, or firewall blocks).
+
+Return ONLY raw JSON in this exact format:
+{
+  "cause": "2-sentence explanation of why it happened.",
+  "action": "1. [Step 1]\n2. [Step 2]\n3. [Step 3]",
+  "severity": "low|medium|high|critical"
+}
   `.trim();
 
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.2,
+      temperature: 0.1, // Lower temperature for more consistent, technical advice
     });
 
     const content = completion.choices[0].message.content?.trim() || "";
+    // Clean up content to ensure pure JSON
     const jsonString = content.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(jsonString);
   } catch (error) {
     console.error("AI Analysis Error:", error);
     return {
-      cause: "Connection failure or timeout",
-      action: "Check server status and DNS settings",
+      cause: "The service is currently unreachable.",
+      action: "1. Verify your server is online.\n2. Check your DNS and firewall settings.\n3. Review your last deployment logs.",
       severity: "high",
     };
   }

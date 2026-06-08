@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { resend } from '@/lib/resend';
 import { generateIncidentAnalysis } from "@/lib/ai-analysis";
+import dns from 'dns/promises';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -59,6 +60,20 @@ export async function GET() {
     } catch (err: any) {
       console.log("❌ OFFLINE:", err.message);
 
+      // --- IMPROVED FORENSICS LOGIC ---
+      let resolvedIp = "N/A";
+      let detailedError = err.message;
+
+      try {
+        const domain = new URL(monitor.target_url).hostname;
+        const lookup = await dns.lookup(domain);
+        resolvedIp = lookup.address;
+      } catch (dnsErr: any) {
+        resolvedIp = `DNS Error: ${dnsErr.code || 'Unknown'}`;
+        detailedError = `DNS Resolution failed: ${dnsErr.message}. The domain might be invalid or unreachable.`;
+      }
+      // --------------------------------
+
       const { data: existingIncident } = await supabase
         .from('incidents')
         .select('id')
@@ -76,7 +91,7 @@ export async function GET() {
         const aiAnalysis = await generateIncidentAnalysis(
           monitor.target_url,
           statusCode,
-          err.message,
+          detailedError, // Send the more detailed error to AI
           monitor.type ?? "website"
         );
 
@@ -88,6 +103,8 @@ export async function GET() {
           ai_cause: aiAnalysis.cause,
           ai_action: aiAnalysis.action,
           ai_severity: aiAnalysis.severity,
+          failed_ip: resolvedIp,   // Store the specific DNS result
+          raw_error: detailedError, // Store the specific log
         });
 
         if (insertError) console.error("INSERT ERROR:", insertError);

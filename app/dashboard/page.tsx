@@ -27,9 +27,10 @@ export default function DashboardPage() {
     }
     if (monitorData) setMonitors(monitorData);
 
+    // Fetch incidents including new forensics columns
     const { data: incidentData, error: incidentError } = await supabase
       .from('incidents')
-      .select('monitor_id, ai_cause, ai_action, ai_severity, resolved_at')
+      .select('monitor_id, ai_cause, ai_action, ai_severity, resolved_at, failed_ip, raw_error, started_at')
       .is('resolved_at', null);
 
     if (!incidentError && incidentData) {
@@ -90,7 +91,6 @@ export default function DashboardPage() {
 
       {/* Main */}
       <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
-
         {/* Mobile Top Nav */}
         <nav className="md:hidden flex gap-6 mb-6 pb-4 items-center" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <Link href="/dashboard" style={{ fontSize: 13, fontWeight: 600, color: '#eef1f6', textDecoration: 'none', borderBottom: '1px solid #eef1f6', paddingBottom: 2 }}>Monitors</Link>
@@ -151,7 +151,7 @@ export default function DashboardPage() {
             const sslWarn = isSSL && m.ssl_days_remaining != null && m.ssl_days_remaining < 30;
 
             const activeIncident = isOffline
-              ? incidents.find(i => i.monitor_id === m.id && (i.ai_cause || i.ai_action))
+              ? incidents.find(i => i.monitor_id === m.id)
               : null;
 
             return (
@@ -178,7 +178,6 @@ export default function DashboardPage() {
                       {m.target_url}
                     </div>
 
-                    {/* SSL expiry */}
                     {isSSL && m.ssl_expiry_date && (
                       <div style={{ fontSize: 10, marginTop: 4, color: sslWarn ? '#f87171' : '#8a95a3', display: 'flex', alignItems: 'center', gap: 4 }}>
                         {sslWarn && <span>⚠️</span>}
@@ -188,18 +187,19 @@ export default function DashboardPage() {
                       </div>
                     )}
 
-                    {/* ✅ AI Diagnosis Box — uses new component */}
                     {activeIncident && (
                       <AIDiagnosisBox
                         ai_cause={activeIncident.ai_cause}
                         ai_action={activeIncident.ai_action}
                         ai_severity={activeIncident.ai_severity}
+                        failed_ip={activeIncident.failed_ip}
+                        raw_error={activeIncident.raw_error}
+                        started_at={activeIncident.started_at}
                       />
                     )}
                   </div>
                 </div>
 
-                {/* Bottom row: status badge + action buttons */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,

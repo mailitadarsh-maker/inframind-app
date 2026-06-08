@@ -1,7 +1,7 @@
 // components/AIDiagnosisBox.tsx
 // Drop-in component — use in both dashboard and incidents page
 
-import React from 'react';
+import React, { useState } from 'react';
 
 const sevStyle: Record<string, { text: string; bg: string; border: string }> = {
   critical: { text: '#f87171', bg: 'rgba(239,68,68,0.07)', border: 'rgba(239,68,68,0.22)' },
@@ -14,9 +14,21 @@ interface Props {
   ai_cause?: string;
   ai_action?: string;
   ai_severity?: string;
+  failed_ip?: string;
+  raw_error?: string;
+  started_at?: string;
 }
 
-export default function AIDiagnosisBox({ ai_cause, ai_action, ai_severity }: Props) {
+export default function AIDiagnosisBox({ 
+  ai_cause, 
+  ai_action, 
+  ai_severity, 
+  failed_ip, 
+  raw_error, 
+  started_at 
+}: Props) {
+  const [showForensics, setShowForensics] = useState(false);
+  
   if (!ai_cause && !ai_action) return null;
 
   const sev = ai_severity?.toLowerCase() ?? 'high';
@@ -83,13 +95,12 @@ export default function AIDiagnosisBox({ ai_cause, ai_action, ai_severity }: Pro
 
         {/* Action Steps */}
         {steps.length > 0 && (
-          <div>
+          <div style={{ marginBottom: 4 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: ss.text, letterSpacing: '0.06em', marginBottom: 6 }}>
               WHAT TO DO NOW
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {steps.map((step, i) => {
-                // Strip leading "1." "2." etc if present
                 const clean = step.replace(/^\d+\.\s*/, '');
                 return (
                   <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -116,6 +127,33 @@ export default function AIDiagnosisBox({ ai_cause, ai_action, ai_severity }: Pro
             </div>
           </div>
         )}
+
+        {/* Technical Forensics Toggle */}
+        <div style={{ marginTop: 10, borderTop: `1px solid ${ss.border}`, paddingTop: 10 }}>
+          <button 
+            onClick={() => setShowForensics(!showForensics)}
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: ss.text, 
+              fontSize: 10, 
+              fontWeight: 700, 
+              cursor: 'pointer', 
+              textDecoration: 'underline',
+              padding: 0
+            }}
+          >
+            {showForensics ? 'HIDE TECHNICAL FORENSICS' : 'VIEW TECHNICAL FORENSICS'}
+          </button>
+
+          {showForensics && (
+            <div style={{ marginTop: 8, padding: 10, background: 'rgba(0,0,0,0.3)', borderRadius: 6, fontSize: 11, color: '#d1d5db', fontFamily: 'monospace' }}>
+              <div>IP Address: {failed_ip || 'N/A'}</div>
+              <div>Detected: {started_at ? new Date(started_at).toLocaleString() : '-'}</div>
+              <div style={{ marginTop: 5, wordBreak: 'break-all' }}>Error Log: {raw_error || 'No log captured'}</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
