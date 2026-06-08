@@ -4,18 +4,37 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AddMonitorModal from '../components/AddMonitorModal';
 import EditMonitorModal from '../components/EditMonitorModal';
+import AIDiagnosisBox from '../components/AIDiagnosisBox';
 import { supabase } from '@/lib/supabase';
 
 export default function DashboardPage() {
   const [monitors, setMonitors] = useState<any[]>([]);
+  const [incidents, setIncidents] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMonitor, setSelectedMonitor] = useState<any>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const fetchMonitors = async () => {
-    const { data } = await supabase.from('monitors').select('*').order('created_at', { ascending: false });
-    if (data) setMonitors(data);
+    const { data: monitorData, error: monitorError } = await supabase
+      .from('monitors')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (monitorError) {
+      console.error('Error fetching monitors:', monitorError);
+      return;
+    }
+    if (monitorData) setMonitors(monitorData);
+
+    const { data: incidentData, error: incidentError } = await supabase
+      .from('incidents')
+      .select('monitor_id, ai_cause, ai_action, ai_severity, resolved_at')
+      .is('resolved_at', null);
+
+    if (!incidentError && incidentData) {
+      setIncidents(incidentData);
+    }
   };
 
   useEffect(() => {
@@ -98,22 +117,9 @@ export default function DashboardPage() {
 
         {/* Test Mode Banner */}
         {monitors.length > 0 && (
-          <div
-            style={{
-              background: 'rgba(245, 158, 11, 0.08)',
-              border: '1px solid rgba(245, 158, 11, 0.2)',
-              color: '#fbbf24',
-              borderRadius: 12,
-              padding: '12px 16px',
-              marginBottom: 16,
-              fontSize: 13,
-            }}
-          >
+          <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', color: '#fbbf24', borderRadius: 12, padding: '12px 16px', marginBottom: 16, fontSize: 13 }}>
             <div style={{ fontWeight: 600, marginBottom: 4 }}>⚠️ Test Mode Active</div>
-            <div style={{ color: '#d1d5db' }}>
-              Monitoring is active, but email incident alerts are disabled.
-              Configure email settings to receive outage notifications.
-            </div>
+            <div style={{ color: '#d1d5db' }}>Monitoring is active, but email incident alerts are disabled. Configure email settings to receive outage notifications.</div>
           </div>
         )}
 
@@ -144,6 +150,10 @@ export default function DashboardPage() {
             const isSSL = m.type === 'ssl';
             const sslWarn = isSSL && m.ssl_days_remaining != null && m.ssl_days_remaining < 30;
 
+            const activeIncident = isOffline
+              ? incidents.find(i => i.monitor_id === m.id && (i.ai_cause || i.ai_action))
+              : null;
+
             return (
               <div
                 key={m.id}
@@ -167,24 +177,29 @@ export default function DashboardPage() {
                     <div style={{ fontSize: 11, color: '#8a95a3', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {m.target_url}
                     </div>
+
+                    {/* SSL expiry */}
                     {isSSL && m.ssl_expiry_date && (
-                      <div style={{
-                        fontSize: 10,
-                        marginTop: 4,
-                        color: sslWarn ? '#f87171' : '#8a95a3',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}>
+                      <div style={{ fontSize: 10, marginTop: 4, color: sslWarn ? '#f87171' : '#8a95a3', display: 'flex', alignItems: 'center', gap: 4 }}>
                         {sslWarn && <span>⚠️</span>}
                         <span>{m.ssl_days_remaining} days left</span>
                         <span style={{ opacity: 0.4 }}>•</span>
                         <span>Exp: {new Date(m.ssl_expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                       </div>
                     )}
+
+                    {/* ✅ AI Diagnosis Box — uses new component */}
+                    {activeIncident && (
+                      <AIDiagnosisBox
+                        ai_cause={activeIncident.ai_cause}
+                        ai_action={activeIncident.ai_action}
+                        ai_severity={activeIncident.ai_severity}
+                      />
+                    )}
                   </div>
                 </div>
 
+                {/* Bottom row: status badge + action buttons */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -207,28 +222,15 @@ export default function DashboardPage() {
 
                     <Link
                       href={`/status/${m.id}`}
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 4,
-                        fontSize: 11, color: '#8a95a3',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: 8, padding: '5px 12px',
-                        textDecoration: 'none', whiteSpace: 'nowrap',
-                      }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#8a95a3', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '5px 12px', textDecoration: 'none', whiteSpace: 'nowrap' }}
                     >
                       View ↗
                     </Link>
 
                     <div style={{ position: 'relative' }}>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenDropdown(openDropdown === m.id ? null : m.id);
-                        }}
-                        style={{
-                          width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: 'none', border: 'none', cursor: 'pointer',
-                          color: '#8a95a3', borderRadius: 6, fontSize: 16,
-                        }}
+                        onClick={(e) => { e.stopPropagation(); setOpenDropdown(openDropdown === m.id ? null : m.id); }}
+                        style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: '#8a95a3', borderRadius: 6, fontSize: 16 }}
                       >
                         ···
                       </button>
@@ -236,26 +238,10 @@ export default function DashboardPage() {
                       {openDropdown === m.id && (
                         <div
                           onClick={(e) => e.stopPropagation()}
-                          style={{
-                            position: 'absolute', right: 0, bottom: '110%',
-                            width: 140, background: '#1a2330',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: 10, zIndex: 50, padding: '6px 0',
-                            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                          }}
+                          style={{ position: 'absolute', right: 0, bottom: '110%', width: 140, background: '#1a2330', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, zIndex: 50, padding: '6px 0', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
                         >
-                          <button
-                            onClick={() => handleEdit(m)}
-                            style={{ width: '100%', textAlign: 'left', padding: '8px 16px', fontSize: 12, color: '#eef1f6', background: 'none', border: 'none', cursor: 'pointer' }}
-                          >
-                            ✏️ Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(m.id)}
-                            style={{ width: '100%', textAlign: 'left', padding: '8px 16px', fontSize: 12, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer' }}
-                          >
-                            🗑 Delete
-                          </button>
+                          <button onClick={() => handleEdit(m)} style={{ width: '100%', textAlign: 'left', padding: '8px 16px', fontSize: 12, color: '#eef1f6', background: 'none', border: 'none', cursor: 'pointer' }}>✏️ Edit</button>
+                          <button onClick={() => handleDelete(m.id)} style={{ width: '100%', textAlign: 'left', padding: '8px 16px', fontSize: 12, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer' }}>🗑 Delete</button>
                         </div>
                       )}
                     </div>
