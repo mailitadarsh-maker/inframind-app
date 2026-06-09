@@ -51,7 +51,7 @@ const CSS = `
 .im-sb-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 12px; }
 
 /* ── Main ────────────────────────────────────────────────────── */
-.im-main { flex: 1; margin-left: 216px; padding: 32px 32px 64px; max-width: 960px; }
+.im-main { flex: 1; margin-left: 216px; padding: 32px 40px 64px; max-width: 100%; }
 
 /* ── Topbar ──────────────────────────────────────────────────── */
 .im-topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; gap: 16px; }
@@ -195,34 +195,33 @@ const CSS = `
 .im-empty h3 { font-size: 14px; font-weight: 600; color: #c4c9d8; margin-bottom: 6px; }
 .im-empty p { font-size: 12px; color: #3a3f52; margin-bottom: 22px; }
 
-/* mobile nav — hidden by default */
+/* ── Mobile nav ──────────────────────────────────────────────── */
 .im-mob-nav {
   display: none;
   background: #0d0f16;
   border-bottom: 1px solid rgba(255,255,255,0.07);
-  padding: 10px 14px;
+  padding: 0 12px;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 100;
+  z-index: 200;
   height: 50px;
 }
-.im-mob-logo { display: flex; align-items: center; gap: 8px; margin-right: auto; }
+.im-mob-logo { display: flex; align-items: center; gap: 8px; margin-right: auto; flex-shrink: 0; }
 .im-mob-logo-mark { width: 26px; height: 26px; border-radius: 7px; background: #34d399 !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .im-mob-logo-mark svg { width: 13px; height: 13px; }
 .im-mob-logo span { font-size: 13px; font-weight: 600; color: #e2e6f0; }
-.im-mob-link { padding: 6px 9px; border-radius: 7px; font-size: 12px; font-weight: 500; color: #6b7280; text-decoration: none; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+.im-mob-link { padding: 6px 8px; border-radius: 7px; font-size: 12px; font-weight: 500; color: #6b7280; text-decoration: none; font-family: 'DM Sans', sans-serif; white-space: nowrap; flex-shrink: 0; }
 .im-mob-link.on { color: #34d399 !important; background: rgba(52,211,153,0.08); }
-.im-mob-logout { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 6px 8px; flex-shrink: 0; }
+.im-mob-logout { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 6px 8px; flex-shrink: 0; margin-left: 2px; }
 
+/* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  /* root becomes column so nav stacks above main */
   .im { flex-direction: column; }
   .im-sb { display: none !important; }
   .im-mob-nav { display: flex; }
 
-  /* main pushed down by fixed nav height */
   .im-main {
     margin-left: 0 !important;
     margin-top: 50px;
@@ -242,21 +241,36 @@ const CSS = `
 
   .im-alert { padding: 10px 12px; margin-bottom: 16px; }
 
-  .im-card-main { padding: 12px 12px 10px; gap: 10px; }
+  /* card main: wrap so sparkline drops to its own row */
+  .im-card-main { padding: 12px 12px 6px; gap: 8px; flex-wrap: wrap; }
+  .im-card-info { width: calc(100% - 20px); flex: unset; }
   .im-card-name { font-size: 13px; max-width: 100%; }
   .im-card-url { font-size: 10px; }
   .im-card-row1 { gap: 6px; flex-wrap: nowrap; }
-  .im-card-footer { padding: 8px 12px; flex-wrap: wrap; gap: 6px; }
-  .im-actions { gap: 4px; }
-  .im-spark-wrap { display: none; }
-  .im-btn { padding: 5px 9px; font-size: 10px; }
+
+  /* sparkline: always visible, full-width row at bottom of card-main */
+  .im-spark-wrap {
+    display: flex !important;
+    width: 100%;
+    justify-content: flex-end;
+    padding-bottom: 4px;
+  }
+
+  /* footer stays on one row */
+  .im-card-footer { padding: 8px 12px; flex-wrap: nowrap; gap: 4px; overflow: hidden; }
+  .im-actions { gap: 3px; flex-shrink: 0; }
+
+  .im-btn { padding: 5px 8px; font-size: 10px; gap: 4px; }
   .im-btn svg { width: 10px; height: 10px; }
   .im-icon-btn { width: 26px; height: 26px; font-size: 12px; }
+  .im-status-pill { padding: 3px 8px; font-size: 9px; }
 }
 
 @media (max-width: 400px) {
   .im-main { padding: 18px 10px 60px; }
-  .im-btn-label { display: none; }
+  .im-spark-wrap { display: flex !important; }
+  .im-btn { padding: 5px 7px; font-size: 10px; }
+  .im-mob-link { font-size: 11px; padding: 5px 6px; }
 }
 `;
 
@@ -271,7 +285,6 @@ function Spark({ isOffline }: { isOffline: boolean }) {
 
   useEffect(() => {
     if (isOffline) {
-      // offline: all bars dim/flat, last bar twitches slightly
       const id = setInterval(() => {
         setHeights(prev => {
           const next = [...prev];
@@ -281,7 +294,6 @@ function Spark({ isOffline }: { isOffline: boolean }) {
       }, 1200);
       return () => clearInterval(id);
     }
-    // online: random bars update continuously for live feel
     const id = setInterval(() => {
       setHeights(prev => prev.map(h => Math.random() > 0.45 ? rand() : h));
     }, 550 + Math.random() * 200);
@@ -335,7 +347,6 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchMonitors();
     const fetchInterval = setInterval(fetchMonitors, 30000);
-    // live clock
     const clockInterval = setInterval(() => {
       setTimeStr(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     }, 1000);
@@ -394,7 +405,7 @@ export default function DashboardPage() {
           </div>
         </aside>
 
-        {/* Mobile nav */}
+        {/* Mobile nav — FIX: z-index 200 so no avatar overlaps */}
         <nav className="im-mob-nav">
           <div className="im-mob-logo">
             <div className="im-mob-logo-mark">
@@ -438,17 +449,17 @@ export default function DashboardPage() {
           <div className="im-stats">
             <div className="im-stat">
               <div className="im-stat-label">Operational</div>
-              <div className={`im-stat-val c-green`}>{onlineCount}</div>
+              <div className="im-stat-val c-green">{onlineCount}</div>
               <div className="im-stat-hint">services up</div>
             </div>
             <div className="im-stat">
               <div className="im-stat-label">Offline</div>
-              <div className={`im-stat-val c-red`}>{offlineCount}</div>
+              <div className="im-stat-val c-red">{offlineCount}</div>
               <div className="im-stat-hint">need attention</div>
             </div>
             <div className="im-stat">
               <div className="im-stat-label">Total</div>
-              <div className={`im-stat-val c-white`}>{monitors.length}</div>
+              <div className="im-stat-val c-white">{monitors.length}</div>
               <div className="im-stat-hint">monitored</div>
             </div>
             <div className="im-stat">
@@ -513,6 +524,7 @@ export default function DashboardPage() {
                         />
                       )}
                     </div>
+                    {/* FIX: sparkline always rendered; CSS controls visibility by breakpoint */}
                     <div className="im-spark-wrap"><Spark isOffline={isOffline} /></div>
                   </div>
 
