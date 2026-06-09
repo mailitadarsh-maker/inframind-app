@@ -12,126 +12,123 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function GET() {
-  console.log("🚀 API CHECK ROUTE TRIGGERED");
-
-  const { data: monitors, error } = await supabase.from('monitors').select('*');
-  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-
-  for (const monitor of monitors || []) {
-    console.log("--- Checking:", monitor.name, `(${monitor.type}) ---`);
-
+// --- UTILS ---
+async function fetchWithRetry(url: string, options: any, retries = 3): Promise<Response> {
+  for (let i = 0; i < retries; i++) {
     try {
-      const headers: Record<string, string> = {};
-
-      // Bearer Token Support
-      if (monitor.auth_type === "bearer" && monitor.auth_value) {
-        headers["Authorization"] = `Bearer ${monitor.auth_value}`;
-      }
-
-      // API Key Support
-      if (monitor.auth_type === "apikey" && monitor.auth_value) {
-        headers["x-api-key"] = monitor.auth_value;
-      }
-
-      const response = await fetch(monitor.target_url, {
-        method: monitor.request_method || "GET",
-        headers,
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      await supabase.from('monitors').update({
-        status: 'online',
-        last_checked: new Date().toISOString()
-      }).eq('id', monitor.id);
-
-      await supabase
-        .from('incidents')
-        .update({ resolved_at: new Date().toISOString() })
-        .eq('monitor_id', monitor.id)
-        .is('resolved_at', null);
-
-      console.log("✅ ONLINE");
-
-    } catch (err: any) {
-      console.log("❌ OFFLINE:", err.message);
-
-      // --- IMPROVED FORENSICS LOGIC ---
-      let resolvedIp = "N/A";
-      let detailedError = err.message;
-
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       try {
-        const domain = new URL(monitor.target_url).hostname;
-        const lookup = await dns.lookup(domain);
-        resolvedIp = lookup.address;
-      } catch (dnsErr: any) {
-        resolvedIp = `DNS Error: ${dnsErr.code || 'Unknown'}`;
-        detailedError = `DNS Resolution failed: ${dnsErr.message}. The domain might be invalid or unreachable.`;
+        return await fetch(url, { ...options, signal: controller.signal });
+      } finally {
+        clearTimeout(timeoutId);
       }
-      // --------------------------------
-
-      const { data: existingIncident } = await supabase
-        .from('incidents')
-        .select('id')
-        .eq('monitor_id', monitor.id)
-        .is('resolved_at', null)
-        .maybeSingle();
-
-      if (!existingIncident) {
-        console.log("🤖 Running AI Analysis for type:", monitor.type);
-
-        const statusCode = err.message.match(/HTTP (\d+)/)?.[1]
-          ? parseInt(err.message.match(/HTTP (\d+)/)[1])
-          : 0;
-
-        const aiAnalysis = await generateIncidentAnalysis(
-          monitor.target_url,
-          statusCode,
-          detailedError, // Send the more detailed error to AI
-          monitor.type ?? "website"
-        );
-
-        console.log("🤖 AI RESULT:", aiAnalysis);
-
-        const { error: insertError } = await supabase.from("incidents").insert({
-          monitor_id: monitor.id,
-          started_at: new Date().toISOString(),
-          ai_cause: aiAnalysis.cause,
-          ai_action: aiAnalysis.action,
-          ai_severity: aiAnalysis.severity,
-          failed_ip: resolvedIp,   // Store the specific DNS result
-          raw_error: detailedError, // Store the specific log
-        });
-
-        if (insertError) console.error("INSERT ERROR:", insertError);
-
-        if (monitor.alert_email) {
-          await resend.emails.send({
-            from: 'InfraMind <onboarding@resend.dev>',
-            to: monitor.alert_email,
-            subject: `🚨 Alert: ${monitor.name} is DOWN`,
-            html: `
-              <h2>${monitor.name} is offline</h2>
-              <p><strong>Type:</strong> ${monitor.type?.toUpperCase()}</p>
-              <p><strong>Target:</strong> ${monitor.target_url}</p>
-              <p><strong>Cause:</strong> ${aiAnalysis.cause}</p>
-              <p><strong>Action:</strong> ${aiAnalysis.action}</p>
-              <p><strong>Severity:</strong> ${aiAnalysis.severity?.toUpperCase()}</p>
-            `
-          });
-        }
-      }
-
-      await supabase.from('monitors').update({
-        status: 'offline',
-        last_checked: new Date().toISOString()
-      }).eq('id', monitor.id);
+    } catch (err: any) {
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, 2000));
     }
   }
+  throw new Error("Max retries reached");
+}
 
-  return NextResponse.json({ success: true });
+async function performMonitorCheck(monitor: any) {
+  const start = Date.now();
+  let resolvedIp = "N/A";
+
+  try {
+    const domain = new URL(monitor.target_url).hostname;
+    const lookup = await dns.lookup(domain);
+    resolvedIp = lookup.address;
+  } catch (dnsErr: any) {}
+  
+  try {
+    const headers: Record<string, string> = {};
+    if (monitor.auth_type === "bearer") headers["Authorization"] = `Bearer ${monitor.auth_value}`;
+    if (monitor.auth_type === "apikey") headers["x-api-key"] = monitor.auth_value;
+
+    const response = await fetchWithRetry(monitor.target_url, {
+      method: monitor.request_method || "GET",
+      headers,
+      cache: "no-store",
+    });
+
+    const responseTime = Date.now() - start;
+
+    // Strict Status Validation
+    if (monitor.type === "api" && monitor.expected_status && response.status !== monitor.expected_status) {
+      throw new Error(`Expected ${monitor.expected_status} but got ${response.status}`);
+    } else if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    // --- RECOVERY LOGIC ---
+    const { data: incident } = await supabase
+      .from('incidents')
+      .select('id, started_at')
+      .eq('monitor_id', monitor.id)
+      .is('resolved_at', null)
+      .maybeSingle();
+
+    if (incident) {
+      await supabase.from('incidents').update({ resolved_at: new Date().toISOString() }).eq('id', incident.id);
+      if (monitor.alert_email) {
+        const durationMinutes = ((Date.now() - new Date(incident.started_at).getTime()) / 60000).toFixed(1);
+        await resend.emails.send({
+          from: 'InfraMind <onboarding@resend.dev>',
+          to: monitor.alert_email,
+          subject: `✅ Recovery: ${monitor.name} is back online`,
+          html: `<p>${monitor.name} recovered after ${durationMinutes} minutes of downtime.</p>`
+        });
+      }
+    }
+
+    await supabase.from('monitors').update({ 
+      status: 'online', last_status: 'online', response_time: responseTime, last_checked: new Date().toISOString() 
+    }).eq('id', monitor.id);
+
+  } catch (err: any) {
+    const detailedError = err?.message || "Unknown monitoring error";
+    const { data: existingIncident } = await supabase.from('incidents').select('id').eq('monitor_id', monitor.id).is('resolved_at', null).maybeSingle();
+
+    if (!existingIncident) {
+      const statusCodeMatch = detailedError.match(/HTTP (\d+)/)?.[1] || detailedError.match(/got (\d+)/)?.[1];
+      const aiAnalysis = await generateIncidentAnalysis(monitor.target_url, statusCodeMatch ? parseInt(statusCodeMatch) : 0, detailedError, monitor.type ?? "website");
+      
+      await supabase.from("incidents").insert({
+        monitor_id: monitor.id,
+        started_at: new Date().toISOString(),
+        ai_cause: aiAnalysis.cause,
+        ai_action: aiAnalysis.action,
+        ai_severity: aiAnalysis.severity,
+        raw_error: detailedError,
+        failed_ip: resolvedIp,
+      });
+
+      if (monitor.alert_email) {
+        await resend.emails.send({
+          from: 'InfraMind <onboarding@resend.dev>',
+          to: monitor.alert_email,
+          subject: `🚨 Alert: ${monitor.name} is DOWN`,
+          html: `<h2>${monitor.name} is offline</h2><p><strong>Cause:</strong> ${aiAnalysis.cause}</p>`
+        });
+      }
+    }
+    
+    await supabase.from('monitors').update({ 
+      status: 'offline', last_status: 'offline', response_time: 0, last_checked: new Date().toISOString() 
+    }).eq('id', monitor.id);
+  }
+}
+
+export async function GET(req: Request) {
+  const authHeader = req.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: monitors, error } = await supabase.from('monitors').select('*');
+  if (error || !monitors) return NextResponse.json({ success: false, error: error?.message });
+
+  await Promise.allSettled(monitors.map(performMonitorCheck));
+  return NextResponse.json({ success: true, processed: monitors.length });
 }
