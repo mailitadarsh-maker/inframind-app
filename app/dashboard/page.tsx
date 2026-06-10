@@ -69,6 +69,42 @@ const CSS = `
 .im-add-btn:hover { background: #4aeaaa !important; box-shadow: 0 4px 16px rgba(52,211,153,0.28); }
 .im-add-btn svg { width: 14px; height: 14px; }
 
+/* ── Trial Banner ────────────────────────────────────────────── */
+.im-trial-banner {
+  background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.15);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.im-trial-banner-left {}
+.im-trial-banner-title {
+  color: #34d399;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.im-trial-banner-sub {
+  color: #9ca3af;
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.im-trial-banner-days {
+  background: rgba(52,211,153,0.12);
+  border: 1px solid rgba(52,211,153,0.2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: #34d399;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* ── Alert ───────────────────────────────────────────────────── */
 .im-alert {
   display: flex; align-items: flex-start; gap: 12px;
@@ -240,6 +276,8 @@ const CSS = `
   .im-stat-val { font-size: 24px; }
 
   .im-alert { padding: 10px 12px; margin-bottom: 16px; }
+  .im-trial-banner { padding: 12px 14px; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .im-trial-banner-days { align-self: flex-start; }
 
   /* card main: wrap so sparkline drops to its own row */
   .im-card-main { padding: 12px 12px 6px; gap: 8px; flex-wrap: wrap; }
@@ -324,6 +362,7 @@ function Spark({ isOffline }: { isOffline: boolean }) {
 export default function DashboardPage() {
   const [monitors, setMonitors] = useState<any[]>([]);
   const [incidents, setIncidents] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null); // ← Step 1
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMonitor, setSelectedMonitor] = useState<any>(null);
@@ -344,8 +383,37 @@ export default function DashboardPage() {
     if (!incidentError && incidentData) setIncidents(incidentData);
   };
 
+  // ← Step 2
+  const fetchProfile = async () => {
+    const {
+      data: { user },
+      error: userError
+    } = await supabase.auth.getUser();
+
+    console.log("85fe8a5b-849c-43b8-adc4-ecc2677e092f", user?.id);
+    console.log("USER ERROR", userError);
+
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    console.log("PROFILE DATA", data);
+    console.log("PROFILE ERROR", error);
+
+    if (data) {
+      setProfile(data);
+    }
+  };
+
+  // ← Step 3
   useEffect(() => {
     fetchMonitors();
+    fetchProfile();
+
     const fetchInterval = setInterval(fetchMonitors, 30000);
     const clockInterval = setInterval(() => {
       setTimeStr(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
@@ -362,18 +430,49 @@ export default function DashboardPage() {
     setCopiedId(id); setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleAddMonitor = () => {
+    if (!profile) {
+      setIsModalOpen(true);
+      return;
+    }
+    if (monitors.length >= profile.max_monitors) {
+      window.location.href = '/upgrade';
+      return;
+    }
+    setIsModalOpen(true);
+  };
+  // ← Step 4
+
+
+  const trialDaysRemaining =
+    profile?.trial_ends_at
+      ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(profile.trial_ends_at).getTime() - Date.now()) /
+          (1000 * 60 * 60 * 24)
+        )
+      )
+      : null;
+
   const onlineCount = monitors.filter(m => m.status !== 'offline').length;
   const offlineCount = monitors.filter(m => m.status === 'offline').length;
   const uptimePct = monitors.length > 0 ? Math.round((onlineCount / monitors.length) * 100) : 100;
   const barCol = uptimePct === 100 ? 'c-green' : uptimePct >= 80 ? 'c-amber' : 'c-red';
 
   const NAV = [
-    { href: '/dashboard', label: 'Monitors', active: true,
-      icon: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg> },
-    { href: '/incidents', label: 'Incidents', active: false,
-      icon: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M8 2L14 13H2L8 2Z"/><line x1="8" y1="7" x2="8" y2="10"/><circle cx="8" cy="12" r=".6" fill="currentColor"/></svg> },
-    { href: '/settings', label: 'Settings', active: false,
-      icon: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="15" height="15"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.6 3.6l.7.7M11.7 11.7l.7.7M12.4 3.6l-.7.7M4.3 11.7l-.7.7"/></svg> },
+    {
+      href: '/dashboard', label: 'Monitors', active: true,
+      icon: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="1" y="1" width="6" height="6" rx="1.5" /><rect x="9" y="1" width="6" height="6" rx="1.5" /><rect x="1" y="9" width="6" height="6" rx="1.5" /><rect x="9" y="9" width="6" height="6" rx="1.5" /></svg>
+    },
+    {
+      href: '/incidents', label: 'Incidents', active: false,
+      icon: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M8 2L14 13H2L8 2Z" /><line x1="8" y1="7" x2="8" y2="10" /><circle cx="8" cy="12" r=".6" fill="currentColor" /></svg>
+    },
+    {
+      href: '/settings', label: 'Settings', active: false,
+      icon: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="15" height="15"><circle cx="8" cy="8" r="2.5" /><path d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.6 3.6l.7.7M11.7 11.7l.7.7M12.4 3.6l-.7.7M4.3 11.7l-.7.7" /></svg>
+    },
   ];
 
   return (
@@ -385,7 +484,7 @@ export default function DashboardPage() {
         <aside className="im-sb">
           <div className="im-sb-logo">
             <div className="im-sb-logo-mark">
-              <svg viewBox="0 0 15 15" fill="#09090f" width="15" height="15"><path d="M7.5 1l2 4.5H14l-3.5 3 1.5 4.5L7.5 11 3.5 13 5 8.5 1.5 5.5H5.5L7.5 1Z"/></svg>
+              <svg viewBox="0 0 15 15" fill="#09090f" width="15" height="15"><path d="M7.5 1l2 4.5H14l-3.5 3 1.5 4.5L7.5 11 3.5 13 5 8.5 1.5 5.5H5.5L7.5 1Z" /></svg>
             </div>
             <span className="im-sb-logo-name">InfraMind</span>
           </div>
@@ -398,18 +497,22 @@ export default function DashboardPage() {
             ))}
           </nav>
           <div className="im-sb-footer">
-            <button onClick={handleLogout} className="im-sb-link danger">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="15" height="15"><path d="M10 8H2M7 5l-3 3 3 3"/><path d="M6 3H13V13H6"/></svg>
+            <button
+              onClick={handleLogout}
+              className="im-sb-link danger"
+              style={{ width: '100%' }}
+            >
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="15" height="15"><path d="M10 8H2M7 5l-3 3 3 3" /><path d="M6 3H13V13H6" /></svg>
               Logout
             </button>
           </div>
         </aside>
 
-        {/* Mobile nav — FIX: z-index 200 so no avatar overlaps */}
+        {/* Mobile nav */}
         <nav className="im-mob-nav">
           <div className="im-mob-logo">
             <div className="im-mob-logo-mark">
-              <svg viewBox="0 0 15 15" fill="#09090f" width="13" height="13"><path d="M7.5 1l2 4.5H14l-3.5 3 1.5 4.5L7.5 11 3.5 13 5 8.5 1.5 5.5H5.5L7.5 1Z"/></svg>
+              <svg viewBox="0 0 15 15" fill="#09090f" width="13" height="13"><path d="M7.5 1l2 4.5H14l-3.5 3 1.5 4.5L7.5 11 3.5 13 5 8.5 1.5 5.5H5.5L7.5 1Z" /></svg>
             </div>
             <span>InfraMind</span>
           </div>
@@ -428,12 +531,112 @@ export default function DashboardPage() {
               <div className="im-topbar-title">Live Monitors</div>
               <div className="im-topbar-sub">↻ refreshes every 30s · {timeStr}</div>
             </div>
-            <button onClick={() => setIsModalOpen(true)} className="im-add-btn">
-              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" width="14" height="14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
+            <button onClick={handleAddMonitor} className="im-add-btn">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" width="14" height="14">
+                <line x1="7" y1="1" x2="7" y2="13" />
+                <line x1="1" y1="7" x2="13" y2="7" />
+              </svg>
               Add Monitor
             </button>
           </div>
 
+          {/* ← Step 5: Trial Banner */}
+          {profile?.plan === 'trial' && (
+            <div className="im-trial-banner">
+              <div className="im-trial-banner-left">
+                <div className="im-trial-banner-title">⚡ Free Trial Active</div>
+                <div className="im-trial-banner-sub">
+                  {profile.max_monitors} monitor limit
+                  {trialDaysRemaining !== null && (
+                    <> · {trialDaysRemaining} day{trialDaysRemaining !== 1 ? 's' : ''} remaining</>
+                  )}
+                </div>
+              </div>
+              {trialDaysRemaining !== null && (
+                <div className="im-trial-banner-days">
+                  {trialDaysRemaining}d left
+                </div>
+              )}
+            </div>
+          )}
+{/* LinkedIn Reward - Not Submitted */}
+{profile?.plan === 'trial' &&
+ profile?.linkedin_reward_status === 'not_submitted' && (
+  <div
+    style={{
+      background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(234,179,8,0.08))',
+      border: '1px solid rgba(34,197,94,0.3)',
+      borderRadius: '12px',
+      padding: '16px 20px',
+      marginBottom: '20px',
+    }}
+  >
+    <div
+      style={{
+        fontSize: '14px',
+        fontWeight: 600,
+        color: '#4ade80',
+        marginBottom: '4px',
+      }}
+    >
+      🎁 Get 14 Extra Trial Days
+    </div>
+
+    <div
+      style={{
+        color: '#9ca3af',
+        fontSize: '12px',
+        marginBottom: '10px',
+      }}
+    >
+      Share InfraMind on LinkedIn and unlock 14 extra trial days.
+    </div>
+
+    <a
+      href="/dashboard/linkedin-reward"
+      style={{
+        color: '#4ade80',
+        fontWeight: 600,
+        textDecoration: 'none',
+        fontSize: '13px',
+      }}
+    >
+      Claim Reward →
+    </a>
+  </div>
+)}
+{/* LinkedIn Reward - Pending */}
+{true &&
+ true && (
+  <div
+    style={{
+      background: 'rgba(250,204,21,0.08)',
+      border: '1px solid rgba(250,204,21,0.2)',
+      borderRadius: '12px',
+      padding: '16px 20px',
+      marginBottom: '20px',
+    }}
+  >
+    <div
+      style={{
+        color: '#facc15',
+        fontWeight: 600,
+        marginBottom: '4px',
+      }}
+    >
+      ⏳ LinkedIn Reward Pending Review
+    </div>
+
+    <div
+      style={{
+        color: '#9ca3af',
+        fontSize: '12px',
+      }}
+    >
+      Your submission has been received and is waiting for approval.
+    </div>
+  </div>
+)}
           {/* Alert */}
           {monitors.length > 0 && (
             <div className="im-alert">
@@ -480,12 +683,27 @@ export default function DashboardPage() {
             {monitors.length === 0 && (
               <div className="im-empty" style={{ background: '#0d0f16', border: '1px solid rgba(255,255,255,0.055)', borderRadius: 12 }}>
                 <div className="im-empty-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M12 8v8M8 12h8" strokeLinecap="round"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="5" /><path d="M12 8v8M8 12h8" strokeLinecap="round" /></svg>
                 </div>
                 <h3>No monitors yet</h3>
                 <p>Add your first monitor to start tracking uptime.</p>
-                <button onClick={() => setIsModalOpen(true)} className="im-add-btn" style={{ margin: '0 auto' }}>
-                  + Add Monitor
+                <button
+                  onClick={() => {
+                    if (profile && monitors.length >= profile.max_monitors) {
+                      window.location.href = "/upgrade";
+                      return;
+                    }
+                    setIsModalOpen(true);
+                  }}
+                  className="im-add-btn"
+                  style={{ margin: '0 auto' }}
+                >
+                  {
+                    profile &&
+                      monitors.length >= profile.max_monitors
+                      ? "Upgrade Plan"
+                      : "Add Monitor"
+                  }
                 </button>
               </div>
             )}
@@ -524,7 +742,6 @@ export default function DashboardPage() {
                         />
                       )}
                     </div>
-                    {/* FIX: sparkline always rendered; CSS controls visibility by breakpoint */}
                     <div className="im-spark-wrap"><Spark isOffline={isOffline} /></div>
                   </div>
 
@@ -536,12 +753,12 @@ export default function DashboardPage() {
                     <div className="im-actions">
                       <button onClick={() => handleCopy(m.id)} className={`im-btn${copiedId === m.id ? ' copied' : ''}`}>
                         {copiedId === m.id
-                          ? <><svg viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" width="11" height="11"><path d="M1.5 5.5l3 3 5-5"/></svg><span className="im-btn-label">Copied</span></>
-                          : <><svg viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="11" height="11"><rect x="3.5" y="3.5" width="6" height="6" rx="1.2"/><path d="M7.5 3.5V2.2A1.2 1.2 0 006.3 1H2.2A1.2 1.2 0 001 2.2v4.1a1.2 1.2 0 001.2 1.2H3.5"/></svg><span className="im-btn-label">Copy</span></>
+                          ? <><svg viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" width="11" height="11"><path d="M1.5 5.5l3 3 5-5" /></svg><span className="im-btn-label">Copied</span></>
+                          : <><svg viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="11" height="11"><rect x="3.5" y="3.5" width="6" height="6" rx="1.2" /><path d="M7.5 3.5V2.2A1.2 1.2 0 006.3 1H2.2A1.2 1.2 0 001 2.2v4.1a1.2 1.2 0 001.2 1.2H3.5" /></svg><span className="im-btn-label">Copy</span></>
                         }
                       </button>
                       <Link href={`/status/${m.id}`} className="im-btn">
-                        <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="11" height="11"><path d="M4.5 2H2A1 1 0 001 3v6a1 1 0 001 1h6a1 1 0 001-1V6.5M6.5 1H10m0 0v3.5M10 1L5 6"/></svg>
+                        <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="11" height="11"><path d="M4.5 2H2A1 1 0 001 3v6a1 1 0 001 1h6a1 1 0 001-1V6.5M6.5 1H10m0 0v3.5M10 1L5 6" /></svg>
                         <span className="im-btn-label">Status</span>
                       </Link>
                       <div className="im-drop-wrap">
@@ -549,11 +766,11 @@ export default function DashboardPage() {
                         {openDropdown === m.id && (
                           <div className="im-drop" onClick={(e) => e.stopPropagation()}>
                             <button onClick={() => handleEdit(m)} className="im-drop-item edit">
-                              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="12" height="12"><path d="M8 2l2 2-6 6H2V8l6-6z"/></svg>
+                              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="12" height="12"><path d="M8 2l2 2-6 6H2V8l6-6z" /></svg>
                               Edit monitor
                             </button>
                             <button onClick={() => handleDelete(m.id)} className="im-drop-item del">
-                              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="12" height="12"><path d="M1.5 3.5h9M4 3.5V2.5h4v1M5 6v3M7 6v3M2.5 3.5l.5 7h6l.5-7"/></svg>
+                              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="12" height="12"><path d="M1.5 3.5h9M4 3.5V2.5h4v1M5 6v3M7 6v3M2.5 3.5l.5 7h6l.5-7" /></svg>
                               Delete
                             </button>
                           </div>
