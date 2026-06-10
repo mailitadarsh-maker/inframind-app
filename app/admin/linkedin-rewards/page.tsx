@@ -16,10 +16,34 @@ export default function LinkedInRewardsPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+const [isAdmin, setIsAdmin] = useState(false);
+const [checkingAdmin, setCheckingAdmin] = useState(true);
 
   useEffect(() => {
+  checkAdmin();
+}, []);
+
+async function checkAdmin() {
+  const { data: auth } = await supabase.auth.getUser();
+
+  if (!auth.user) {
+    setCheckingAdmin(false);
+    return;
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', auth.user.id)
+    .single();
+
+  if (profile?.role === 'admin') {
+    setIsAdmin(true);
     fetchSubmissions();
-  }, []);
+  }
+
+  setCheckingAdmin(false);
+}
 
   async function fetchSubmissions() {
     setLoading(true);
@@ -80,7 +104,41 @@ export default function LinkedInRewardsPage() {
   function shortId(id: string) {
     return id.slice(0, 8) + '…';
   }
+if (checkingAdmin) {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#09090f',
+        color: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      Checking access...
+    </div>
+  );
+}
 
+if (!isAdmin) {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#09090f',
+        color: '#ef4444',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '24px',
+        fontWeight: 600,
+      }}
+    >
+      Access Denied
+    </div>
+  );
+}
   return (
     <div
       style={{

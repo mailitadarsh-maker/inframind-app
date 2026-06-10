@@ -528,7 +528,10 @@ export default function DashboardPage() {
           {/* Topbar */}
           <div className="im-topbar">
             <div>
-              <div className="im-topbar-title">Live Monitors</div>
+              <div>
+  <div className="im-topbar-title">Live Monitors</div>
+  
+</div>
               <div className="im-topbar-sub">↻ refreshes every 30s · {timeStr}</div>
             </div>
             <button onClick={handleAddMonitor} className="im-add-btn">
@@ -606,8 +609,7 @@ export default function DashboardPage() {
   </div>
 )}
 {/* LinkedIn Reward - Pending */}
-{true &&
- true && (
+{profile?.linkedin_reward_status === 'pending' && (
   <div
     style={{
       background: 'rgba(250,204,21,0.08)',
@@ -634,6 +636,159 @@ export default function DashboardPage() {
       }}
     >
       Your submission has been received and is waiting for approval.
+    </div>
+  </div>
+)}
+{/* LinkedIn Reward - Approved */}
+{profile?.linkedin_reward_status === 'approved' &&
+ !profile?.linkedin_reward_notification_seen && (
+  <div
+    style={{
+      background: 'rgba(34,197,94,0.08)',
+      border: '1px solid rgba(34,197,94,0.2)',
+      borderRadius: '12px',
+      padding: '16px 20px',
+      marginBottom: '20px',
+    }}
+  >
+    <div
+  style={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  }}
+>
+  <div
+    style={{
+      color: '#4ade80',
+      fontWeight: 600,
+    }}
+  >
+    🎉 LinkedIn Reward Approved
+  </div>
+
+  <button
+    onClick={async () => {
+      await supabase
+        .from('profiles')
+        .update({
+          linkedin_reward_notification_seen: true,
+        })
+        .eq('id', profile.id);
+
+      fetchProfile();
+    }}
+    style={{
+      background: 'none',
+      border: 'none',
+      color: '#9ca3af',
+      cursor: 'pointer',
+      fontSize: '18px',
+    }}
+  >
+    ✕
+  </button>
+</div>
+
+    <div
+      style={{
+        color: '#9ca3af',
+        fontSize: '12px',
+      }}
+    >
+      +14 trial days and +10 monitor slots have been added.
+    </div>
+  </div>
+)}
+{/* LinkedIn Reward - Rejected */}
+{profile?.linkedin_reward_status === 'rejected' &&
+ !profile?.linkedin_reward_notification_seen && (
+  <div
+    style={{
+      background: 'rgba(239,68,68,0.08)',
+      border: '1px solid rgba(239,68,68,0.2)',
+      borderRadius: '12px',
+      padding: '16px 20px',
+      marginBottom: '20px',
+    }}
+  >
+    <div
+      style={{
+        color: '#f87171',
+        fontWeight: 600,
+        marginBottom: '4px',
+      }}
+    >
+      ❌ LinkedIn Reward Rejected
+    </div>
+    <div
+  style={{
+    display: 'flex',
+    gap: '10px',
+    marginTop: '12px',
+  }}
+>
+  <button
+    onClick={async () => {
+      await supabase
+        .from('profiles')
+        .update({
+          linkedin_reward_notification_seen: true,
+        })
+        .eq('id', profile.id);
+
+      fetchProfile();
+    }}
+    style={{
+      padding: '6px 12px',
+      borderRadius: '8px',
+      border: '1px solid rgba(255,255,255,0.15)',
+      background: 'transparent',
+      color: '#9ca3af',
+      cursor: 'pointer',
+    }}
+  >
+    Close
+  </button>
+
+  <button
+    onClick={async () => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          linkedin_reward_status: 'not_submitted',
+          linkedin_reward_notification_seen: false,
+          linkedin_post_url: null,
+          linkedin_submitted_at: null,
+          linkedin_admin_note: null,
+        })
+        .eq('id', profile.id);
+
+      if (!error) {
+        window.location.href = '/dashboard/linkedin-reward';
+      }
+    }}
+    style={{
+      padding: '6px 12px',
+      borderRadius: '8px',
+      border: 'none',
+      background: '#f87171',
+      color: '#fff',
+      cursor: 'pointer',
+      fontWeight: 600,
+    }}
+  >
+    Re-initiate Reward
+  </button>
+</div>
+
+    <div
+      style={{
+        color: '#9ca3af',
+        fontSize: '12px',
+      }}
+    >
+      Your LinkedIn submission could not be verified.
     </div>
   </div>
 )}

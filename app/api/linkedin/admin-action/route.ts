@@ -44,12 +44,14 @@ export async function POST(req: NextRequest) {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
-          linkedin_reward_claimed: true,
-          linkedin_reward_status: 'approved',
-          linkedin_reward_claimed_at: new Date().toISOString(),
-          max_monitors: newMonitorLimit,
-          trial_ends_at: trialEnd.toISOString(),
-        })
+  linkedin_reward_claimed: true,
+  linkedin_reward_status: 'approved',
+  linkedin_reward_claimed_at: new Date().toISOString(),
+  linkedin_admin_note:
+    'Verified successfully. 14 extra trial days have been added.',
+  max_monitors: newMonitorLimit,
+  trial_ends_at: trialEnd.toISOString(),
+})
         .eq('id', userId);
 
       console.log('UPDATE ERROR:', updateError);
@@ -61,22 +63,24 @@ export async function POST(req: NextRequest) {
         message: 'Reward approved successfully',
       });
     }
+if (action === 'reject') {
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      linkedin_reward_status: 'rejected',
+      linkedin_admin_note:
+        'LinkedIn post could not be verified. Please submit a valid public post.',
+    })
+    .eq('id', userId);
 
-    if (action === 'reject') {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          linkedin_reward_status: 'rejected',
-        })
-        .eq('id', userId);
+  if (error) throw error;
 
-      if (error) throw error;
+  return NextResponse.json({
+    success: true,
+    message: 'Reward rejected',
+  });
+}
 
-      return NextResponse.json({
-        success: true,
-        message: 'Reward rejected',
-      });
-    }
 
     return NextResponse.json(
       { error: 'Invalid action' },
