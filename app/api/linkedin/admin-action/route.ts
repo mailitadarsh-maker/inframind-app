@@ -8,7 +8,7 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, action } = await req.json();
+    const { userId, action, adminNote } = await req.json();
 
     if (!userId || !action) {
       return NextResponse.json(
@@ -47,8 +47,7 @@ export async function POST(req: NextRequest) {
   linkedin_reward_claimed: true,
   linkedin_reward_status: 'approved',
   linkedin_reward_claimed_at: new Date().toISOString(),
-  linkedin_admin_note:
-    'Verified successfully. 14 extra trial days have been added.',
+  linkedin_admin_note: adminNote || 'Reward approved.',
   max_monitors: newMonitorLimit,
   trial_ends_at: trialEnd.toISOString(),
 })
@@ -69,7 +68,8 @@ if (action === 'reject') {
     .update({
       linkedin_reward_status: 'rejected',
       linkedin_admin_note:
-        'LinkedIn post could not be verified. Please submit a valid public post.',
+  adminNote ||
+  'LinkedIn post could not be verified. Please submit a valid public post.',
     })
     .eq('id', userId);
 

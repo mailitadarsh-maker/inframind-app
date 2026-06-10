@@ -752,21 +752,8 @@ export default function DashboardPage() {
   </button>
 
   <button
-    onClick={async () => {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          linkedin_reward_status: 'not_submitted',
-          linkedin_reward_notification_seen: false,
-          linkedin_post_url: null,
-          linkedin_submitted_at: null,
-          linkedin_admin_note: null,
-        })
-        .eq('id', profile.id);
-
-      if (!error) {
-        window.location.href = '/dashboard/linkedin-reward';
-      }
+    onClick={() => {
+      window.location.href = '/dashboard/linkedin-reward';
     }}
     style={{
       padding: '6px 12px',
@@ -782,16 +769,34 @@ export default function DashboardPage() {
   </button>
 </div>
 
-    <div
-      style={{
-        color: '#9ca3af',
-        fontSize: '12px',
-      }}
-    >
-      Your LinkedIn submission could not be verified.
+<div
+  style={{
+    color: '#9ca3af',
+    fontSize: '12px',
+  }}
+>
+  Your LinkedIn submission could not be verified.
+</div>
+
+{profile?.linkedin_admin_note && (
+  <div
+    style={{
+      marginTop: '10px',
+      padding: '10px',
+      borderRadius: '8px',
+      background: 'rgba(239,68,68,0.08)',
+      border: '1px solid rgba(239,68,68,0.15)',
+      color: '#fca5a5',
+      fontSize: '12px',
+    }}>
+      <strong>Reason:</strong> {profile.linkedin_admin_note}
     </div>
+  )}
   </div>
 )}
+
+{/* Alert */}
+
           {/* Alert */}
           {monitors.length > 0 && (
             <div className="im-alert">
