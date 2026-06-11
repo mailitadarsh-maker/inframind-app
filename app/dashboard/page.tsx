@@ -698,6 +698,11 @@ export default function DashboardPage() {
     >
       +14 trial days and +10 monitor slots have been added.
     </div>
+    {profile?.linkedin_admin_note && profile.linkedin_admin_note !== 'Reward approved.' && (
+      <div style={{ color: '#9ca3af', fontSize: '12px', marginTop: '6px' }}>
+        <strong style={{ color: '#4ade80' }}>Note:</strong> {profile.linkedin_admin_note}
+      </div>
+    )}
   </div>
 )}
 {/* LinkedIn Reward - Rejected */}
