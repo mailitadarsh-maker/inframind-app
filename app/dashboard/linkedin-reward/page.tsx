@@ -176,7 +176,25 @@ export default function LinkedInRewardPage() {
           ))}
         </div>
         <a
-          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://inframind-app.vercel.app/')}`}
+          onClick={(e) => {
+            e.preventDefault();
+            const shareUrl = 'https://inframind-app.vercel.app/';
+            const webUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+            const appUrl = `linkedin://shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}`;
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+              const now = Date.now();
+              window.location.href = appUrl;
+              setTimeout(() => {
+                if (Date.now() - now < 2000) {
+                  window.location.href = webUrl;
+                }
+              }, 1200);
+            } else {
+              window.open(webUrl, '_blank', 'noopener,noreferrer');
+            }
+          }}
+          href="#"
           target="_blank"
           rel="noopener noreferrer"
           style={{

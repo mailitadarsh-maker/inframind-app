@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
 
         try {
           await resend.emails.send({
-            from: 'InfraMind <alerts@yourdomain.com>',
+            from: 'InfraMind <alert@inframindhq.online>',
             to: userEmail,
             subject: '🎉 Your InfraMind LinkedIn Reward Has Been Approved',
             html: emailHtml,
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
 
         try {
           await resend.emails.send({
-            from: 'InfraMind <alerts@yourdomain.com>',
+            from: 'InfraMind <alert@inframindhq.online>',
             to: userEmail,
             subject: 'InfraMind LinkedIn Reward Submission Update',
             html: rejectionHtml,
