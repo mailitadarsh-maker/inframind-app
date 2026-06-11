@@ -175,6 +175,40 @@ export default function LinkedInRewardPage() {
             </div>
           ))}
         </div>
+        <a
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://inframind-app.vercel.app/')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            width: '100%',
+            padding: '12px 16px',
+            borderRadius: '10px',
+            background: '#22c55e',
+            color: '#09090f',
+            fontSize: '14px',
+            fontWeight: 700,
+            textDecoration: 'none',
+            marginBottom: '24px',
+            boxSizing: 'border-box',
+          }}
+        >
+          Share on LinkedIn →
+        </a>
+
+        <p
+          style={{
+            fontSize: '12px',
+            color: '#6b7280',
+            margin: '-12px 0 24px',
+            textAlign: 'center',
+          }}
+        >
+          This opens LinkedIn with InfraMind pre-attached. Add your own caption, post it, then paste the link below.
+        </p>
 
         <div style={{ marginBottom: '16px' }}>
           <label
