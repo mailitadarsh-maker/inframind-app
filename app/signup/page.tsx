@@ -30,6 +30,7 @@ export default function SignupPage() {
         first_name: firstName,
         company: company,
       },
+      emailRedirectTo: 'https://www.inframindhq.online/dashboard',
     },
   });
 

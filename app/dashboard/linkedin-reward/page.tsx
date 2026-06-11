@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 
 export default function LinkedInRewardPage() {
   const [url, setUrl] = useState('');
+  const [captionCopied, setCaptionCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -175,6 +176,52 @@ export default function LinkedInRewardPage() {
             </div>
           ))}
         </div>
+        <div
+          style={{
+            background: 'rgba(34,197,94,0.06)',
+            border: '1px solid rgba(34,197,94,0.18)',
+            borderRadius: '10px',
+            padding: '14px 16px',
+            marginBottom: '16px',
+          }}
+        >
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+            Suggested Caption
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <p style={{ fontSize: '13px', color: '#d1d5db', lineHeight: 1.6, margin: 0, flex: 1 }}>
+              Hey, I've been using @InfraMindHQ to monitor my apps and websites — it alerts me the moment something goes down and even tells me what's wrong in plain English. If you run an app without a dev team, check it out 👉 https://inframindhq.online
+            </p>
+          </div>
+          <p style={{ fontSize: '11px', color: '#6b7280', margin: '8px 0 0', lineHeight: 1.5 }}>
+            💡 After pasting, delete and retype <strong style={{ color: '#9ca3af' }}>@InfraMindHQ</strong> so LinkedIn shows the autocomplete and links it to our page.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+            <button
+              onClick={() => {
+                const text = "Hey, I've been using @InfraMindHQ to monitor my apps and websites — it alerts me the moment something goes down and even tells me what's wrong in plain English. If you run an app without a dev team, check it out 👉 https://inframindhq.online";
+                navigator.clipboard.writeText(text);
+                setCaptionCopied(true);
+                setTimeout(() => setCaptionCopied(false), 2000);
+              }}
+              style={{
+                flexShrink: 0,
+                padding: '6px 10px',
+                borderRadius: '8px',
+                border: '1px solid rgba(34,197,94,0.25)',
+                background: 'rgba(34,197,94,0.1)',
+                color: '#4ade80',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {captionCopied ? 'Copied ✓' : 'Copy'}
+            </button>
+          </div>
+        </div>
+
         <a
           onClick={(e) => {
             e.preventDefault();

@@ -85,7 +85,7 @@ async function performMonitorCheck(monitor: any) {
       if (monitor.alert_email) {
         const duration = ((Date.now() - new Date(incident.started_at).getTime()) / 60000).toFixed(1);
         await resend.emails.send({
-          from: 'InfraMind <onboarding@resend.dev>', to: monitor.alert_email,
+          from: 'InfraMind <alert@inframindhq.online>', to: monitor.alert_email,
           subject: `✅ Recovery: ${monitor.name} is back online`,
           html: `<p>${monitor.name} recovered after ${duration} minutes.</p>`
         });
@@ -110,7 +110,7 @@ async function performMonitorCheck(monitor: any) {
 
       if (monitor.alert_email) {
         await resend.emails.send({
-          from: 'InfraMind <onboarding@resend.dev>', to: monitor.alert_email,
+          from: 'InfraMind <alert@inframindhq.online>', to: monitor.alert_email,
           subject: `🚨 Alert: ${monitor.name} is DOWN`,
           html: `<h2>${monitor.name} is offline</h2><p><strong>Cause:</strong> ${ai.cause}</p>`
         });
