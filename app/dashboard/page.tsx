@@ -322,20 +322,30 @@ function Spark({ isOffline }: { isOffline: boolean }) {
   );
 
   useEffect(() => {
-    if (isOffline) {
-      const id = setInterval(() => {
-        setHeights(prev => {
-          const next = [...prev];
-          next[COUNT - 1] = 3 + Math.random() * 4;
-          return next;
-        });
-      }, 1200);
-      return () => clearInterval(id);
-    }
-    const id = setInterval(() => {
-      setHeights(prev => prev.map(h => Math.random() > 0.45 ? rand() : h));
-    }, 550 + Math.random() * 200);
-    return () => clearInterval(id);
+    let id: any;
+    const start = () => {
+      if (isOffline) {
+        id = setInterval(() => {
+          setHeights(prev => {
+            const next = [...prev];
+            next[COUNT - 1] = 3 + Math.random() * 4;
+            return next;
+          });
+        }, 1200);
+      } else {
+        id = setInterval(() => {
+          setHeights(prev => prev.map(h => Math.random() > 0.45 ? rand() : h));
+        }, 550 + Math.random() * 200);
+      }
+    };
+    const stop = () => clearInterval(id);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') start();
+      else stop();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    if (document.visibilityState === 'visible') start();
+    return () => { stop(); document.removeEventListener('visibilitychange', handleVisibility); };
   }, [isOffline]);
 
   return (
