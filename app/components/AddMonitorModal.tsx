@@ -50,6 +50,12 @@ export default function AddMonitorModal({ isOpen, onClose, onSuccess, atLimit }:
       return;
     }
 
+    const domainPart = url.replace(/^https?:\/\//, '');
+    if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(\/.*)?$/.test(domainPart)) {
+      setError('Please enter a valid domain (e.g. www.example.com)');
+      return;
+    }
+
     if (type === 'api') {
       try {
         JSON.parse(customHeaders);
@@ -156,10 +162,17 @@ export default function AddMonitorModal({ isOpen, onClose, onSuccess, atLimit }:
                   required
                   value={url.replace(/^https?:\/\//, '')}
                   placeholder="www.example.com"
-                  onChange={(e) => setUrl('https://' + e.target.value.replace(/^https?:\/\//, ''))}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/^https?:\/\//, '');
+                    val = val.replace(/,/g, '.'); // auto-fix comma typos
+                    setUrl('https://' + val);
+                  }}
                   className="flex-1 bg-transparent border-none outline-none text-white text-sm px-2 py-2.5"
                 />
               </div>
+              {url.replace(/^https?:\/\//, '') !== '' && !/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(\/.*)?$/.test(url.replace(/^https?:\/\//, '')) && (
+                <p className="text-xs text-red-400 mt-1">Enter a valid domain (e.g. www.example.com)</p>
+              )}
             </div>
           </div>
 

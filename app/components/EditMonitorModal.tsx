@@ -42,6 +42,12 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
       return;
     }
 
+    const domainPart = url.replace(/^https?:\/\//, '');
+    if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(\/.*)?$/.test(domainPart)) {
+      setError('Please enter a valid domain (e.g. www.example.com)');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -120,14 +126,24 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
 
               <div className="flex-1">
                 <label htmlFor="edit-url" className="block text-xs font-medium text-[#8a95a3] mb-1.5">Target URL</label>
-                <input
-                  id="edit-url"
-                  type="url"
-                  required
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-[#2e333d] px-4 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50"
-                />
+                <div className="flex items-center rounded-lg border border-white/10 bg-[#2e333d] focus-within:border-[#1ddb78]/50 focus-within:ring-1 focus-within:ring-[#1ddb78]/50">
+                  <span className="pl-3 text-sm text-[#6b7280] select-none">https://</span>
+                  <input
+                    id="edit-url"
+                    type="text"
+                    required
+                    value={url.replace(/^https?:\/\//, '')}
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/^https?:\/\//, '');
+                      val = val.replace(/,/g, '.');
+                      setUrl('https://' + val);
+                    }}
+                    className="flex-1 bg-transparent border-none outline-none text-[#eef1f6] text-sm px-2 py-2.5"
+                  />
+                </div>
+                {url.replace(/^https?:\/\//, '') !== '' && !/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(\/.*)?$/.test(url.replace(/^https?:\/\//, '')) && (
+                  <p className="text-xs text-red-400 mt-1">Enter a valid domain (e.g. www.example.com)</p>
+                )}
               </div>
             </div>
 
