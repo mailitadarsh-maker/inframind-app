@@ -145,7 +145,7 @@ const CSS = `
   background: #0d0f16;
   border: 1px solid rgba(255,255,255,0.055);
   border-left: 3px solid transparent;
-  border-radius: 12px; overflow: hidden;
+  border-radius: 12px; overflow: visible;
   transition: border-color 0.18s, transform 0.15s, box-shadow 0.15s;
 }
 .im-card:hover { border-color: rgba(255,255,255,0.1); border-left-color: inherit; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,0.3); }
@@ -217,7 +217,7 @@ const CSS = `
 .im-icon-btn:hover { background: rgba(255,255,255,0.07); color: #c4c9d8; }
 
 .im-drop-wrap { position: relative; }
-.im-drop { position: absolute; right: 0; bottom: calc(100% + 6px); width: 156px; background: #12141e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; z-index: 60; padding: 5px; box-shadow: 0 16px 40px rgba(0,0,0,0.6); }
+.im-drop { position: absolute; right: 0; bottom: calc(100% + 6px); width: 156px; background: #12141e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; z-index: 250; padding: 5px; box-shadow: 0 16px 40px rgba(0,0,0,0.6); }
 .im-drop-item { width: 100%; text-align: left; padding: 8px 10px; font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; border-radius: 6px; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: background 0.1s; }
 .im-drop-item.edit { color: #c4c9d8; }
 .im-drop-item.edit:hover { background: rgba(255,255,255,0.06); }
@@ -295,7 +295,7 @@ const CSS = `
   }
 
   /* footer stays on one row */
-  .im-card-footer { padding: 8px 12px; flex-wrap: nowrap; gap: 4px; overflow: hidden; }
+  .im-card-footer { padding: 8px 12px; flex-wrap: nowrap; gap: 4px; overflow: visible; }
   .im-actions { gap: 3px; flex-shrink: 0; }
 
   .im-btn { padding: 5px 8px; font-size: 10px; gap: 4px; }
