@@ -423,14 +423,19 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchMonitors();
     fetchProfile();
+    setTimeStr(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  }, []);
+
+  useEffect(() => {
+    const anyModalOpen = isModalOpen || isEditModalOpen;
+    if (anyModalOpen) return;
 
     const fetchInterval = setInterval(fetchMonitors, 30000);
     const clockInterval = setInterval(() => {
       setTimeStr(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     }, 1000);
-    setTimeStr(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     return () => { clearInterval(fetchInterval); clearInterval(clockInterval); };
-  }, []);
+  }, [isModalOpen, isEditModalOpen]);
 
   const handleEdit = (m: any) => { setSelectedMonitor(m); setOpenDropdown(null); setTimeout(() => setIsEditModalOpen(true), 50); };
   const handleDelete = async (id: string) => { setOpenDropdown(null); await supabase.from('monitors').delete().eq('id', id); fetchMonitors(); };
