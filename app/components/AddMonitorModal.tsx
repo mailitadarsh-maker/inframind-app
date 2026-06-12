@@ -149,14 +149,17 @@ export default function AddMonitorModal({ isOpen, onClose, onSuccess, atLimit }:
             </div>
             <div className="flex-1">
               <label className="block text-xs font-medium text-[#8a95a3] mb-1.5">Target URL</label>
-              <input
-                type="url"
-                required
-                value={url}
-                placeholder="https://example.com"
-                onChange={(e) => setUrl(e.target.value)}
-                className={inputClass}
-              />
+              <div className="flex items-center rounded-lg border border-white/10 bg-[#0d1117] focus-within:border-[#22c55e]/50">
+                <span className="pl-3 text-sm text-[#6b7280] select-none">https://</span>
+                <input
+                  type="text"
+                  required
+                  value={url.replace(/^https?:\/\//, '')}
+                  placeholder="www.example.com"
+                  onChange={(e) => setUrl('https://' + e.target.value.replace(/^https?:\/\//, ''))}
+                  className="flex-1 bg-transparent border-none outline-none text-white text-sm px-2 py-2.5"
+                />
+              </div>
             </div>
           </div>
 

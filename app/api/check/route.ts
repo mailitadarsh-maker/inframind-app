@@ -136,6 +136,11 @@ async function performMonitorCheck(monitor: any) {
       headers["Content-Type"] = "application/json";
     }
 
+    // Default User-Agent to avoid WAF/bot-protection 403s
+    if (!headers["User-Agent"]) {
+      headers["User-Agent"] = "Mozilla/5.0 (compatible; InfraMindBot/1.0; +https://inframindhq.online)";
+    }
+
     const response = await fetchWithRetry(monitor.target_url, {
       method: monitor.request_method || "GET",
       headers,
