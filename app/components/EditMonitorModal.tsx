@@ -78,7 +78,7 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div 
         className="w-full max-w-md overflow-hidden rounded-xl border border-white/10 bg-[#2b3039] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -103,8 +103,8 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
             </div>
 
             {/* Type & URL */}
-            <div className="flex gap-4">
-              <div className="w-1/3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="w-full sm:w-1/3">
                 <label htmlFor="edit-type" className="block text-xs font-medium text-[#8a95a3] mb-1.5">Type</label>
                 <select
                   id="edit-type"

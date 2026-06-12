@@ -250,7 +250,7 @@ const CSS = `
 .im-mob-logo span { font-size: 13px; font-weight: 600; color: #e2e6f0; }
 .im-mob-link { padding: 6px 8px; border-radius: 7px; font-size: 12px; font-weight: 500; color: #6b7280; text-decoration: none; font-family: 'DM Sans', sans-serif; white-space: nowrap; flex-shrink: 0; }
 .im-mob-link.on { color: #34d399 !important; background: rgba(52,211,153,0.08); }
-.im-mob-logout { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 6px 8px; flex-shrink: 0; margin-left: 2px; }
+.im-mob-logout { display: flex; align-items: center; justify-content: center; color: #f87171; background: none; border: none; cursor: pointer; padding: 6px 8px; flex-shrink: 0; margin-left: 2px; border-radius: 7px; transition: background 0.15s; }
 
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -519,7 +519,9 @@ export default function DashboardPage() {
           <Link href="/dashboard" className="im-mob-link on">Monitors</Link>
           <Link href="/incidents" className="im-mob-link">Incidents</Link>
           <Link href="/settings" className="im-mob-link">Settings</Link>
-          <button onClick={handleLogout} className="im-mob-logout">↩</button>
+          <button onClick={handleLogout} className="im-mob-logout" title="Sign out" aria-label="Sign out">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
         </nav>
 
         {/* Main */}
