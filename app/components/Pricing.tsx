@@ -100,14 +100,12 @@ export default function Pricing() {
             }}
           >
             Simple pricing for{' '}
-            <span style={{ color: '#22c55e', fontStyle: 'italic' }}>
+            <span style={{ color: '#22c55e' }}>
               growing infrastructure teams.
             </span>
           </h2>
           <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: 1.7, margin: 0 }}>
-            Monitor websites, APIs, and SSL certificates —
-            <br />
-            and get AI-powered insights when incidents happen.
+            Monitor websites, APIs, and SSL certificates — and get AI-powered insights when incidents happen.
           </p>
         </div>
 

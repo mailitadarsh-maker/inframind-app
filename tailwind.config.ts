@@ -37,7 +37,7 @@ const config: Config = {
         'purple-border': 'rgba(167, 139, 250, 0.19)',
       },
       fontFamily: {
-        serif: ['"Instrument Serif"', 'serif'],
+        serif: ['"Montserrat"', 'sans-serif'],
         sans: ['"DM Sans"', 'sans-serif'],
         mono: ['"DM Mono"', 'monospace'],
       },

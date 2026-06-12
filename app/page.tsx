@@ -5,7 +5,6 @@ import ProofBar from './components/ProofBar';
 import HowItWorks from './components/HowItWorks';
 import Features from './components/Features';
 import Pricing from './components/Pricing';
-import Testimonials from './components/Testimonials';
 import Footer from './components/Footer';
 
 export const metadata: Metadata = {
@@ -36,7 +35,6 @@ export default function Page() {
       <HowItWorks />
       <Features />
       <Pricing />
-      <Testimonials />
       <Footer />
     </main>
   );
