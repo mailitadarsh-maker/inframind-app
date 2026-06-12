@@ -421,6 +421,26 @@ export default function LoginPage() {
               </p>
             </div>
 
+            <div className="mt-3 text-center">
+              <button
+                type="button"
+                onClick={() => { setError(''); setResetEmail(email); setView('forgot_password'); }}
+                className="text-xs text-[#8a95a3] hover:text-[#1ddb78] transition-colors underline underline-offset-2"
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            <div className="mt-3 text-center">
+              <button
+                type="button"
+                onClick={() => { setError(''); setResetEmail(email); setView('forgot_password'); }}
+                className="text-xs text-[#8a95a3] hover:text-[#1ddb78] transition-colors underline underline-offset-2"
+              >
+                Forgot password?
+              </button>
+            </div>
+
             <div className="mt-5 pt-5 border-t border-white/[0.05] text-center">
               <button
                 onClick={() => { setError(''); setView('login'); }}
