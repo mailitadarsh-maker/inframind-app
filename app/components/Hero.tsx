@@ -122,7 +122,7 @@ export default function Hero() {
 
         {/* Dashboard preview */}
         <div
-          className="relative rounded-xl border border-white/[0.07] bg-[#0d1117] overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
+          className="relative rounded-xl border border-white/[0.07] bg-[#2b3039] overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
           style={{ animation: 'fadeUp 0.7s 0.65s ease both', opacity: 0 }}
         >
           {/* Scan beam */}
@@ -140,7 +140,7 @@ export default function Hero() {
           </div>
 
           {/* Window bar */}
-          <div className="flex items-center gap-2 px-4 py-3 bg-[#131920] border-b border-white/[0.05]">
+          <div className="flex items-center gap-2 px-4 py-3 bg-[#313742] border-b border-white/[0.05]">
             <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
             <span className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]" />
             <span className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
@@ -152,7 +152,7 @@ export default function Hero() {
             {monitors.map((m, i) => (
               <div
                 key={m.name}
-                className="flex items-center justify-between px-4 py-3 rounded-lg bg-[#131920] border border-white/[0.05] hover:border-white/[0.1] hover:translate-x-1 transition-all duration-200 group"
+                className="flex items-center justify-between px-4 py-3 rounded-lg bg-[#313742] border border-white/[0.05] hover:border-white/[0.1] hover:translate-x-1 transition-all duration-200 group"
                 style={{ animation: `slideInLeft 0.4s ${0.7 + i * 0.12}s ease both`, opacity: 0 }}
               >
                 <div className="flex-1 min-w-0">

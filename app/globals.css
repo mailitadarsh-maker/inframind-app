@@ -15,7 +15,7 @@
 
   body {
     font-family: 'DM Sans', sans-serif;
-    @apply bg-[#07090d] text-[#eef1f6] antialiased;
+    @apply bg-[#22252c] text-[#eef1f6] antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {

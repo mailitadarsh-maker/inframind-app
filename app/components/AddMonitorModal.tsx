@@ -105,11 +105,11 @@ export default function AddMonitorModal({ isOpen, onClose, onSuccess, atLimit }:
     }
   };
 
-  const inputClass = "w-full rounded-lg border border-white/10 bg-[#161b22] px-4 py-2.5 text-sm text-[#eef1f6] placeholder-[#8a95a3]/50 outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50";
+  const inputClass = "w-full rounded-lg border border-white/10 bg-[#2e333d] px-4 py-2.5 text-sm text-[#eef1f6] placeholder-[#8a95a3]/50 outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md overflow-hidden rounded-xl border border-white/10 bg-[#0d1117] shadow-2xl p-6">
+      <div className="w-full max-w-md overflow-hidden rounded-xl border border-white/10 bg-[#2b3039] shadow-2xl p-6">
         <h2 className="text-xl font-semibold text-[#eef1f6] mb-1">Add New Monitor</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

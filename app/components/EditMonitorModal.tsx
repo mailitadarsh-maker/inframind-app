@@ -80,7 +80,7 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div 
-        className="w-full max-w-md overflow-hidden rounded-xl border border-white/10 bg-[#0d1117] shadow-2xl"
+        className="w-full max-w-md overflow-hidden rounded-xl border border-white/10 bg-[#2b3039] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
@@ -98,7 +98,7 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-[#161b22] px-4 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50"
+                className="w-full rounded-lg border border-white/10 bg-[#2e333d] px-4 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50"
               />
             </div>
 
@@ -110,7 +110,7 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
                   id="edit-type"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-[#161b22] px-3 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50 appearance-none"
+                  className="w-full rounded-lg border border-white/10 bg-[#2e333d] px-3 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50 appearance-none"
                 >
                   <option value="website">Website</option>
                   <option value="api">API</option>
@@ -126,7 +126,7 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
                   required
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-[#161b22] px-4 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50"
+                  className="w-full rounded-lg border border-white/10 bg-[#2e333d] px-4 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50"
                 />
               </div>
             </div>
@@ -141,7 +141,7 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
                   required
                   value={expectedStatus}
                   onChange={(e) => setExpectedStatus(Number(e.target.value))}
-                  className="w-full rounded-lg border border-white/10 bg-[#161b22] px-4 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50"
+                  className="w-full rounded-lg border border-white/10 bg-[#2e333d] px-4 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50"
                 />
               </div>
             )}
@@ -155,7 +155,7 @@ export default function EditMonitorModal({ isOpen, onClose, onSuccess, monitor }
                 required
                 value={alertEmail}
                 onChange={(e) => setAlertEmail(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-[#161b22] px-4 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50"
+                className="w-full rounded-lg border border-white/10 bg-[#2e333d] px-4 py-2.5 text-sm text-[#eef1f6] outline-none transition-all focus:border-[#1ddb78]/50 focus:ring-1 focus:ring-[#1ddb78]/50"
               />
             </div>
 

@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="bg-[#07090d]">
+    <main className="bg-[#22252c]">
       <Navbar />
       <Hero />
       <ProofBar />

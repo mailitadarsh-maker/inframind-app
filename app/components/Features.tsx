@@ -67,7 +67,7 @@ export default function Features() {
   }, []);
 
   return (
-    <section id="features" ref={ref} className="py-28 px-6 bg-[#0a0d12]">
+    <section id="features" ref={ref} className="py-28 px-6 bg-[#262a32]">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div
@@ -86,7 +86,7 @@ export default function Features() {
           {features.map((f, i) => (
             <div
               key={i}
-              className={`relative p-7 rounded-xl border border-white/[0.06] bg-[#0d1117] ${f.accent} transition-all duration-300 group overflow-hidden hover:-translate-y-1`}
+              className={`relative p-7 rounded-xl border border-white/[0.06] bg-[#2b3039] ${f.accent} transition-all duration-300 group overflow-hidden hover:-translate-y-1`}
               style={{
                 opacity: visible ? 1 : 0,
                 transform: visible ? 'translateY(0)' : `translateY(${i < 2 ? '-20px' : '20px'})`,

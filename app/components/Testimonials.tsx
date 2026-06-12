@@ -53,7 +53,7 @@ export default function Pricing() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Free card */}
           <div
-            className="relative rounded-2xl border-2 border-green/30 bg-[#0d1117] p-8 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
+            className="relative rounded-2xl border-2 border-green/30 bg-[#2b3039] p-8 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? 'translateY(0)' : 'translateY(28px)',
@@ -101,7 +101,7 @@ export default function Pricing() {
 
           {/* Coming soon */}
           <div
-            className="relative rounded-2xl border border-white/[0.07] bg-[#0d1117] p-8 hover:-translate-y-1.5 transition-all duration-300"
+            className="relative rounded-2xl border border-white/[0.07] bg-[#2b3039] p-8 hover:-translate-y-1.5 transition-all duration-300"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? 'translateY(0)' : 'translateY(28px)',

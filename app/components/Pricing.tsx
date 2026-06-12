@@ -59,7 +59,7 @@ export default function Pricing() {
   }, []);
 
   return (
-    <section id="pricing" ref={ref} style={{ padding: '80px 40px', background: '#09090f' }}>
+    <section id="pricing" ref={ref} style={{ padding: '80px 40px', background: '#262a32' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
         {/* Header */}
@@ -174,8 +174,8 @@ export default function Pricing() {
                   position: 'relative',
                   width: '340px',
                   background: plan.highlight
-                    ? 'linear-gradient(160deg, #0d1a12 0%, #0d1117 60%)'
-                    : '#0d1117',
+                    ? 'linear-gradient(160deg, #223526 0%, #2b3039 60%)'
+                    : '#2b3039',
                   border: plan.highlight
                     ? '1px solid rgba(34,197,94,0.45)'
                     : '1px solid #1f2937',

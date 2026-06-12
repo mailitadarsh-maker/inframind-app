@@ -76,7 +76,7 @@ export default function HowItWorks() {
           {steps.map((s, i) => (
             <div
               key={i}
-              className="relative p-7 rounded-xl border border-white/[0.06] bg-[#0d1117] hover:border-green/20 hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden"
+              className="relative p-7 rounded-xl border border-white/[0.06] bg-[#2b3039] hover:border-green/20 hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden"
               style={{
                 opacity: visible ? 1 : 0,
                 transform: visible ? 'translateY(0)' : 'translateY(28px)',

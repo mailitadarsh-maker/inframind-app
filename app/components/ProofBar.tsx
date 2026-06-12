@@ -8,7 +8,7 @@ const stats = [
 
 export default function ProofBar() {
   return (
-    <div className="border-y border-white/[0.05] bg-[#0d1117] w-full">
+    <div className="border-y border-white/[0.05] bg-[#2b3039] w-full">
       {/* flex-col: Stacks items vertically on mobile (Default)
          md:flex-row: Stacks items horizontally on desktop (Preserves your original look)
       */}
