@@ -11,12 +11,13 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
 
   const handleSignup = async (e: React.FormEvent) => {
   e.preventDefault();
 
   if (!firstName || !email || !password) {
-    alert("Please fill all required fields");
+    setToast({ type: 'error', message: 'Please fill all required fields.' });
     return;
   }
 
@@ -37,17 +38,20 @@ export default function SignupPage() {
   setLoading(false);
 
   if (error) {
-    alert(error.message);
+    setToast({ type: 'error', message: error.message });
     return;
   }
 
-  alert(
-    "Account created successfully! You can now sign in."
-  );
+  setToast({
+    type: 'success',
+    message: "Account created! We've sent a confirmation link to your email — please verify before signing in.",
+  });
 
   console.log(data);
 
-  router.push("/login");
+  setTimeout(() => {
+    router.push("/login");
+  }, 2500);
 };
 
   return (
@@ -59,6 +63,37 @@ export default function SignupPage() {
           background: 'radial-gradient(circle, rgba(29,219,120,0.06) 0%, transparent 70%)',
         }}
       />
+
+      {/* Toast */}
+      {toast && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 50,
+            maxWidth: '90vw',
+            width: '420px',
+            padding: '14px 18px',
+            borderRadius: '12px',
+            background: toast.type === 'success' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+            border: `1px solid ${toast.type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+            color: toast.type === 'success' ? '#4ade80' : '#f87171',
+            fontSize: '13px',
+            lineHeight: 1.5,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '10px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+          }}
+        >
+          <span style={{ flexShrink: 0, marginTop: '1px' }}>
+            {toast.type === 'success' ? '✅' : '⚠️'}
+          </span>
+          <span>{toast.message}</span>
+        </div>
+      )}
 
       {/* Auth box */}
       <div className="bg-[#0d1117] border border-white/[0.1] rounded-[18px] p-9 w-full max-w-sm relative z-10 animate-fade-up">
