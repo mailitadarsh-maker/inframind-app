@@ -31,7 +31,7 @@ export default function SignupPage() {
         first_name: firstName,
         company: company,
       },
-      emailRedirectTo: 'https://www.inframindhq.online/dashboard',
+      emailRedirectTo: 'https://www.inframindhq.online/login',
     },
   });
 
@@ -66,34 +66,91 @@ export default function SignupPage() {
 
       {/* Toast */}
       {toast && (
+        <>
+        <div
+          onClick={() => setToast(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            zIndex: 49,
+          }}
+        />
         <div
           style={{
             position: 'fixed',
-            top: '24px',
+            top: '50%',
             left: '50%',
-            transform: 'translateX(-50%)',
+            transform: 'translate(-50%, -50%)',
             zIndex: 50,
-            maxWidth: '90vw',
-            width: '420px',
-            padding: '14px 18px',
-            borderRadius: '12px',
-            background: toast.type === 'success' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-            border: `1px solid ${toast.type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
-            color: toast.type === 'success' ? '#4ade80' : '#f87171',
-            fontSize: '13px',
-            lineHeight: 1.5,
+            maxWidth: '92vw',
+            width: '460px',
+            padding: '16px 18px',
+            borderRadius: '14px',
+            background: '#0d1117',
+            border: `1px solid ${toast.type === 'success' ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`,
+            boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
             display: 'flex',
             alignItems: 'flex-start',
-            gap: '10px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            gap: '12px',
+            animation: 'slideDown 0.3s ease-out',
           }}
         >
-          <span style={{ flexShrink: 0, marginTop: '1px' }}>
-            {toast.type === 'success' ? '✅' : '⚠️'}
-          </span>
-          <span>{toast.message}</span>
+          <div
+            style={{
+              flexShrink: 0,
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+              background: toast.type === 'success' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+              color: toast.type === 'success' ? '#4ade80' : '#f87171',
+            }}
+          >
+            {toast.type === 'success' ? '✓' : '!'}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                fontSize: '13px',
+                fontWeight: 600,
+                color: toast.type === 'success' ? '#4ade80' : '#f87171',
+                marginBottom: '2px',
+              }}
+            >
+              {toast.type === 'success' ? 'Account created' : 'Something went wrong'}
+            </div>
+            <div style={{ fontSize: '12.5px', color: '#9ca3af', lineHeight: 1.5 }}>
+              {toast.message}
+            </div>
+          </div>
+          <button
+            onClick={() => setToast(null)}
+            style={{
+              flexShrink: 0,
+              background: 'none',
+              border: 'none',
+              color: '#6b7280',
+              cursor: 'pointer',
+              fontSize: '16px',
+              lineHeight: 1,
+              padding: 0,
+            }}
+          >
+            ×
+          </button>
         </div>
+        </>
       )}
+      <style jsx global>{`
+        @keyframes slideDown {
+          from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+          to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+      `}</style>
 
       {/* Auth box */}
       <div className="bg-[#0d1117] border border-white/[0.1] rounded-[18px] p-9 w-full max-w-sm relative z-10 animate-fade-up">

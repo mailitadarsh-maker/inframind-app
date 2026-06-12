@@ -11,7 +11,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showWhatsAppHint, setShowWhatsAppHint] = useState(false);
-  const [view, setView] = useState<'login' | 'change_password' | 'change_done'>('login');
+  const [view, setView] = useState<'login' | 'change_password' | 'change_done' | 'forgot_password' | 'forgot_sent'>('login');
+  const [resetEmail, setResetEmail] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -61,6 +62,24 @@ export default function LoginPage() {
     } else {
       await supabase.auth.signOut();
       setView('change_done');
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: 'https://www.inframindhq.online/reset-password',
+    });
+
+    setLoading(false);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setView('forgot_sent');
     }
   };
 
@@ -170,6 +189,16 @@ export default function LoginPage() {
               </button>
             </form>
 
+            <div className="mt-3 text-center">
+              <button
+                type="button"
+                onClick={() => { setError(''); setShowWhatsAppHint(false); setResetEmail(email); setView('forgot_password'); }}
+                className="text-xs text-[#8a95a3] hover:text-[#1ddb78] transition-colors underline underline-offset-2"
+              >
+                Forgot password?
+              </button>
+            </div>
+
             {/* WhatsApp hint — only shows after failed login */}
             {showWhatsAppHint && (
               <div
@@ -179,11 +208,11 @@ export default function LoginPage() {
               >
                 <WhatsAppIcon />
                 <p className="text-[11px] text-[#8a95a3] leading-relaxed">
-                  Forgot your password?{' '}
+                  Still stuck?{' '}
                   <span className="text-[#1ddb78] underline underline-offset-2">
                     Message admin on WhatsApp
                   </span>{' '}
-                  to get it reset instantly.
+                  for help.
                 </p>
               </div>
             )}
@@ -197,6 +226,92 @@ export default function LoginPage() {
               </p>
             </div>
           </>
+        )}
+
+        {/* ── FORGOT PASSWORD ── */}
+        {view === 'forgot_password' && (
+          <>
+            <div className="flex flex-col items-center mb-8">
+              <div
+                className="w-10 h-10 mb-4 rounded-[10px] flex items-center justify-center"
+                style={{ background: 'rgba(29,219,120,0.1)', border: '1px solid rgba(29,219,120,0.3)' }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1ddb78" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-serif text-[#eef1f6] mb-2">Reset your password</h1>
+              <p className="text-sm text-[#8a95a3] text-center">Enter your email and we'll send you a reset link.</p>
+            </div>
+
+            {error && (
+              <div
+                className="mb-4 px-4 py-2.5 rounded-lg text-xs text-red-400 text-center"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+              >
+                {error}
+              </div>
+            )}
+
+            <form className="space-y-4" onSubmit={handleForgotPassword}>
+              <div>
+                <label className="block text-xs font-medium text-[#8a95a3] mb-1.5">Email address</label>
+                <input
+                  type="email"
+                  placeholder="you@company.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="w-full bg-[#131920] border border-white/[0.09] rounded-lg px-4 py-2.5 text-sm text-[#eef1f6] focus:outline-none focus:border-[#1ddb78] transition-colors"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 text-sm rounded-lg flex items-center justify-center gap-2 font-semibold transition-all disabled:opacity-50"
+                style={{ background: '#1ddb78', color: '#07090d' }}
+              >
+                {loading ? 'Sending...' : 'Send reset link →'}
+              </button>
+            </form>
+
+            <div className="mt-5 pt-5 border-t border-white/[0.05] text-center">
+              <button
+                onClick={() => { setError(''); setView('login'); }}
+                className="text-xs text-[#8a95a3] hover:text-[#eef1f6] transition-colors"
+              >
+                ← Back to login
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ── FORGOT PASSWORD: EMAIL SENT ── */}
+        {view === 'forgot_sent' && (
+          <div className="flex flex-col items-center text-center py-4">
+            <div
+              className="w-12 h-12 mb-5 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(29,219,120,0.1)', border: '1px solid rgba(29,219,120,0.3)' }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1ddb78" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 6 12 13 2 6" />
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-serif text-[#eef1f6] mb-2">Check your email</h1>
+            <p className="text-sm text-[#8a95a3] mb-8">
+              We've sent a password reset link to <span className="text-[#eef1f6]">{resetEmail}</span>. Click the link to set a new password.
+            </p>
+            <button
+              onClick={() => { setError(''); setView('login'); }}
+              className="w-full py-3 text-sm rounded-lg font-semibold transition-all"
+              style={{ background: '#1ddb78', color: '#07090d' }}
+            >
+              ← Back to login
+            </button>
+          </div>
         )}
 
         {/* ── CHANGE PASSWORD ── */}
