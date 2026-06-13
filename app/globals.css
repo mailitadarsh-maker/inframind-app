@@ -101,3 +101,10 @@
 .animate-blink    { animation: blink 2s infinite; }
 .animate-float    { animation: float 3s ease-in-out infinite; }
 .animate-pulse-badge { animation: pulseBadge 2s infinite; }
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}

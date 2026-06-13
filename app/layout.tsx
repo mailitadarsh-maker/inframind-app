@@ -1,9 +1,14 @@
 import './globals.css';
+import ChatWidget from './components/ChatWidget';
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
-  title: 'InfraMind Dashboard',
-  description: 'Real-time infrastructure monitoring',
+  metadataBase: new URL('https://inframindhq.online'),
+  title: 'InfraMind – AI-Powered Uptime, API & SSL Monitoring',
+  description: 'Monitor your websites, APIs, and SSL certificates 24/7. Get plain-English AI incident reports — no full-time dev needed. Free beta.',
+  alternates: {
+    canonical: 'https://inframindhq.online/',
+  },
 };
 
 export const viewport: Viewport = {
@@ -28,6 +33,7 @@ export default function RootLayout({
       </head>
       <body className="bg-[#07090d] text-[#eef1f6] antialiased h-full">
         {children}
+        <ChatWidget />
       </body>
     </html>
   );
