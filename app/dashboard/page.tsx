@@ -819,16 +819,7 @@ export default function DashboardPage() {
 
 {/* Alert */}
 
-          {/* Alert */}
-          {monitors.length > 0 && (
-            <div className="im-alert">
-              <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>⚠</span>
-              <div className="im-alert-body">
-                <strong>Test Mode Active</strong>
-                <span>Monitoring is running, but email alerts are off. Go to Settings to enable outage notifications.</span>
-              </div>
-            </div>
-          )}
+
 
           {/* Stats */}
           <div className="im-stats">

@@ -35,17 +35,31 @@ export default function ChatWidget() {
     } catch {}
   };
 
+  const interactedRef = useRef(false);
+
   useEffect(() => {
+    const markInteracted = () => { interactedRef.current = true; };
+    window.addEventListener('click', markInteracted, { once: true });
+    window.addEventListener('scroll', markInteracted, { once: true });
+    window.addEventListener('keydown', markInteracted, { once: true });
+
     const alreadyShown = sessionStorage.getItem('inframind_chat_bubble_shown');
     if (alreadyShown) return;
 
     const timer = setTimeout(() => {
       setShowBubble(true);
-      playSound();
+      if (interactedRef.current) {
+        playSound();
+      }
       sessionStorage.setItem('inframind_chat_bubble_shown', '1');
     }, 12000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('click', markInteracted);
+      window.removeEventListener('scroll', markInteracted);
+      window.removeEventListener('keydown', markInteracted);
+    };
   }, []);
 
   const handleOpen = () => {

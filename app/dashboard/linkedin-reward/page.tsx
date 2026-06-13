@@ -225,7 +225,7 @@ export default function LinkedInRewardPage() {
         <a
           onClick={(e) => {
             e.preventDefault();
-            const shareUrl = 'https://inframind-app.vercel.app/';
+            const shareUrl = 'https://inframindhq.online/';
             const webUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
             const appUrl = `linkedin://shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}`;
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
