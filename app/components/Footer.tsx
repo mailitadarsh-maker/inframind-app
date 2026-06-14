@@ -40,7 +40,7 @@ export default function Footer() {
               <li><a href="/login" className="hover:text-green transition-colors">Log in</a></li>
               <li><a href="/signup" className="hover:text-green transition-colors">Start free</a></li>
               <li>
-                <a href="https://www.linkedin.com/company/inframind" target="_blank" rel="noopener noreferrer" className="hover:text-green transition-colors">
+                <a href="https://www.linkedin.com/company/inframindhq" target="_blank" rel="noopener noreferrer" className="hover:text-green transition-colors">
                   LinkedIn
                 </a>
               </li>

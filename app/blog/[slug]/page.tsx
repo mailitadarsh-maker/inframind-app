@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import ShareButton from '../../components/ShareButton';
 import { supabase } from '@/lib/supabase';
 
 export const revalidate = 60;
@@ -72,9 +73,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             year: 'numeric',
           })}
         </p>
-        <h1 className="text-3xl md:text-4xl font-bold text-text mb-6 leading-tight">
-          {post.title}
-        </h1>
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-text leading-tight">
+            {post.title}
+          </h1>
+          <ShareButton title={post.title} text={post.description} url={`https://inframindhq.online/blog/${post.slug}`} />
+        </div>
 
         {post.cover_image && (
           <div className="aspect-[16/9] bg-[#1a1c22] rounded-xl overflow-hidden mb-8">

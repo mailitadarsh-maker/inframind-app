@@ -6,6 +6,7 @@ import HowItWorks from './components/HowItWorks';
 import Features from './components/Features';
 import Pricing from './components/Pricing';
 import Footer from './components/Footer';
+import BlogSection from '@/components/landing/BlogSection';
 import FAQ from './components/FAQ';
 
 export const metadata: Metadata = {
@@ -46,6 +47,7 @@ export default function Page() {
       <Features />
       <Pricing />
       <FAQ />
+      <BlogSection />
       <Footer />
     </main>
   );

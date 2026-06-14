@@ -11,12 +11,37 @@ type Post = {
   created_at: string;
 };
 
+function htmlToPlainText(html: string): string {
+  let text = html
+    .replace(/<\/h[1-6]>/gi, '\n\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<li>/gi, '• ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '');
+
+  text = text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+
+  return text.replace(/\n{3,}/g, '\n\n').trim();
+}
+
 export default function AdminBlogPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [genTopic, setGenTopic] = useState('');
+  const [genDetails, setGenDetails] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [genMessage, setGenMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPosts();
@@ -57,9 +82,70 @@ export default function AdminBlogPage() {
     setActionLoading(null);
   }
 
+  async function copyForLinkedIn(post: Post) {
+    const plain = `${post.title}\n\n${htmlToPlainText(post.content)}`;
+    await navigator.clipboard.writeText(plain);
+    setCopied(post.slug);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
+  async function generatePost() {
+    setGenerating(true);
+    setGenMessage(null);
+    try {
+      const res = await fetch('/api/admin/generate-blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: genTopic, details: genDetails }),
+      });
+      const result = await res.json();
+      if (result.error) {
+        setGenMessage(`Error: ${result.error}`);
+      } else {
+        setGenMessage(`Created draft: ${result.title}`);
+        setGenTopic('');
+        setGenDetails('');
+        await fetchPosts();
+      }
+    } catch (err) {
+      setGenMessage('Something went wrong.');
+    }
+    setGenerating(false);
+  }
+
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', background: '#09090f', color: '#e2e6f0', minHeight: '100vh', padding: '32px' }}>
       <h1 style={{ fontSize: '22px', fontWeight: 600, marginBottom: '24px' }}>Blog Posts</h1>
+
+      <div style={{ background: '#0d0f16', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '10px' }}>Generate New Post</h2>
+        <input
+          type="text"
+          placeholder="Topic (leave blank for auto-pick)"
+          value={genTopic}
+          onChange={(e) => setGenTopic(e.target.value)}
+          style={{ width: '100%', background: '#06070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', color: '#e2e6f0', marginBottom: '8px' }}
+        />
+        <textarea
+          placeholder="Optional details/instructions for the AI..."
+          value={genDetails}
+          onChange={(e) => setGenDetails(e.target.value)}
+          rows={3}
+          style={{ width: '100%', background: '#06070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', color: '#e2e6f0', marginBottom: '10px', resize: 'vertical' }}
+        />
+        <button
+          onClick={generatePost}
+          disabled={generating}
+          style={{ background: '#34d399', color: '#06140f', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+        >
+          {generating ? 'Generating...' : 'Generate Post'}
+        </button>
+        {genMessage && (
+          <p style={{ marginTop: '10px', fontSize: '13px', color: genMessage.startsWith('Error') ? '#f87171' : '#34d399' }}>
+            {genMessage}
+          </p>
+        )}
+      </div>
 
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: '#f87171' }}>{error}</p>}
@@ -98,44 +184,32 @@ export default function AdminBlogPage() {
                 </div>
                 <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '4px' }}>{post.title}</h2>
                 <p style={{ fontSize: '13px', color: '#8a95a3', marginBottom: '6px' }}>{post.description}</p>
-                <a
+                
+                  <a
                   href={`/blog/${post.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ fontSize: '12px', color: '#34d399' }}
                 >
-                  /blog/{post.slug} ↗
+                  {`/blog/${post.slug} ↗`}
                 </a>
-                <button
-                  onClick={() => setExpanded(expanded === post.slug ? null : post.slug)}
-                  style={{ display: 'block', marginTop: '8px', fontSize: '12px', color: '#8a95a3', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
-                >
-                  {expanded === post.slug ? 'Hide content ▲' : 'Preview content ▼'}
-                </button>
-                {expanded === post.slug && (
-                  <div
-                    style={{ marginTop: '10px', padding: '12px', background: '#06070b', borderRadius: '8px', fontSize: '13px', color: '#c5cad4', maxHeight: '300px', overflowY: 'auto' }}
-                    dangerouslySetInnerHTML={{ __html: post.content }}
-                  />
-                )}
-                <button
-                  onClick={() => setExpanded(expanded === post.slug ? null : post.slug)}
-                  style={{ display: 'block', marginTop: '8px', fontSize: '12px', color: '#8a95a3', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
-                >
-                  {expanded === post.slug ? 'Hide content ▲' : 'Preview content ▼'}
-                </button>
-                {expanded === post.slug && (
-                  <div
-                    style={{ marginTop: '10px', padding: '12px', background: '#06070b', borderRadius: '8px', fontSize: '13px', color: '#c5cad4', maxHeight: '300px', overflowY: 'auto' }}
-                    dangerouslySetInnerHTML={{ __html: post.content }}
-                  />
-                )}
-                <button
-                  onClick={() => setExpanded(expanded === post.slug ? null : post.slug)}
-                  style={{ display: 'block', marginTop: '8px', fontSize: '12px', color: '#8a95a3', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
-                >
-                  {expanded === post.slug ? 'Hide content ▲' : 'Preview content ▼'}
-                </button>
+
+                <div style={{ display: 'flex', gap: '14px', marginTop: '8px' }}>
+                  <button
+                    onClick={() => setExpanded(expanded === post.slug ? null : post.slug)}
+                    style={{ fontSize: '12px', color: '#8a95a3', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    {expanded === post.slug ? 'Hide content ▲' : 'Preview content ▼'}
+                  </button>
+
+                  <button
+                    onClick={() => copyForLinkedIn(post)}
+                    style={{ fontSize: '12px', color: '#34d399', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    {copied === post.slug ? 'Copied ✓' : 'Copy for LinkedIn'}
+                  </button>
+                </div>
+
                 {expanded === post.slug && (
                   <div
                     style={{ marginTop: '10px', padding: '12px', background: '#06070b', borderRadius: '8px', fontSize: '13px', color: '#c5cad4', maxHeight: '300px', overflowY: 'auto' }}
