@@ -7,7 +7,7 @@ export default function AdminHomePage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '400px' }}>
         <Link
-          href="/admin/blog"
+          href="/ad-min/blog"
           style={{
             background: '#0d0f16',
             border: '1px solid rgba(255,255,255,0.06)',
@@ -23,7 +23,7 @@ export default function AdminHomePage() {
         </Link>
 
         <Link
-          href="/admin/linkedin-rewards"
+          href="/ad-min/linkedin-rewards"
           style={{
             background: '#0d0f16',
             border: '1px solid rgba(255,255,255,0.06)',
