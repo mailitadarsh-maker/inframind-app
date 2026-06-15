@@ -7,6 +7,7 @@ import Features from './components/Features';
 import Pricing from './components/Pricing';
 import Footer from './components/Footer';
 import BlogSection from '@/components/landing/BlogSection';
+import ReviewsCarousel from '@/components/landing/ReviewsCarousel';
 import FAQ from './components/FAQ';
 
 export const metadata: Metadata = {
@@ -45,6 +46,7 @@ export default function Page() {
       <ProofBar />
       <HowItWorks />
       <Features />
+      <ReviewsCarousel />
       <Pricing />
       <FAQ />
       <BlogSection />

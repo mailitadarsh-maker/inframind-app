@@ -37,6 +37,22 @@ export default function AdminHomePage() {
         >
           LinkedIn Rewards
         </Link>
+
+        <Link
+          href="/ad-min/social-proof"
+          style={{
+            background: '#0d0f16',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: '10px',
+            padding: '16px 20px',
+            color: '#e2e6f0',
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: '15px',
+          }}
+        >
+          Social Proof
+        </Link>
       </div>
     </div>
   );
