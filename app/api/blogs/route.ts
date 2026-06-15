@@ -9,7 +9,7 @@ const supabase = createClient(
 export async function GET() {
   const { data, error } = await supabase
     .from('blog_posts')
-    .select('slug, title, description, published, created_at')
+    .select('slug, title, description, cover_image, published, created_at')
     .eq('published', true)
     .order('created_at', { ascending: false })
     .limit(6);

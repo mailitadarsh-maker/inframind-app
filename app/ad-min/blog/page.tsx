@@ -6,6 +6,7 @@ type Post = {
   slug: string;
   title: string;
   description: string;
+  cover_image?: string | null;
   content: string;
   published: boolean;
   created_at: string;
@@ -42,6 +43,9 @@ export default function AdminBlogPage() {
   const [genDetails, setGenDetails] = useState('');
   const [generating, setGenerating] = useState(false);
   const [genMessage, setGenMessage] = useState<string | null>(null);
+  const [editingImage, setEditingImage] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [imageUpdateMsg, setImageUpdateMsg] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPosts();
@@ -57,6 +61,35 @@ export default function AdminBlogPage() {
       setPosts(result.data || []);
     }
     setLoading(false);
+  }
+
+  async function regenerateImage(slug: string, title: string) {
+    setActionLoading(slug + '-regen');
+    const res = await fetch('/api/admin/regenerate-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug, title }),
+    });
+    const result = await res.json();
+    await fetchPosts();
+    setActionLoading(null);
+    setImageUpdateMsg(result.cover_image ? 'Image regenerated!' : 'Could not find image');
+    setTimeout(() => setImageUpdateMsg(null), 3000);
+  }
+
+  async function updateImage(slug: string, url: string | null) {
+    setActionLoading(slug + '-img');
+    await fetch('/api/admin/blog', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug, cover_image: url }),
+    });
+    await fetchPosts();
+    setEditingImage(null);
+    setImageUrl('');
+    setActionLoading(null);
+    setImageUpdateMsg(url ? 'Image updated!' : 'Image removed!');
+    setTimeout(() => setImageUpdateMsg(null), 3000);
   }
 
   async function togglePublish(slug: string, published: boolean) {
@@ -182,6 +215,54 @@ export default function AdminBlogPage() {
                     {new Date(post.created_at).toLocaleDateString()}
                   </span>
                 </div>
+                {/* Image preview and controls */}
+                {post.cover_image && editingImage !== post.slug && (
+                  <div style={{ marginBottom: '12px', borderRadius: '8px', overflow: 'hidden', height: '140px', position: 'relative' }}>
+                    <img src={post.cover_image} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 }}>
+                      <button onClick={() => regenerateImage(post.slug, post.title)}
+                        disabled={actionLoading === post.slug + '-regen'}
+                        style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(52,211,153,0.4)', color: '#34d399', borderRadius: 6, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}>
+                        {actionLoading === post.slug + '-regen' ? '...' : '🔄 Regenerate'}
+                      </button>
+                      <button onClick={() => updateImage(post.slug, null)}
+                        style={{ background: 'rgba(220,38,38,0.8)', border: 'none', color: '#fff', borderRadius: 6, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}>
+                        🗑 Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {!post.cover_image && editingImage !== post.slug && (
+                  <div style={{ marginBottom: '12px', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>No image</span>
+                    <button onClick={() => regenerateImage(post.slug, post.title)}
+                      disabled={actionLoading === post.slug + '-regen'}
+                      style={{ background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399', borderRadius: 6, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}>
+                      {actionLoading === post.slug + '-regen' ? 'Finding...' : '🔄 Generate Image'}
+                    </button>
+                  </div>
+                )}
+                {editingImage === post.slug && (
+                  <div style={{ marginBottom: '12px', padding: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}>
+                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Paste image URL (Pexels, Unsplash, etc.)</p>
+                    <input
+                      value={imageUrl}
+                      onChange={e => setImageUrl(e.target.value)}
+                      placeholder="https://images.pexels.com/..."
+                      style={{ width: '100%', background: '#0d0f16', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '8px 10px', color: '#fff', fontSize: 12, marginBottom: 8, boxSizing: 'border-box' }}
+                    />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => updateImage(post.slug, imageUrl || null)}
+                        style={{ background: '#34d399', border: 'none', color: '#000', borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                        Save
+                      </button>
+                      <button onClick={() => { setEditingImage(null); setImageUrl(''); }}
+                        style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)', borderRadius: 6, padding: '6px 14px', fontSize: 12, cursor: 'pointer' }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '4px' }}>{post.title}</h2>
                 <p style={{ fontSize: '13px', color: '#8a95a3', marginBottom: '6px' }}>{post.description}</p>
                 

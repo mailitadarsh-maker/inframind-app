@@ -7,6 +7,7 @@ interface Post {
   slug: string
   title: string
   description: string
+  cover_image?: string | null
   published: boolean
   created_at: string
 }

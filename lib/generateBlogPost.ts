@@ -58,6 +58,44 @@ function slugify(title: string) {
     .replace(/-+/g, '-');
 }
 
+
+async function fetchPexelsImage(topic: string): Promise<string | null> {
+  try {
+    // Map monitoring topics to better visual search terms
+    const topicLower = topic.toLowerCase();
+    let searchQuery = 'technology laptop workspace';
+
+    if (topicLower.includes('ssl') || topicLower.includes('certificate') || topicLower.includes('security')) {
+      searchQuery = 'cybersecurity lock digital';
+    } else if (topicLower.includes('downtime') || topicLower.includes('outage') || topicLower.includes('incident')) {
+      searchQuery = 'server room data center';
+    } else if (topicLower.includes('api') || topicLower.includes('deploy') || topicLower.includes('developer')) {
+      searchQuery = 'developer coding laptop dark';
+    } else if (topicLower.includes('uptime') || topicLower.includes('monitor')) {
+      searchQuery = 'dashboard analytics screen';
+    } else if (topicLower.includes('status') || topicLower.includes('page')) {
+      searchQuery = 'website design screen monitor';
+    } else if (topicLower.includes('business') || topicLower.includes('founder') || topicLower.includes('small')) {
+      searchQuery = 'business office startup team';
+    } else if (topicLower.includes('cost') || topicLower.includes('revenue') || topicLower.includes('loss')) {
+      searchQuery = 'business growth chart analytics';
+    }
+
+    const query = encodeURIComponent(searchQuery);
+    const res = await fetch(`https://api.pexels.com/v1/search?query=${query}&per_page=5&orientation=landscape`, {
+      headers: { Authorization: process.env.PEXELS_API_KEY! },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const photos = data.photos;
+    if (!photos || photos.length === 0) return null;
+    const photo = photos[Math.floor(Math.random() * photos.length)];
+    return photo.src.large || photo.src.original || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function generateBlogPost(topic: string, extraDetails?: string) {
   const detailsBlock = extraDetails
     ? `\n\nAdditional details/instructions from the founder to incorporate:\n${extraDetails}\n`
@@ -126,7 +164,7 @@ Respond ONLY with valid JSON in this exact format, no markdown fences, no extra 
     title: parsed.title,
     description: parsed.description,
     content: parsed.content,
-    cover_image: null,
+    cover_image: await fetchPexelsImage(topic),
     published: false,
   });
 
