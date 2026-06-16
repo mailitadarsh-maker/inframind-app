@@ -23,30 +23,57 @@ export function pickTopic(offset: number = 0) {
   return TOPICS[((dayIndex % TOPICS.length) + TOPICS.length) % TOPICS.length];
 }
 
-export async function pickUnusedTopic(): Promise<string> {
+export async function pickUnusedTopic(sessionUsed: string[] = []): Promise<string> {
   const { data } = await supabaseAdmin
     .from('blog_posts')
     .select('title')
     .order('created_at', { ascending: false })
-    .limit(20);
+    .limit(30);
 
-  const usedTitles = (data || []).map((p) => p.title.toLowerCase());
+  const recentTitles = [
+    ...(data || []).map((p) => p.title),
+    ...sessionUsed,
+  ];
 
-  // Try topics in random order, pick the first one whose keywords
-  // don't closely match any recent post title
-  const shuffled = [...TOPICS].sort(() => Math.random() - 0.5);
+  const avoidBlock = recentTitles.length > 0
+    ? `Avoid these topics which were already written:
+${recentTitles.map((t) => `- ${t}`).join('
+')}`
+    : '';
 
-  for (const topic of shuffled) {
-    const topicWords = topic.toLowerCase().split(/\W+/).filter((w) => w.length > 4);
-    const isDuplicate = usedTitles.some((title) => {
-      const overlap = topicWords.filter((w) => title.includes(w)).length;
-      return overlap >= 2;
-    });
-    if (!isDuplicate) return topic;
+  const prompt = `You are a content strategist for InfraMind, an AI-powered uptime, API, and SSL monitoring SaaS for non-technical founders and small business owners.
+
+Generate 1 fresh, specific blog post topic idea that:
+- Is relevant to website monitoring, uptime, SSL, API reliability, or developer operations
+- Would be useful and interesting to a non-technical founder or small business owner
+- Is SEO-friendly and practical
+- Has not been covered before
+
+${avoidBlock}
+
+Respond ONLY with the topic as a plain string, no quotes, no explanation, no punctuation at the end.`;
+
+  const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.9,
+    }),
+  });
+
+  if (!aiResponse.ok) {
+    // fallback to a hardcoded topic if AI fails
+    return TOPICS[Math.floor(Math.random() * TOPICS.length)];
   }
 
-  // Fallback: all topics seem used recently, just pick a random one
-  return shuffled[0];
+  const aiData = await aiResponse.json();
+  const topic = aiData.choices?.[0]?.message?.content?.trim();
+  return topic || TOPICS[Math.floor(Math.random() * TOPICS.length)];
 }
 
 function slugify(title: string) {
