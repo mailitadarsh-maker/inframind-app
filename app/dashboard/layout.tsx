@@ -1,4 +1,3 @@
-import ChatWidget from '../components/ChatWidget';
 
 export default function DashboardLayout({
   children,
@@ -8,7 +7,6 @@ export default function DashboardLayout({
   return (
     <>
       {children}
-      <ChatWidget />
     </>
   );
 }

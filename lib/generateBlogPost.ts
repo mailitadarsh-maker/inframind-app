@@ -37,8 +37,7 @@ export async function pickUnusedTopic(sessionUsed: string[] = []): Promise<strin
 
   const avoidBlock = recentTitles.length > 0
     ? `Avoid these topics which were already written:
-${recentTitles.map((t) => `- ${t}`).join('
-')}`
+${recentTitles.map((t) => `- ${t}`).join('\n')}`
     : '';
 
   const prompt = `You are a content strategist for InfraMind, an AI-powered uptime, API, and SSL monitoring SaaS for non-technical founders and small business owners.

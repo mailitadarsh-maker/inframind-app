@@ -1,73 +1,108 @@
 'use client';
 
-import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 export default function MyAppsPage() {
+  const router = useRouter();
   const [apps, setApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadApps();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push('/login'); return; }
+      supabase.from('monitors').select('*').eq('user_id', user.id)
+        .then(({ data }) => { setApps(data || []); setLoading(false); });
+    });
   }, []);
 
-  const loadApps = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    const { data, error } = await supabase
-      .from('monitors')
-      .select('*')
-      .eq('user_id', user?.id);
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setApps(data || []);
-    setLoading(false);
+  const statusColor: Record<string, string> = {
+    online: 'bg-[#4ade80]/10 text-[#4ade80] border-[#4ade80]/20',
+    offline: 'bg-red-400/10 text-red-400 border-red-400/20',
   };
 
   return (
-    <div className="min-h-screen bg-[#07090d] text-white p-8">
+    <div className="min-h-screen bg-[#1e2128] px-6 py-12">
+      <div className="max-w-3xl mx-auto">
 
-      <h1 className="text-3xl font-bold mb-6">
-        My Apps
-      </h1>
-
-      {loading && (
-        <p>Loading...</p>
-      )}
-
-      {!loading && apps.length === 0 && (
-        <p>No apps connected yet.</p>
-      )}
-
-      <div className="grid gap-4">
-
-        {apps.map((app) => (
-          <div
-            key={app.id}
-            className="bg-[#0d1117] border border-white/10 rounded-xl p-5"
-          >
-            <h2 className="text-xl font-bold">
-              {app.name}
-            </h2>
-
-            <p className="text-gray-400">
-              {app.type}
-            </p>
-
-            <p className="text-[#1ddb78]">
-              {app.target_url}
-            </p>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="text-xs text-white/30 hover:text-white/60 mb-3 flex items-center gap-1 transition-colors"
+            >
+              ← Back to Dashboard
+            </button>
+            <h1 className="text-2xl font-bold text-white">Uptime Monitoring</h1>
+            <p className="text-white/40 text-sm mt-1">Your monitored services</p>
           </div>
-        ))}
+          <button
+            onClick={() => window.open('https://inframindhq.online/dashboard', '_blank')}
+            className="bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-colors"
+          >
+            Open Full Dashboard
+          </button>
+        </div>
+
+        {/* Stats */}
+        {!loading && apps.length > 0 && (
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="bg-[#26292f] border border-white/[0.08] rounded-xl p-4">
+              <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Total</p>
+              <p className="text-2xl font-bold text-white">{apps.length}</p>
+            </div>
+            <div className="bg-[#26292f] border border-white/[0.08] rounded-xl p-4">
+              <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Online</p>
+              <p className="text-2xl font-bold text-[#4ade80]">{apps.filter(a => a.status === 'online').length}</p>
+            </div>
+            <div className="bg-[#26292f] border border-white/[0.08] rounded-xl p-4">
+              <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Offline</p>
+              <p className="text-2xl font-bold text-red-400">{apps.filter(a => a.status === 'offline').length}</p>
+            </div>
+          </div>
+        )}
+
+        {/* List */}
+        <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl overflow-hidden">
+          {loading && (
+            <div className="flex items-center justify-center py-16">
+              <div className="w-6 h-6 rounded-full border-2 border-[#4ade80] border-t-transparent animate-spin" />
+            </div>
+          )}
+
+          {!loading && apps.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-4xl mb-3">📡</p>
+              <p className="text-white font-medium">No monitors yet</p>
+              <p className="text-white/30 text-sm mt-1 mb-5">Add your first monitor on the full dashboard</p>
+              <button
+                onClick={() => window.open('https://inframindhq.online/dashboard', '_blank')}
+                className="bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-colors"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          )}
+
+          {!loading && apps.map((app, i) => (
+            <div key={app.id} className={`px-6 py-4 flex items-center justify-between ${i !== 0 ? 'border-t border-white/[0.06]' : ''}`}>
+              <div>
+                <p className="text-white text-sm font-medium">{app.name}</p>
+                <p className="text-white/30 text-xs mt-0.5">{app.target_url}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`text-xs px-2.5 py-1 rounded-full border capitalize ${statusColor[app.status] || 'bg-white/5 text-white/40 border-white/10'}`}>
+                  {app.status || 'unknown'}
+                </span>
+                <span className="text-xs text-white/20 uppercase tracking-widest">{app.type}</span>
+              </div>
+            </div>
+          ))}
+        </div>
 
       </div>
-
     </div>
   );
 }

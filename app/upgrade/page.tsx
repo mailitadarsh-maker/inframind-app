@@ -1,452 +1,251 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
 const plans = [
   {
-    id: 'starter',
-    name: 'Starter',
-    price: '₹499',
-    period: '/month',
-    description: 'For solo developers and small projects.',
-    highlight: false,
-    badge: null,
+    name: 'Free Trial',
+    price: '₹0',
+    period: '7 days',
+    tagline: 'No credit card needed',
+    blogs: '4 blogs',
+    generation: '1 blog every alternate day',
+    cta: 'Start Free Trial',
+    ctaStyle: 'solid',
+    popular: false,
     features: [
-      '10 Monitors',
-      'Website & API monitoring',
-      'SSL monitoring',
-      'Email alerts',
-      'Incident tracking',
-      'Public status page',
+      '4 blogs over 7 days',
+      'Auto-generation every alternate day',
+      'Manual generation anytime',
+      'AI content strategy',
+      'Approve & publish flow',
+      'Embed script included',
     ],
-    cta: 'Coming Soon',
-    ctaDisabled: true,
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    price: '₹1,499',
+    name: 'Starter',
+    price: '₹999',
     period: '/month',
-    description: 'For teams that need deeper visibility and AI-powered triage.',
-    highlight: true,
-    badge: 'Most Popular',
+    tagline: 'Best for small businesses',
+    blogs: '15 blogs/mo',
+    generation: 'Auto + manual',
+    cta: 'Get Started',
+    ctaStyle: 'outline',
+    popular: false,
     features: [
-      '50 Monitors',
-      'Website, API & SSL monitoring',
-      'AI incident analysis',
-      'Email + Slack alerts',
-      'Team workspaces',
-      'Priority support',
-      'Custom branding',
+      '15 blogs per month',
+      'Daily auto-generation',
+      'Manual generation anytime',
+      'SEO keyword targeting',
+      'Approve & publish flow',
+      'Embed script delivery',
+      'Email support',
     ],
-    cta: 'Coming Soon',
-    ctaDisabled: true,
+  },
+  {
+    name: 'Growth',
+    price: '₹1,899',
+    period: '/month',
+    tagline: 'Most popular plan',
+    blogs: '30 blogs/mo',
+    generation: 'Daily auto + manual',
+    cta: 'Get Started',
+    ctaStyle: 'solid',
+    popular: true,
+    features: [
+      '30 blogs per month',
+      'Daily auto-generation',
+      'Manual generation anytime',
+      'Advanced SEO strategy',
+      'Approve & publish flow',
+      'Embed script delivery',
+      'Priority support',
+      'Content performance insights',
+    ],
+  },
+  {
+    name: 'Pro',
+    price: '₹2,499',
+    period: '/month',
+    tagline: 'For growing brands',
+    blogs: '60 blogs/mo',
+    generation: '2 blogs/day auto + manual',
+    cta: 'Get Started',
+    ctaStyle: 'outline',
+    popular: false,
+    features: [
+      '60 blogs per month',
+      '2 auto-generated blogs per day',
+      'Manual generation anytime',
+      'Advanced SEO strategy',
+      'Embed + WordPress delivery',
+      'Dedicated support',
+      'Content calendar',
+      'Custom tone & style',
+    ],
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    period: 'on request',
+    tagline: 'For agencies & large teams',
+    blogs: 'Unlimited',
+    generation: 'Custom schedule',
+    cta: 'Contact Us',
+    ctaStyle: 'outline',
+    popular: false,
+    features: [
+      'Unlimited blogs',
+      'Custom generation schedule',
+      'Multiple company profiles',
+      'White label option',
+      'API access',
+      'Dedicated account manager',
+      'Custom integrations',
+      'SLA guarantee',
+    ],
   },
 ];
 
-export default function UpgradePage() {
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [profile, setProfile] = useState<any>(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      setProfile(data);
-    };
-    fetchProfile();
-  }, []);
+export default function PricingPage() {
+  const router = useRouter();
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#09090f',
-        color: '#fff',
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '1100px',
-          padding: '40px 40px 0',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div
-            style={{
-              width: '32px',
-              height: '32px',
-              background: '#22c55e',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '16px',
-            }}
-          >
-            ✓
-          </div>
-          <span style={{ fontWeight: 600, fontSize: '16px', letterSpacing: '-0.01em' }}>
-            InfraMind
-          </span>
-        </div>
-        <a
-          href="/dashboard"
-          style={{
-            color: '#6b7280',
-            fontSize: '14px',
-            textDecoration: 'none',
-            padding: '8px 16px',
-            border: '1px solid #1f2937',
-            borderRadius: '8px',
-            transition: 'border-color 0.2s',
-          }}
-        >
-          ← Back to Dashboard
-        </a>
-      </div>
+    <div className="min-h-screen bg-[#1e2128]">
 
-      {/* Hero */}
-      <div
-        style={{
-          textAlign: 'center',
-          padding: '72px 40px 56px',
-          maxWidth: '620px',
-        }}
-      >
-        <div
-          style={{
-            display: 'inline-block',
-            fontSize: '11px',
-            fontWeight: 600,
-            letterSpacing: '0.12em',
-            color: '#22c55e',
-            textTransform: 'uppercase',
-            marginBottom: '20px',
-            padding: '4px 12px',
-            border: '1px solid rgba(34,197,94,0.3)',
-            borderRadius: '100px',
-            background: 'rgba(34,197,94,0.05)',
-          }}
-        >
-          Pricing
+      {/* Header */}
+      <div className="px-6 py-16 text-center">
+        <div className="inline-flex items-center gap-2 bg-[#4ade80]/10 border border-[#4ade80]/20 rounded-full px-4 py-1.5 mb-6">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#4ade80]" />
+          <span className="text-xs text-[#4ade80] font-medium">Simple Pricing</span>
         </div>
-        <h1
-          style={{
-            fontSize: '42px',
-            fontWeight: 700,
-            lineHeight: 1.15,
-            letterSpacing: '-0.03em',
-            margin: '0 0 16px',
-            color: '#f9fafb',
-          }}
-        >
-          Simple pricing for{' '}
-          <span
-            style={{
-              color: '#22c55e',
-              fontStyle: 'italic',
-            }}
-          >
-            growing infrastructure teams.
-          </span>
+        <h1 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
+          Start free.<br />Scale as you grow.
         </h1>
-        <p
-          style={{
-            fontSize: '16px',
-            color: '#6b7280',
-            lineHeight: 1.7,
-            margin: 0,
-          }}
-        >
-          Monitor websites, APIs, and SSL certificates —
-          <br />
-          and get AI-powered insights when incidents happen.
+        <p className="text-white/40 text-base max-w-lg mx-auto">
+          7 days free, no credit card needed. Upgrade anytime. Cancel anytime.
         </p>
       </div>
 
-      {/* LinkedIn Reward Banner */}
-      {profile?.plan === 'trial' && profile?.linkedin_reward_status === 'not_submitted' && (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(234,179,8,0.08))',
-            border: '1px solid rgba(34,197,94,0.3)',
-            borderRadius: '12px',
-            padding: '20px 28px',
-            marginBottom: '40px',
-            maxWidth: '720px',
-            width: '100%',
-            boxSizing: 'border-box',
-          }}
-        >
-          <div
-            style={{
-              fontSize: '17px',
-              fontWeight: 600,
-              color: '#4ade80',
-              marginBottom: '6px',
-            }}
-          >
-            🎁 Not ready to pay? Get 14 Extra Trial Days — Free
-          </div>
-          <div
-            style={{
-              color: '#94a3b8',
-              marginBottom: '14px',
-              fontSize: '14px',
-              lineHeight: 1.6,
-            }}
-          >
-            Share InfraMind on LinkedIn and unlock 14 extra trial days + 10 monitors
-            instantly. No card needed.
-          </div>
-          <a
-            href="/dashboard/linkedin-reward"
-            style={{
-              color: '#4ade80',
-              fontWeight: 600,
-              textDecoration: 'none',
-              fontSize: '14px',
-            }}
-          >
-            Claim Free Reward →
-          </a>
-        </div>
-      )}
+      {/* Plans */}
+      <div className="px-4 md:px-6 pb-20 max-w-6xl mx-auto">
 
-      {/* Cards */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '20px',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          padding: '0 40px 80px',
-          width: '100%',
-          maxWidth: '1100px',
-          boxSizing: 'border-box',
-        }}
-      >
-        {plans.map((plan) => {
-          const isHovered = hovered === plan.id;
-
-          return (
+        {/* Top row - 3 plans */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+          {plans.slice(0, 3).map((plan) => (
             <div
-              key={plan.id}
-              onMouseEnter={() => setHovered(plan.id)}
-              onMouseLeave={() => setHovered(null)}
-              style={{
-                position: 'relative',
-                width: '340px',
-                background: plan.highlight
-                  ? 'linear-gradient(160deg, #0d1a12 0%, #0d1117 60%)'
-                  : '#0d1117',
-                border: plan.highlight
-                  ? '1px solid rgba(34,197,94,0.45)'
-                  : '1px solid #1f2937',
-                borderRadius: '20px',
-                padding: '32px',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
-                boxShadow: plan.highlight
-                  ? isHovered
-                    ? '0 24px 60px rgba(34,197,94,0.15)'
-                    : '0 8px 32px rgba(34,197,94,0.08)'
-                  : isHovered
-                  ? '0 24px 60px rgba(0,0,0,0.5)'
-                  : 'none',
-              }}
+              key={plan.name}
+              className={`relative rounded-2xl p-6 flex flex-col border ${
+                plan.popular
+                  ? 'bg-[#4ade80]/[0.06] border-[#4ade80]/40'
+                  : 'bg-[#26292f] border-white/[0.08]'
+              }`}
             >
-              {/* Popular badge */}
-              {plan.badge && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '-13px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: '#22c55e',
-                    color: '#000',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    padding: '4px 14px',
-                    borderRadius: '100px',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {plan.badge}
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                  <span className="bg-[#4ade80] text-black text-xs font-bold px-4 py-1 rounded-full">
+                    ⭐ Most Popular
+                  </span>
                 </div>
               )}
 
-              {/* Plan name */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '20px',
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    color: plan.highlight ? '#22c55e' : '#9ca3af',
-                  }}
-                >
+              <div className="mb-5">
+                <p className="text-xs font-bold uppercase tracking-widest mb-3 text-[#4ade80]">
                   {plan.name}
-                </span>
-                {plan.highlight && (
-                  <span
-                    style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      background: '#22c55e',
-                      boxShadow: '0 0 8px rgba(34,197,94,0.6)',
-                      display: 'inline-block',
-                    }}
-                  />
-                )}
+                </p>
+                <div className="flex items-end gap-1 mb-1">
+                  <span className="text-4xl font-black text-white">{plan.price}</span>
+                  <span className="text-white/30 text-sm mb-1.5">{plan.period}</span>
+                </div>
+                <p className="text-white/30 text-xs">{plan.tagline}</p>
               </div>
 
-              {/* Price */}
-              <div style={{ marginBottom: '8px' }}>
-                <span
-                  style={{
-                    fontSize: '48px',
-                    fontWeight: 800,
-                    letterSpacing: '-0.04em',
-                    color: '#f9fafb',
-                    lineHeight: 1,
-                  }}
-                >
-                  {plan.price}
-                </span>
-                <span
-                  style={{
-                    fontSize: '14px',
-                    color: '#6b7280',
-                    marginLeft: '4px',
-                  }}
-                >
-                  {plan.period}
-                </span>
+              <div className="rounded-xl px-4 py-3 mb-5 bg-[#1e2128] border border-white/[0.06]">
+                <p className="text-white font-semibold text-sm">{plan.blogs}</p>
+                <p className="text-white/30 text-xs mt-0.5">{plan.generation}</p>
               </div>
 
-              {/* Description */}
-              <p
-                style={{
-                  fontSize: '13px',
-                  color: '#6b7280',
-                  lineHeight: 1.5,
-                  margin: '0 0 28px',
-                }}
-              >
-                {plan.description}
-              </p>
-
-              {/* Divider */}
-              <div
-                style={{
-                  height: '1px',
-                  background: plan.highlight
-                    ? 'rgba(34,197,94,0.15)'
-                    : '#1f2937',
-                  marginBottom: '24px',
-                }}
-              />
-
-              {/* Features */}
-              <ul
-                style={{
-                  listStyle: 'none',
-                  margin: '0 0 32px',
-                  padding: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                }}
-              >
+              <ul className="flex flex-col gap-2.5 mb-6 flex-1">
                 {plan.features.map((f) => (
-                  <li
-                    key={f}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      fontSize: '14px',
-                      color: '#d1d5db',
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: '#22c55e',
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        flexShrink: 0,
-                      }}
-                    >
-                      ✓
-                    </span>
+                  <li key={f} className="flex items-start gap-2 text-sm text-white/60">
+                    <span className="mt-0.5 text-xs flex-shrink-0 text-[#4ade80]">✓</span>
                     {f}
                   </li>
                 ))}
               </ul>
 
-              {/* CTA */}
               <button
-                disabled={plan.ctaDisabled}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  borderRadius: '12px',
-                  background: plan.highlight ? '#22c55e' : 'transparent',
-                  color: plan.highlight ? '#000' : '#6b7280',
-                  border: plan.highlight ? 'none' : '1px solid #374151',
-                  cursor: 'not-allowed',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  letterSpacing: '0.01em',
-                  opacity: 0.75,
-                }}
+                onClick={() => plan.name === 'Enterprise'
+                  ? window.location.href = 'mailto:hello@inframindhq.online?subject=Enterprise Plan'
+                  : router.push('/signup')}
+                className={`w-full py-3 rounded-xl text-sm font-bold transition-colors ${
+                  plan.ctaStyle === 'solid'
+                    ? 'bg-[#4ade80] hover:bg-[#22c55e] text-black'
+                    : 'bg-transparent border border-white/20 hover:border-[#4ade80]/50 hover:text-[#4ade80] text-white'
+                }`}
               >
                 {plan.cta}
               </button>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
 
-      {/* Footer note */}
-      <div
-        style={{
-          paddingBottom: '60px',
-          textAlign: 'center',
-          color: '#374151',
-          fontSize: '13px',
-        }}
-      >
-        Paid plans launching soon. You're on the free beta — enjoy it while it lasts.
+        {/* Bottom row - 2 plans */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {plans.slice(3).map((plan) => (
+            <div
+              key={plan.name}
+              className="relative rounded-2xl p-6 flex flex-col bg-[#26292f] border border-white/[0.08]"
+            >
+              <div className="flex items-start justify-between mb-5 gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-3 text-[#4ade80]">
+                    {plan.name}
+                  </p>
+                  <div className="flex items-end gap-1 mb-1">
+                    <span className="text-4xl font-black text-white">{plan.price}</span>
+                    <span className="text-white/30 text-sm mb-1.5">{plan.period}</span>
+                  </div>
+                  <p className="text-white/30 text-xs">{plan.tagline}</p>
+                </div>
+                <div className="rounded-xl px-4 py-3 text-right bg-[#1e2128] border border-white/[0.06] flex-shrink-0">
+                  <p className="text-white font-semibold text-sm">{plan.blogs}</p>
+                  <p className="text-white/30 text-xs mt-0.5">{plan.generation}</p>
+                </div>
+              </div>
+
+              <ul className="grid grid-cols-2 gap-2.5 mb-6 flex-1">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm text-white/60">
+                    <span className="mt-0.5 text-xs flex-shrink-0 text-[#4ade80]">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => plan.name === 'Enterprise'
+                  ? window.location.href = 'mailto:hello@inframindhq.online?subject=Enterprise Plan'
+                  : router.push('/signup')}
+                className={`w-full py-3 rounded-xl text-sm font-bold transition-colors ${
+                  plan.ctaStyle === 'solid'
+                    ? 'bg-[#4ade80] hover:bg-[#22c55e] text-black'
+                    : 'bg-transparent border border-white/20 hover:border-[#4ade80]/50 hover:text-[#4ade80] text-white'
+                }`}
+              >
+                {plan.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer note */}
+        <p className="text-center text-white/20 text-xs mt-10">
+          All plans include AI-powered blog generation, SEO optimization, and embed delivery. · Questions?{' '}
+          <a href="mailto:hello@inframindhq.online" className="text-[#4ade80] hover:underline">
+            hello@inframindhq.online
+          </a>
+        </p>
       </div>
     </div>
   );

@@ -118,7 +118,7 @@ function AdminLoginForm() {
         return;
       }
 
-      const next = searchParams.get('next') || '/admin/linkedin-rewards';
+      const next = searchParams.get('next') || '/ad-min';
       router.replace(next);
       router.refresh();
     } catch {
