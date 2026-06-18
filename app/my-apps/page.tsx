@@ -3,18 +3,24 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import AddMonitorModal from '@/app/components/AddMonitorModal';
 
 export default function MyAppsPage() {
   const router = useRouter();
   const [apps, setApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  useEffect(() => {
+  const loadMonitors = () => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push('/login'); return; }
       supabase.from('monitors').select('*').eq('user_id', user.id)
         .then(({ data }) => { setApps(data || []); setLoading(false); });
     });
+  };
+
+  useEffect(() => {
+    loadMonitors();
   }, []);
 
   const statusColor: Record<string, string> = {
@@ -39,10 +45,10 @@ export default function MyAppsPage() {
             <p className="text-white/40 text-sm mt-1">Your monitored services</p>
           </div>
           <button
-            onClick={() => window.open('https://inframindhq.online/dashboard', '_blank')}
+            onClick={() => setShowAddModal(true)}
             className="bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-colors"
           >
-            Open Full Dashboard
+            + Add Monitor
           </button>
         </div>
 
@@ -78,10 +84,10 @@ export default function MyAppsPage() {
               <p className="text-white font-medium">No monitors yet</p>
               <p className="text-white/30 text-sm mt-1 mb-5">Add your first monitor on the full dashboard</p>
               <button
-                onClick={() => window.open('https://inframindhq.online/dashboard', '_blank')}
+                onClick={() => setShowAddModal(true)}
                 className="bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-colors"
               >
-                Go to Dashboard
+                + Add Monitor
               </button>
             </div>
           )}
@@ -103,6 +109,12 @@ export default function MyAppsPage() {
         </div>
 
       </div>
+
+      <AddMonitorModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={() => { setLoading(true); loadMonitors(); }}
+      />
     </div>
   );
 }

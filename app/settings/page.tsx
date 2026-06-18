@@ -226,7 +226,7 @@ export default function SettingsPage() {
 
   const NAV = [
     {
-      href: '/dashboard', label: 'Monitors', active: false,
+      href: '/monitors', label: 'Monitors', active: false,
       icon: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="1" y="1" width="6" height="6" rx="1.5" /><rect x="9" y="1" width="6" height="6" rx="1.5" /><rect x="1" y="9" width="6" height="6" rx="1.5" /><rect x="9" y="9" width="6" height="6" rx="1.5" /></svg>
     },
     {
@@ -275,7 +275,7 @@ export default function SettingsPage() {
 
         {/* Mobile nav */}
         <nav className="im-mob-nav">
-          <Link href="/dashboard" className="im-mob-link">Monitors</Link>
+          <Link href="/monitors" className="im-mob-link">Monitors</Link>
           <Link href="/incidents" className="im-mob-link">Incidents</Link>
           <Link href="/settings" className="im-mob-link on">Settings</Link>
         </nav>
@@ -283,31 +283,9 @@ export default function SettingsPage() {
         {/* Main */}
         <main className="im-main">
           <h1 className="im-h1">Settings</h1>
-          <p className="im-sub">Manage your account details and security.</p>
+          <p className="im-sub">Manage your monitoring plan and notification preferences.</p>
 
-          {/* Profile */}
-          <div className="im-card">
-            <div className="im-profile-head">
-              <div className="im-avatar">{initial}</div>
-              <div className="im-profile-head-text">
-                <div className="im-card-title">{firstName || 'Your profile'}</div>
-                <div className="im-card-desc">Your account information.</div>
-              </div>
-            </div>
 
-            <div className="im-field">
-              <label className="im-label">First name</label>
-              <input className="im-input" value={firstName} disabled />
-            </div>
-            <div className="im-field">
-              <label className="im-label">Email address</label>
-              <input className="im-input" value={email} disabled />
-            </div>
-            <div className="im-field" style={{ marginBottom: 0 }}>
-              <label className="im-label">Company</label>
-              <input className="im-input" value={company} disabled />
-            </div>
-          </div>
 
           {/* Plan */}
           <div className="im-card">
@@ -336,67 +314,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Change password */}
-          <div className="im-card">
-            <div className="im-card-head">
-              <div className="im-card-icon">
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5" /><path d="M5 7V4.5a3 3 0 0 1 6 0V7" /></svg>
-              </div>
-              <div className="im-card-title">Change password</div>
-            </div>
-            <div className="im-card-desc">Enter your current password and choose a new one.</div>
 
-            {msg && <div className={`im-msg ${msg.type === 'ok' ? 'ok' : 'err'}`}>{msg.text}</div>}
-
-            <form onSubmit={handleChangePassword}>
-              <div className="im-field">
-                <label className="im-label">Current password</label>
-                <input
-                  type="password"
-                  className="im-input"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="••••••••"
-                  style={{ color: '#e2e6f0' }}
-                />
-              </div>
-              <div className="im-field">
-                <label className="im-label">New password</label>
-                <input
-                  type="password"
-                  className="im-input"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="••••••••"
-                  style={{ color: '#e2e6f0' }}
-                />
-              </div>
-              <div className="im-field">
-                <label className="im-label">Confirm new password</label>
-                <input
-                  type="password"
-                  className="im-input"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  style={{ color: '#e2e6f0' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-                <button type="submit" className="im-btn-primary" disabled={loading}>
-                  {loading ? 'Updating...' : 'Update password'}
-                </button>
-                <button
-                  type="button"
-                  className="im-forgot"
-                  onClick={() => router.push(`/login?forgot=1&email=${encodeURIComponent(email)}`)}
-                >
-                  Forgot password?
-                </button>
-              </div>
-            </form>
-          </div>
         </main>
       </div>
     </>
