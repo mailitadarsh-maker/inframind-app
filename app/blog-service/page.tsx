@@ -179,10 +179,7 @@ export default function BlogServicePage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
           {features.map((f, i) => (
-            <div key={i} style={{ background: '#1a1d24', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '24px', transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = 'rgba(167,139,250,0.25)'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'}
-            >
+            <div key={i} style={{ background: '#1a1d24', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 14, padding: '24px' }}>
               <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 {f.icon}
               </div>

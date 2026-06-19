@@ -49,7 +49,7 @@ export default function Hero() {
           style={{
             fontSize: "60px", fontWeight: 900, lineHeight: 1.08,
             letterSpacing: "-0.03em", margin: "0 auto", maxWidth: "900px",
-            whiteSpace: "nowrap",
+            
           }}
         >
           Monitor Everything.

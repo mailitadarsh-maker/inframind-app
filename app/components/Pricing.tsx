@@ -293,7 +293,7 @@ export default function Pricing() {
         )}
 
         {/* Cards */}
-        <div style={{
+        <div className="scroll-carousel" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '16px',
