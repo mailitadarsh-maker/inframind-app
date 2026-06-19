@@ -6,24 +6,20 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export default async function BlogPostPage({ params }: { params: Promise<{ clientSlug: string; slug: string }> }) {
+export default async function BlogPage({ params }: { params: Promise<{ clientSlug: string; slug: string }> }) {
   const { clientSlug, slug } = await params;
 
-  const { data: clients } = await supabase
+  const { data: client } = await supabase
     .from('clients')
-    .select('id, company_name, website, industry');
-
-  const client = (clients || []).find(c => {
-    const domain = c.website.replace('https://', '').replace('http://', '').replace(/\/+$/, '').toLowerCase();
-    const nameSlug = c.company_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    return domain === clientSlug || nameSlug === clientSlug;
-  });
+    .select('id, company_name, website')
+    .eq('slug', clientSlug)
+    .single();
 
   if (!client) notFound();
 
   const { data: blog } = await supabase
     .from('client_blogs')
-    .select('*')
+    .select('id, title, content, slug, created_at')
     .eq('client_id', client.id)
     .eq('slug', slug)
     .eq('status', 'published')
@@ -31,26 +27,230 @@ export default async function BlogPostPage({ params }: { params: Promise<{ clien
 
   if (!blog) notFound();
 
+  const date = new Date(blog.created_at).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  const readingTime = Math.ceil((blog.content || '').replace(/<[^>]*>/g, '').split(' ').length / 200);
+
   return (
-    <div className="min-h-screen bg-[#1e2128] px-4 py-16">
-      <div className="max-w-2xl mx-auto">
-        <p className="text-xs text-green-400 uppercase tracking-widest mb-3">{client.industry}</p>
-        <h1 className="text-3xl font-bold text-white leading-tight mb-4">{blog.title}</h1>
-        {blog.description && (
-          <p className="text-white/50 text-base mb-8 leading-relaxed">{blog.description}</p>
-        )}
-        <p className="text-xs text-white/30 mb-10">
-          {new Date(blog.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
-        <div
-          className="prose prose-invert prose-p:text-white/70 prose-h2:text-white prose-h2:text-xl prose-h2:font-semibold prose-li:text-white/70 prose-strong:text-white max-w-none"
-          dangerouslySetInnerHTML={{ __html: blog.content }}
-        />
-        <div className="mt-16 pt-8 border-t border-white/[0.06] text-center">
-          <p className="text-xs text-white/20 mb-1">Powered by</p>
-          <a href="https://inframindhq.online" target="_blank" rel="noopener noreferrer" className="text-xs text-green-400 hover:underline">InfraMind</a>
+    <>
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #fafaf9; }
+
+        .blog-header {
+          background: #fff;
+          border-bottom: 1px solid #e7e5e4;
+          padding: 0 24px;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+        .blog-header-brand {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-weight: 700;
+          font-size: 16px;
+          color: #1c1917;
+          text-decoration: none;
+          letter-spacing: -0.01em;
+        }
+        .blog-header-back {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-size: 13px;
+          color: #78716c;
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: color 0.15s;
+        }
+        .blog-header-back:hover { color: #1c1917; }
+
+        .blog-hero {
+          background: #fff;
+          border-bottom: 1px solid #e7e5e4;
+          padding: 56px 24px 48px;
+        }
+        .blog-hero-inner {
+          max-width: 720px;
+          margin: 0 auto;
+        }
+        .blog-meta {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+        }
+        .blog-meta-date {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-size: 13px;
+          color: #78716c;
+        }
+        .blog-meta-dot {
+          width: 3px;
+          height: 3px;
+          border-radius: 50%;
+          background: #d6d3d1;
+        }
+        .blog-meta-read {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-size: 13px;
+          color: #78716c;
+        }
+        .blog-title {
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: clamp(28px, 5vw, 42px);
+          font-weight: 700;
+          color: #1c1917;
+          line-height: 1.2;
+          letter-spacing: -0.02em;
+        }
+
+        .blog-body {
+          max-width: 720px;
+          margin: 0 auto;
+          padding: 48px 24px 80px;
+        }
+        .blog-content {
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: 19px;
+          color: #292524;
+          line-height: 1.85;
+        }
+        .blog-content h1,
+        .blog-content h2,
+        .blog-content h3 {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          color: #1c1917;
+          margin-top: 48px;
+          margin-bottom: 16px;
+          line-height: 1.3;
+          letter-spacing: -0.01em;
+        }
+        .blog-content h2 { font-size: 24px; font-weight: 700; }
+        .blog-content h3 { font-size: 20px; font-weight: 600; }
+        .blog-content p { margin-bottom: 24px; }
+        .blog-content ul, .blog-content ol {
+          padding-left: 28px;
+          margin-bottom: 24px;
+        }
+        .blog-content li { margin-bottom: 10px; }
+        .blog-content strong { color: #1c1917; font-weight: 700; }
+        .blog-content a { color: #0d9488; text-decoration: underline; }
+        .blog-content blockquote {
+          border-left: 3px solid #d6d3d1;
+          padding: 4px 0 4px 20px;
+          margin: 32px 0;
+          color: #57534e;
+          font-style: italic;
+        }
+
+        .blog-footer {
+          border-top: 1px solid #e7e5e4;
+          padding: 32px 24px;
+          text-align: center;
+          background: #fff;
+        }
+        .blog-footer p {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-size: 13px;
+          color: #a8a29e;
+        }
+        .blog-footer a {
+          color: #10b981;
+          text-decoration: none;
+          font-weight: 600;
+        }
+
+        @media (max-width: 640px) {
+          .blog-hero { padding: 36px 20px 32px; }
+          .blog-body { padding: 32px 20px 60px; }
+          .blog-content { font-size: 17px; }
+        }
+      `}</style>
+
+      <div style={{ minHeight: '100vh', background: '#fafaf9' }}>
+
+        {/* Header */}
+        <header className="blog-header">
+          <a href={client.website} target="_blank" rel="noopener noreferrer" className="blog-header-brand">
+            {client.company_name}
+          </a>
+          <a href={client.website} target="_blank" rel="noopener noreferrer" className="blog-header-back">
+            <span>←</span> Back to website
+          </a>
+        </header>
+
+        {/* Hero */}
+        <div className="blog-hero">
+          <div className="blog-hero-inner">
+            <div className="blog-meta">
+              <span className="blog-meta-date">{date}</span>
+              <span className="blog-meta-dot" />
+              <span className="blog-meta-read">{readingTime} min read</span>
+            </div>
+            <h1 className="blog-title">{blog.title}</h1>
+          </div>
         </div>
+
+        {/* Content */}
+        <div className="blog-body">
+          <div
+            className="blog-content"
+            dangerouslySetInnerHTML={{ __html: blog.content }}
+          />
+        </div>
+
+        {/* Footer */}
+        <footer className="blog-footer">
+          <p>
+            Content powered by{' '}
+            <a href="https://inframindhq.online" target="_blank" rel="noopener noreferrer">
+              InfraMind
+            </a>
+          </p>
+        </footer>
+
       </div>
-    </div>
+    </>
   );
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ clientSlug: string; slug: string }> }) {
+  const { clientSlug, slug } = await params;
+
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id, company_name')
+    .eq('slug', clientSlug)
+    .single();
+
+  if (!client) return {};
+
+  const { data: blog } = await supabase
+    .from('client_blogs')
+    .select('title, content')
+    .eq('client_id', client.id)
+    .eq('slug', slug)
+    .single();
+
+  if (!blog) return {};
+
+  const description = (blog.content || '').replace(/<[^>]*>/g, '').slice(0, 160);
+
+  return {
+    title: `${blog.title} | ${client.company_name}`,
+    description,
+    openGraph: {
+      title: blog.title,
+      description,
+      type: 'article',
+    },
+  };
 }

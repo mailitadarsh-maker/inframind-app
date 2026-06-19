@@ -1,27 +1,67 @@
-'use client';
-
-const stats = [
-  { icon: '🛡', num: '99.9%', label: 'avg uptime' },
-  { icon: '⚡', num: '3 minutes', label: 'to connect' },
-  { icon: '✦', num: 'AI reports', label: 'in plain English' },
-];
+"use client";
 
 export default function ProofBar() {
+  const stats = [
+    { value: "99.9%",        label: "uptime tracked" },
+    { value: "<30s",         label: "alert latency" },
+    { value: "AI",           label: "plain-english diagnosis" },
+    { value: "1-click",      label: "blog publishing" },
+    { value: "Multi-client", label: "from one dashboard" },
+  ];
+
   return (
-    <div className="border-y border-white/[0.05] bg-[#2b3039] w-full">
-      {/* flex-col: Stacks items vertically on mobile (Default)
-         md:flex-row: Stacks items horizontally on desktop (Preserves your original look)
-      */}
-      <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/[0.05]">
+    <div
+      style={{
+        background: "#1e1f26",
+        borderTop: "1px solid #3a3b44",
+        borderBottom: "1px solid #3a3b44",
+        padding: "36px 48px",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         {stats.map((s, i) => (
           <div
             key={i}
-            className="flex-1 flex items-center justify-center gap-2.5 py-4 px-6 animate-fade-up"
-            style={{ animationDelay: `${0.1 + i * 0.1}s` }}
+            style={{
+              flex: 1,
+              textAlign: "center",
+              borderRight: i < stats.length - 1 ? "1px solid #3a3b44" : "none",
+              padding: "0 20px",
+            }}
           >
-            <span className="text-base">{s.icon}</span>
-            <span className="text-sm font-semibold text-green">{s.num}</span>
-            <span className="text-xs text-text-2">{s.label}</span>
+            <div
+              style={{
+                fontSize: "1.9rem",
+                fontWeight: 900,
+                color: "#ffffff",
+                letterSpacing: "-0.03em",
+                marginBottom: "8px",
+                lineHeight: 1,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {s.value}
+            </div>
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "#6b7280",
+                fontFamily: "'SF Mono', 'Fira Code', 'Courier New', monospace",
+                letterSpacing: "0.02em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {s.label}
+            </div>
           </div>
         ))}
       </div>

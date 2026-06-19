@@ -1,0 +1,5 @@
+
+
+cp ~/Downloads/Hero.tsx ~/inframind-app/app/components/Hero.tsx
+cd ~/inframind-app
+npm run dev

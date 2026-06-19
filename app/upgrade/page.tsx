@@ -113,6 +113,19 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[#1e2128]">
 
+      {/* Back button */}
+      <div className="px-6 pt-6 max-w-6xl mx-auto">
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-2 text-white/40 hover:text-white text-sm transition-colors"
+        >
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
+            <path d="M10 8H3M6 5l-3 3 3 3" />
+          </svg>
+          Back
+        </button>
+      </div>
+
       {/* Header */}
       <div className="px-6 py-16 text-center">
         <div className="inline-flex items-center gap-2 bg-[#4ade80]/10 border border-[#4ade80]/20 rounded-full px-4 py-1.5 mb-6">

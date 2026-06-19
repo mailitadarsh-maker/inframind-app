@@ -20,6 +20,46 @@ export async function POST(request: Request) {
 
     if (clientErr || !client) return NextResponse.json({ error: 'Client not found' }, { status: 404 });
 
+    // Enforce trial restrictions using the client's actual row data
+    // (blogs_per_month, trial_ends_at, payment_status) rather than hardcoded values,
+    // so this respects whatever an admin has set per-client.
+    const isTrial = client.payment_status === 'trial' || (!client.payment_status && (client.plan || 'free') === 'free');
+
+    if (isTrial) {
+      const trialExpired = client.trial_ends_at
+        ? Date.now() >= new Date(client.trial_ends_at).getTime()
+        : false;
+
+      if (trialExpired) {
+        return NextResponse.json(
+          {
+            error: 'Your free trial has ended. Upgrade your plan to keep generating blogs.',
+            limitReached: true,
+          },
+          { status: 403 }
+        );
+      }
+
+      if (client.blogs_per_month !== null && client.blogs_per_month !== undefined) {
+        const { count, error: countErr } = await supabase
+          .from('client_blogs')
+          .select('*', { count: 'exact', head: true })
+          .eq('client_id', client_id);
+
+        if (countErr) throw new Error(countErr.message);
+
+        if ((count || 0) >= client.blogs_per_month) {
+          return NextResponse.json(
+            {
+              error: `You've used all ${client.blogs_per_month} blogs included in your free trial. Upgrade your plan to keep generating.`,
+              limitReached: true,
+            },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
     const { data: recentBlogs } = await supabase
       .from('client_blogs')
       .select('title')

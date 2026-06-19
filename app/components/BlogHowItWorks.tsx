@@ -2,36 +2,31 @@
 
 import React from 'react';
 
-function IconLink() {
+function IconGlobe() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
     </svg>
   );
 }
 
-function IconBolt() {
+function IconSparkle() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+      <path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5L12 2z" />
     </svg>
   );
 }
 
-function IconCPU() {
+function IconRocket() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="6" height="6" />
-      <rect x="2" y="2" width="20" height="20" rx="2" />
-      <line x1="9" y1="2" x2="9" y2="6" />
-      <line x1="15" y1="2" x2="15" y2="6" />
-      <line x1="9" y1="18" x2="9" y2="22" />
-      <line x1="15" y1="18" x2="15" y2="22" />
-      <line x1="2" y1="9" x2="6" y2="9" />
-      <line x1="2" y1="15" x2="6" y2="15" />
-      <line x1="18" y1="9" x2="22" y2="9" />
-      <line x1="18" y1="15" x2="22" y2="15" />
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path d="m3.29 15 1.42-1.42" />
+      <path d="M12 2C6.5 2 2 6.5 2 12c0 1.93.55 3.73 1.5 5.27L9 13l3-3 3 3 3-3 3 3-3 3-3-3-3 3-5.73 5.5C5.27 21.45 7.07 22 9 22c5.5 0 10-4.5 10-10S17.5 2 12 2z" />
+      <path d="M15 9h.01" />
     </svg>
   );
 }
@@ -39,31 +34,32 @@ function IconCPU() {
 const steps = [
   {
     number: '01',
-    icon: <IconLink />,
-    title: 'Add your URL',
-    desc: 'Paste your website, API endpoint, or domain. InfraMind validates it and starts watching immediately.',
+    icon: <IconGlobe />,
+    title: 'Client saves their subdomain',
+    desc: 'They enter blog.theirdomain.com in settings. InfraMind provisions it on Vercel automatically — no DNS headaches.',
   },
   {
     number: '02',
-    icon: <IconBolt />,
-    title: 'Get instant alerts',
-    desc: "The moment something's wrong, you're emailed. Response time, status code, and timestamp — all included.",
+    icon: <IconSparkle />,
+    title: 'You generate a post',
+    desc: 'Enter a topic or keyword. InfraMind writes the full article, finds a Pexels cover image, and formats it SEO-ready.',
   },
   {
     number: '03',
-    icon: <IconCPU />,
-    title: 'AI explains the fix',
-    desc: "No guessing what went wrong. InfraMind's AI reads the error, finds the cause, and gives you a step-by-step fix.",
+    icon: <IconRocket />,
+    title: 'Live in seconds',
+    desc: 'Hit publish. The post appears on the client\'s blog instantly — no deployment, no CMS login, no waiting.',
   },
 ];
 
-export default function HowItWorks() {
+export default function BlogHowItWorks() {
   return (
     <section
-      id="monitoring"
+      id="blog-service"
       style={{
         background: '#13151a',
         padding: '96px 40px',
+        borderTop: '1px solid #1f2229',
       }}
     >
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
@@ -79,14 +75,14 @@ export default function HowItWorks() {
             marginBottom: '24px',
           }}
         >
-          HOW IT WORKS — MONITORING
+          HOW IT WORKS — BLOG AS A SERVICE
         </p>
 
         {/* Headline */}
         <h2
           style={{
             textAlign: 'center',
-            fontSize: 'clamp(2.4rem, 5vw, 3.6rem)',
+            fontSize: 'clamp(2.2rem, 5vw, 3.4rem)',
             fontWeight: 800,
             color: '#f0f0f0',
             letterSpacing: '-0.03em',
@@ -94,7 +90,8 @@ export default function HowItWorks() {
             margin: '0 0 72px 0',
           }}
         >
-          Set up in under 3 minutes.
+          From onboarding to live post{' '}
+          <span style={{ color: '#a5b4fc' }}>in minutes.</span>
         </h2>
 
         {/* Steps grid */}
@@ -132,7 +129,7 @@ export default function HowItWorks() {
               {/* Icon */}
               <div
                 style={{
-                  color: '#86efac',
+                  color: '#a5b4fc',
                   marginBottom: '28px',
                   display: 'flex',
                   alignItems: 'center',

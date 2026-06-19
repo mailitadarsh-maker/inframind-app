@@ -1,0 +1,29 @@
+'use client';
+
+const stats = [
+  { icon: '🛡', num: '99.9%', label: 'avg uptime tracked' },
+  { icon: '⚡', num: '<30s', label: 'alert latency' },
+  { icon: '✦', num: 'AI reports', label: 'in plain English' },
+  { icon: '🌐', num: '1-click', label: 'blog publishing' },
+  { icon: '👥', num: 'Multi-client', label: 'one dashboard' },
+];
+
+export default function ProofBar() {
+  return (
+    <div className="border-y border-white/[0.05] bg-[#2b3039] w-full">
+      <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/[0.05]">
+        {stats.map((s, i) => (
+          <div
+            key={i}
+            className="flex-1 flex items-center justify-center gap-2.5 py-4 px-4 animate-fade-up"
+            style={{ animationDelay: `${0.1 + i * 0.08}s` }}
+          >
+            <span className="text-base">{s.icon}</span>
+            <span className="text-sm font-semibold text-green">{s.num}</span>
+            <span className="text-xs text-text-2">{s.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

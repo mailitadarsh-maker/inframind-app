@@ -1,58 +1,98 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
+const navLinks = [
+  { label: 'Monitoring', id: 'monitoring' },
+  { label: 'Blog Service', id: 'blog-service' },
+  { label: 'Pricing', id: 'pricing' },
+  { label: 'Blog', id: 'blog' },
+];
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+export default function Navbar() {
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-[#22252c]/90 backdrop-blur-xl border-b border-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
-          : 'bg-transparent'
-      }`}
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        background: 'rgba(19,21,26,0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid #1f2229',
+        padding: '0 40px',
+        height: '60px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
     >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-7 h-7 rounded-[7px] bg-green flex items-center justify-center transition-all duration-300 group-hover:shadow-[0_0_16px_rgba(29,219,120,0.5)] group-hover:scale-105">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <polyline points="12 3 5.5 10 2 6.5" stroke="#07090d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <span className="font-sans font-semibold text-[15px] text-text">InfraMind</span>
+      {/* Logo */}
+      <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+        <span style={{
+          width: '8px', height: '8px', borderRadius: '50%',
+          background: '#4ade80', boxShadow: '0 0 8px rgba(74,222,128,0.7)',
+          display: 'inline-block', flexShrink: 0,
+        }} />
+        <span style={{ fontSize: '15px', fontWeight: 700, color: '#f0f0f0', letterSpacing: '-0.01em' }}>
+          InfraMind
+        </span>
+      </Link>
+
+      {/* Desktop nav */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+        {navLinks.map((link) => (
+          <button
+            key={link.label}
+            onClick={() => scrollTo(link.id)}
+            style={{
+              fontSize: '14px', color: '#9ca3af', fontWeight: 500,
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: 0, transition: 'color 0.15s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#f0f0f0')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
+          >
+            {link.label}
+          </button>
+        ))}
+      </div>
+
+      {/* CTAs */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <Link
+          href="/login"
+          style={{
+            fontSize: '14px', fontWeight: 600, color: '#9ca3af',
+            textDecoration: 'none', padding: '8px 16px',
+            border: '1px solid #2a2d35', borderRadius: '8px',
+            transition: 'color 0.15s, border-color 0.15s',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.borderColor = '#4b5563'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#2a2d35'; }}
+        >
+          Log in
         </Link>
-
-        {/* Links */}
-        <div className="hidden md:flex items-center gap-8">
-          {['How it works', 'Features', 'Pricing'].map((link) => (
-            <Link
-              key={link}
-              href={`/#${link.toLowerCase().replace(/\s+/g, '-')}`}
-              className="text-text-2 text-sm hover:text-text transition-colors duration-200 relative group"
-            >
-              {link}
-              <span className="absolute -bottom-0.5 left-0 right-0 h-px bg-green scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
-            </Link>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="btn btn-ghost text-sm">Log in</Link>
-          {/* UPDATED: Changed href from /dashboard to /signup */}
-          <Link href="/signup" className="btn btn-primary text-sm">
-            Start free <span className="ml-0.5">→</span>
-          </Link>
-        </div>
+        <Link
+          href="/signup"
+          style={{
+            fontSize: '14px', fontWeight: 700, color: '#000',
+            textDecoration: 'none', padding: '8px 18px',
+            background: '#4ade80', borderRadius: '8px',
+            transition: 'opacity 0.15s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.88')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        >
+          Start free →
+        </Link>
       </div>
     </nav>
   );

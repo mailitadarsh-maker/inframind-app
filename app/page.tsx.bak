@@ -4,7 +4,7 @@ import Hero from './components/Hero';
 import ProofBar from './components/ProofBar';
 import BlogServiceStrip from './components/BlogServiceStrip';
 import HowItWorks from './components/HowItWorks';
-import BlogHowItWorks from './components/BlogHowItWorks';
+import Features from './components/Features';
 import ReviewsCarousel from '@/components/landing/ReviewsCarousel';
 import Pricing from './components/Pricing';
 import FAQ from './components/FAQ';
@@ -41,7 +41,7 @@ export default function Page() {
       <ProofBar />
       <BlogServiceStrip />
       <HowItWorks />
-      <BlogHowItWorks />
+      <Features />
       <ReviewsCarousel />
       <Pricing />
       <FAQ />
