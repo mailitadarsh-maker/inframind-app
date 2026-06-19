@@ -2,11 +2,32 @@
 
 import { useEffect, useState, useRef } from "react";
 
-const FULL_TEXT = "Payment gateway latency spiked to 891ms at 14:32 UTC. Root cause: upstream DNS resolution delay from your payment provider's CDN edge node. ";
-const HIGHLIGHT_TEXT = "Recommended: Switch DNS resolver to 1.1.1.1 and contact Stripe support about their SGP-1 edge incident.";
-const ALL_TEXT = FULL_TEXT + HIGHLIGHT_TEXT;
+const DEFAULT_FULL_TEXT = "Payment gateway latency spiked to 891ms at 14:32 UTC. Root cause: upstream DNS resolution delay from your payment provider's CDN edge node. ";
+const DEFAULT_HIGHLIGHT_TEXT = "Recommended: Switch DNS resolver to 1.1.1.1 and contact Stripe support about their SGP-1 edge incident.";
 
-export default function AIDiagnosisBox() {
+interface AIDiagnosisBoxProps {
+  ai_cause?: string | null;
+  ai_action?: string | null;
+  ai_severity?: string | null;
+  failed_ip?: string | null;
+  raw_error?: string | null;
+  started_at?: string | null;
+}
+
+export default function AIDiagnosisBox({
+  ai_cause,
+  ai_action,
+  ai_severity,
+  failed_ip,
+  raw_error,
+  started_at,
+}: AIDiagnosisBoxProps = {}) {
+  const FULL_TEXT = ai_cause
+    ? `${ai_cause}${raw_error ? ` (${raw_error})` : ""}${failed_ip ? ` — affected host: ${failed_ip}.` : ""} `
+    : DEFAULT_FULL_TEXT;
+  const HIGHLIGHT_TEXT = ai_action ?? DEFAULT_HIGHLIGHT_TEXT;
+  const ALL_TEXT = FULL_TEXT + HIGHLIGHT_TEXT;
+
   const [displayed, setDisplayed] = useState("");
   const [started, setStarted] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
