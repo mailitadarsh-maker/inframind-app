@@ -121,11 +121,62 @@ export default function Pricing() {
             flex-direction: column !important;
             gap: 16px !important;
             padding: 0 !important;
+            margin-top: 0 !important;
           }
           .pricing-card {
             margin-top: 0 !important;
             width: 100% !important;
             box-sizing: border-box !important;
+          }
+        }
+
+        @keyframes trialShimmer {
+          0% { left: -150%; }
+          100% { left: 150%; }
+        }
+        @keyframes trialGiftBounce {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-3px) rotate(-8deg); }
+          75% { transform: translateY(-3px) rotate(8deg); }
+        }
+        @keyframes trialClaimPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.45); }
+          50% { box-shadow: 0 0 0 10px rgba(74,222,128,0); }
+        }
+        .trial-banner {
+          position: relative;
+          overflow: hidden;
+        }
+        .trial-banner::before {
+          content: '';
+          position: absolute;
+          top: 0; left: -150%;
+          width: 60%; height: 100%;
+          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.18), transparent);
+          animation: trialShimmer 3.5s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .trial-gift {
+          display: inline-block;
+          animation: trialGiftBounce 1.8s ease-in-out infinite;
+        }
+        .trial-claim-btn {
+          animation: trialClaimPulse 2.2s ease-in-out infinite;
+        }
+        @media (min-width: 761px) {
+          .trial-banner {
+            padding: 16px 26px !important;
+            border-radius: 14px !important;
+          }
+          .trial-banner-text {
+            font-size: 15px !important;
+          }
+          .trial-gift {
+            font-size: 22px !important;
+          }
+          .trial-claim-btn {
+            font-size: 13px !important;
+            padding: 11px 22px !important;
           }
         }
       `}</style>
@@ -174,18 +225,18 @@ export default function Pricing() {
 
           {/* Sticky banner */}
           {isMonitoring && (
-            <div style={{
-              background: accentDim, border: `1px solid ${accentBorder}`, borderRadius: '10px',
+            <div className="trial-banner" style={{
+              background: `linear-gradient(135deg, ${accentDim}, rgba(74,222,128,0.18))`, border: `1px solid ${accentBorder}`, borderRadius: '10px',
               padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               gap: '10px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                <span style={{ fontSize: '16px' }}>🎁</span>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: accent, whiteSpace: 'nowrap' }}>
+                <span className="trial-gift" style={{ fontSize: '16px' }}>🎁</span>
+                <span className="trial-banner-text" style={{ fontSize: '11px', fontWeight: 600, color: accent, whiteSpace: 'nowrap' }}>
                   14 Extra Trial Days — Free
                 </span>
               </div>
-              <a href="/signup?redirect=/dashboard/linkedin-reward" style={{
+              <a href="/signup?redirect=/dashboard/linkedin-reward" className="trial-claim-btn" style={{
                 background: accent, color: '#000',
                 fontWeight: 700, textDecoration: 'none', fontSize: '11px',
                 padding: '7px 12px', borderRadius: '7px', whiteSpace: 'nowrap', flexShrink: 0,
@@ -216,6 +267,7 @@ export default function Pricing() {
           gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '16px',
           alignItems: 'start',
+          marginTop: '24px',
         }}>
           {plans.map((plan, i) => {
             const isHovered = hovered === plan.id;

@@ -34,6 +34,7 @@ export default function AdminClientsPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [productFilter, setProductFilter] = useState<'all' | 'blog' | 'monitoring' | 'neither'>('all');
   const [planFilter, setPlanFilter] = useState<string>('all');
@@ -43,6 +44,18 @@ export default function AdminClientsPage() {
 
   useEffect(() => { load(); }, []);
   useEffect(() => { setPage(1); }, [productFilter, planFilter, statusFilter]);
+
+  async function deleteClientData(clientId: string, userId: string) {
+    if (!confirm('Delete ALL blog data for this client? This cannot be undone.')) return;
+    setDeletingId(userId);
+    await fetch('/api/admin/delete-client', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: clientId }),
+    });
+    setDeletingId(null);
+    load();
+  }
 
   async function load() {
     setLoading(true);
@@ -304,10 +317,19 @@ export default function AdminClientsPage() {
                         />
                       </div>
 
-                      <div style={{ display: 'flex', gap: 20, fontSize: 12, color: '#8a95a3' }}>
-                        <span>Industry: <span style={{ color: '#eef1f6' }}>{c.industry || '—'}</span></span>
-                        <span>Slug: <span style={{ color: '#eef1f6' }}>{c.slug || '—'}</span></span>
-                        {savingId === a.user_id && <span style={{ color: '#34d399' }}>Saving…</span>}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20, fontSize: 12, color: '#8a95a3' }}>
+                        <div style={{ display: 'flex', gap: 20 }}>
+                          <span>Industry: <span style={{ color: '#eef1f6' }}>{c.industry || '—'}</span></span>
+                          <span>Slug: <span style={{ color: '#eef1f6' }}>{c.slug || '—'}</span></span>
+                          {savingId === a.user_id && <span style={{ color: '#34d399' }}>Saving…</span>}
+                        </div>
+                        <button
+                          onClick={() => deleteClientData(c.id, a.user_id)}
+                          disabled={deletingId === a.user_id}
+                          style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(248,113,113,0.3)', background: 'rgba(248,113,113,0.08)', color: '#f87171', cursor: 'pointer', opacity: deletingId === a.user_id ? 0.5 : 1 }}
+                        >
+                          {deletingId === a.user_id ? 'Deleting…' : 'Delete Blog Data'}
+                        </button>
                       </div>
                     </>
                   ) : (

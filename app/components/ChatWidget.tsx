@@ -3,6 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 
 export default function ChatWidget() {
+  // Don't show on custom client domains
+  if (typeof window !== 'undefined' && !window.location.hostname.includes('inframindhq.online') && !window.location.hostname.includes('localhost')) {
+    return null;
+  }
   const [open, setOpen] = useState(false);
   const [showBubble, setShowBubble] = useState(false);
   const [step, setStep] = useState<'greet' | 'form' | 'sent'>('greet');
@@ -76,6 +80,9 @@ export default function ChatWidget() {
       window.open(`https://wa.me/919633474645?text=${text}`, '_blank');
     }, 900);
   };
+
+  const isMainDomain = typeof window !== 'undefined' && (window.location.hostname.includes('inframindhq.online') || window.location.hostname.includes('localhost'));
+  if (!isMainDomain) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 font-sans">

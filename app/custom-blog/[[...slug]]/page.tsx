@@ -10,6 +10,10 @@ const supabase = createClient(
 // This page handles requests from custom domains like blog.goldvaulttrading.com/some-post
 // The middleware rewrites those requests here and passes the domain via x-custom-domain header.
 
+export async function generateMetadata() {
+  return { title: '' }; // overridden per client below
+}
+
 export default async function CustomBlogPage({ params }: { params: Promise<{ slug?: string[] }> }) {
   const headersList = await headers();
   const customDomain = headersList.get('x-custom-domain');
@@ -57,7 +61,7 @@ export default async function CustomBlogPage({ params }: { params: Promise<{ slu
 function BlogListing({ client, blogs, domain }: { client: any; blogs: any[]; domain: string }) {
   return (
     <>
-      <SharedStyles />
+      <SharedStyles title={`${client.company_name} Blog`} />
       <div style={{ minHeight: '100vh', background: '#fafaf9' }}>
         <header className="blog-header">
           <a href={client.website} target="_blank" rel="noopener noreferrer" className="blog-header-brand">
@@ -80,10 +84,8 @@ function BlogListing({ client, blogs, domain }: { client: any; blogs: any[]; dom
                 const date = new Date(blog.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
                 const excerpt = (blog.content || '').replace(/<[^>]*>/g, '').slice(0, 140);
                 return (
-                  <a key={blog.id} href={`/${blog.slug}`} style={{ textDecoration: 'none' }}>
-                    <div style={{ background: '#fff', border: '1px solid #e7e5e4', borderRadius: 12, padding: 28, cursor: 'pointer', transition: 'box-shadow 0.15s' }}
-                      onMouseOver={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)')}
-                      onMouseOut={e => (e.currentTarget.style.boxShadow = 'none')}>
+                  <a key={blog.id} href={`/${blog.slug}`} className="blog-card-link">
+                    <div className="blog-card">
                       <p style={{ fontFamily: 'sans-serif', fontSize: 12, color: '#a8a29e', marginBottom: 8 }}>{date}</p>
                       <h2 style={{ fontFamily: '-apple-system, sans-serif', fontSize: 20, fontWeight: 700, color: '#1c1917', marginBottom: 10, lineHeight: 1.3 }}>{blog.title}</h2>
                       <p style={{ fontFamily: 'Georgia, serif', fontSize: 15, color: '#57534e', lineHeight: 1.7, marginBottom: 14 }}>{excerpt}...</p>
@@ -108,7 +110,7 @@ function BlogPost({ client, blog }: { client: any; blog: any }) {
 
   return (
     <>
-      <SharedStyles />
+      <SharedStyles title={`${client.company_name} - ${blog.title}`} />
       <div style={{ minHeight: '100vh', background: '#fafaf9' }}>
         <header className="blog-header">
           <a href={client.website} target="_blank" rel="noopener noreferrer" className="blog-header-brand">
@@ -140,8 +142,10 @@ function BlogPost({ client, blog }: { client: any; blog: any }) {
   );
 }
 
-function SharedStyles() {
+function SharedStyles({ title }: { title?: string }) {
   return (
+    <>
+    {title && <title>{title}</title>}
     <style>{`
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { background: #fafaf9; }
@@ -149,6 +153,9 @@ function SharedStyles() {
       .blog-header-brand { font-family:-apple-system,sans-serif;font-weight:700;font-size:16px;color:#1c1917;text-decoration:none; }
       .blog-header-back { font-family:-apple-system,sans-serif;font-size:13px;color:#78716c;text-decoration:none;display:flex;align-items:center;gap:6px; }
       .blog-header-back:hover { color:#1c1917; }
+      .blog-card-link { text-decoration: none; }
+      .blog-card { background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:28px;cursor:pointer;transition:box-shadow 0.15s; }
+      .blog-card:hover { box-shadow:0 4px 20px rgba(0,0,0,0.08); }
       .blog-hero { background:#fff;border-bottom:1px solid #e7e5e4;padding:56px 24px 48px; }
       .blog-hero-inner { max-width:720px;margin:0 auto; }
       .blog-meta { display:flex;align-items:center;gap:12px;margin-bottom:20px; }
@@ -167,18 +174,10 @@ function SharedStyles() {
       .blog-content blockquote { border-left:3px solid #d6d3d1;padding:4px 0 4px 20px;margin:32px 0;color:#57534e;font-style:italic; }
       @media(max-width:640px) { .blog-hero{padding:36px 20px 32px;} .blog-body{padding:32px 20px 60px;} .blog-content{font-size:17px;} }
     `}</style>
+    </>
   );
 }
 
 function SharedFooter() {
-  return (
-    <footer style={{ borderTop: '1px solid #e7e5e4', padding: '24px', textAlign: 'center', background: '#fff' }}>
-      <p style={{ fontFamily: 'sans-serif', fontSize: 13, color: '#a8a29e' }}>
-        Content powered by{' '}
-        <a href="https://inframindhq.online" target="_blank" rel="noopener noreferrer" style={{ color: '#10b981', textDecoration: 'none', fontWeight: 600 }}>
-          InfraMind
-        </a>
-      </p>
-    </footer>
-  );
+  return null;
 }

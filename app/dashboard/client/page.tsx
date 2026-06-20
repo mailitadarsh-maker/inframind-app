@@ -22,6 +22,7 @@ export default function ClientDashboard() {
   const [savingDomain, setSavingDomain] = useState(false);
   const [domainInput, setDomainInput] = useState('');
   const [domainMessage, setDomainMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [vercelCname, setVercelCname] = useState<string>('');
   const [form, setForm] = useState({
     company_name: '',
     website: '',
@@ -52,6 +53,11 @@ export default function ClientDashboard() {
       if (!clientData) { router.push('/dashboard/onboarding'); return; }
       setClient(clientData);
       setDomainInput(clientData.custom_domain || '');
+      if (clientData.custom_domain) {
+        fetch(`/api/client/get-cname?domain=${clientData.custom_domain}`)
+          .then(r => r.json())
+          .then(d => { if (d.cname) setVercelCname(d.cname); });
+      }
       setForm({
         company_name: clientData.company_name || '',
         website: clientData.website || '',
@@ -478,8 +484,8 @@ export default function ClientDashboard() {
                     <p className="text-white/40 text-sm mb-3">Go to your domain provider → DNS Settings → Add Record with these exact values:</p>
                     <div className="bg-[#26292f] border border-white/[0.08] rounded-lg p-3 font-mono text-xs grid grid-cols-2 gap-x-6 gap-y-2">
                       <span className="text-white/40">Type</span><span className="text-[#4ade80]">CNAME</span>
-                      <span className="text-white/40">Name / Host</span><span className="text-[#4ade80]">blog</span>
-                      <span className="text-white/40">Value / Points to</span><span className="text-[#4ade80]">cname.vercel-dns.com</span>
+                      <span className="text-white/40">Name / Host</span><span className="text-[#4ade80]">{domainInput ? domainInput.split(".")[0] : "blog"}</span>
+                      <span className="text-white/40">Value / Points to</span><span className="text-[#4ade80]">{vercelCname || 'cname.vercel-dns.com'}</span>
                       <span className="text-white/40">TTL</span><span className="text-[#4ade80]">Auto (or 3600)</span>
                     </div>
                   </div>

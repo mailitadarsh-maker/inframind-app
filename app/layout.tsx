@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
+import ChatWidget from './components/ChatWidget';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://inframindhq.online'),
@@ -32,6 +33,7 @@ export default function RootLayout({
       </head>
       <body className="bg-[#07090d] text-[#eef1f6] antialiased h-full">
         {children}
+
         </body>
     </html>
   );

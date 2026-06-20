@@ -26,6 +26,13 @@ export default function Footer() {
               <li><a href="/signup" className="hover:text-green transition-colors">API uptime monitoring</a></li>
               <li><a href="/signup" className="hover:text-green transition-colors">SSL certificate checker</a></li>
               <li><a href="/signup" className="hover:text-green transition-colors">Public status page</a></li>
+              <li><a href="/signup" className="hover:text-green transition-colors">Downtime alert tool</a></li>
+              <li><a href="/signup" className="hover:text-green transition-colors">AI incident reports</a></li>
+              <li><a href="/blog-service" className="hover:text-green transition-colors">AI blog writing service</a></li>
+              <li><a href="/blog-service" className="hover:text-green transition-colors">White-label blog for agencies</a></li>
+              <li><a href="/blog-service" className="hover:text-green transition-colors">Client subdomain blog setup</a></li>
+              <li><a href="/blog-service" className="hover:text-green transition-colors">Multi-client blog dashboard</a></li>
+              <li><a href="/blog-service" className="hover:text-green transition-colors">Automated SEO blog publishing</a></li>
               <li><a href="/#pricing" className="hover:text-green transition-colors">Pricing</a></li>
             </ul>
           </div>
