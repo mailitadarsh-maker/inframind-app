@@ -4,6 +4,14 @@ import { useState, useEffect } from "react";
 import AIDiagnosisBox from "./AIDiagnosisBox";
 import BlogPublishingBox from "./BlogPublishingBox";
 
+const askoGradient = {
+  backgroundImage: "linear-gradient(90deg, #4ade80 0%, #a78bfa 100%)",
+  WebkitBackgroundClip: "text" as const,
+  WebkitTextFillColor: "transparent" as const,
+  backgroundClip: "text" as const,
+  fontWeight: 800,
+};
+
 export default function Hero() {
   const [activeTab, setActiveTab] = useState<"monitoring" | "blog">("monitoring");
 
@@ -61,12 +69,15 @@ export default function Hero() {
       {/* SUBTEXT */}
       <div style={{ textAlign: "center", padding: "0 24px", marginBottom: "32px" }}>
         <p style={{ fontSize: "1.05rem", color: "#9a9ba8", lineHeight: 1.65, maxWidth: "520px", margin: "0 auto" }}>
-          InfraMind watches your uptime, SSL, and APIs 24/7 — then explains exactly what broke and how to fix it, in plain English.
+          <span style={askoGradient}>Asko</span> watches your uptime, SSL, and APIs 24/7 — then explains exactly what broke and how to fix it, in plain English.
         </p>
       </div>
 
       {/* TAB SWITCHER */}
       <div style={{ textAlign: "center", marginBottom: "44px" }}>
+        <p style={{ fontSize: "0.78rem", color: "#6b7280", marginBottom: "12px", letterSpacing: "0.02em" }}>
+          Two AI agents, one dashboard
+        </p>
         <div style={{ display: "inline-flex", background: "#2d2e35", border: "1px solid #3a3b44", borderRadius: "12px", padding: "5px", gap: "4px" }}>
           <button
             onClick={() => setActiveTab("monitoring")}
@@ -78,7 +89,7 @@ export default function Hero() {
             }}
           >
             <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#4ade80", display: "inline-block" }} />
-            App Monitoring
+            Asko Watch
           </button>
           <button
             onClick={() => setActiveTab("blog")}
@@ -90,7 +101,7 @@ export default function Hero() {
             }}
           >
             <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#a78bfa", display: "inline-block" }} />
-            Blog as a Service
+            Asko Write
           </button>
         </div>
       </div>
@@ -108,7 +119,11 @@ export default function Hero() {
             <span style={{ fontSize: "0.78rem", color: "#9a9ba8", fontFamily: "monospace" }}>inframindhq.online — dashboard</span>
             <span style={{ fontSize: "0.75rem", color: "#4ade80", fontFamily: "monospace", display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80", display: "inline-block" }} />
-              3 monitors active
+              {activeTab === "monitoring" ? (
+                <><span style={askoGradient}>Asko</span> is watching 3 services</>
+              ) : (
+                <><span style={askoGradient}>Asko</span> is writing...</>
+              )}
             </span>
           </div>
 

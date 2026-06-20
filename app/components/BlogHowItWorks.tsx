@@ -36,130 +36,81 @@ const steps = [
     number: '01',
     icon: <IconGlobe />,
     title: 'Client saves their subdomain',
-    desc: 'They enter blog.theirdomain.com in settings. InfraMind provisions it on Vercel automatically — no DNS headaches.',
+    desc: 'They enter blog.theirdomain.com in settings. Asko provisions it on Vercel automatically — no DNS headaches.',
   },
   {
     number: '02',
     icon: <IconSparkle />,
     title: 'You generate a post',
-    desc: 'Enter a topic or keyword. InfraMind writes the full article, finds a Pexels cover image, and formats it SEO-ready.',
+    desc: 'Enter a topic or keyword. Asko writes the full article, finds a Pexels cover image, and formats it SEO-ready.',
   },
   {
     number: '03',
     icon: <IconRocket />,
     title: 'Live in seconds',
-    desc: 'Hit publish. The post appears on the client\'s blog instantly — no deployment, no CMS login, no waiting.',
+    desc: "Hit publish. The post appears on the client's blog instantly — no deployment, no CMS login, no waiting.",
   },
 ];
 
 export default function BlogHowItWorks() {
   return (
-    <section
-      id="blog-service"
-      style={{
-        background: '#13151a',
-        padding: '96px 40px',
-        borderTop: '1px solid #1f2229',
-      }}
-    >
+    <section id="blog-service" style={{ background: '#13151a', padding: '72px 20px', borderTop: '1px solid #1f2229' }}>
+      <style>{`
+        @media (max-width: 760px) {
+          .bhiw-grid { grid-template-columns: 1fr !important; }
+          .bhiw-step { border-right: none !important; border-bottom: 1px solid #1f2229; padding: 32px 20px !important; }
+          .bhiw-step:last-child { border-bottom: none; }
+          .bhiw-headline { font-size: 2rem !important; margin-bottom: 40px !important; }
+        }
+      `}</style>
+
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        {/* Eyebrow */}
-        <p
-          style={{
-            textAlign: 'center',
-            fontSize: '11px',
-            fontFamily: '"SF Mono", "Fira Code", "Courier New", monospace',
-            letterSpacing: '0.18em',
-            color: '#4b5563',
-            textTransform: 'uppercase',
-            marginBottom: '24px',
-          }}
-        >
+        <p style={{
+          textAlign: 'center', fontSize: '11px',
+          fontFamily: '"SF Mono","Fira Code","Courier New",monospace',
+          letterSpacing: '0.18em', color: '#4b5563',
+          textTransform: 'uppercase', marginBottom: '20px',
+        }}>
           HOW IT WORKS — BLOG AS A SERVICE
         </p>
 
-        {/* Headline */}
-        <h2
-          style={{
-            textAlign: 'center',
-            fontSize: 'clamp(2.2rem, 5vw, 3.4rem)',
-            fontWeight: 800,
-            color: '#f0f0f0',
-            letterSpacing: '-0.03em',
-            lineHeight: 1.05,
-            margin: '0 0 72px 0',
-          }}
-        >
+        <h2 className="bhiw-headline" style={{
+          textAlign: 'center',
+          fontSize: 'clamp(2rem, 5vw, 3.4rem)',
+          fontWeight: 800, color: '#f0f0f0',
+          letterSpacing: '-0.03em', lineHeight: 1.05,
+          margin: '0 0 64px 0',
+        }}>
           From onboarding to live post{' '}
           <span style={{ color: '#a5b4fc' }}>in minutes.</span>
         </h2>
 
-        {/* Steps grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '0',
-            borderTop: '1px solid #1f2229',
-          }}
-        >
+        <div className="bhiw-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '0',
+          borderTop: '1px solid #1f2229',
+        }}>
           {steps.map((step, i) => (
-            <div
-              key={i}
-              style={{
-                padding: '40px 40px 48px',
-                borderRight: i < 2 ? '1px solid #1f2229' : 'none',
-                position: 'relative',
-              }}
-            >
-              {/* Step number */}
-              <p
-                style={{
-                  fontSize: '13px',
-                  fontFamily: '"SF Mono", "Fira Code", "Courier New", monospace',
-                  color: '#2d3139',
-                  fontWeight: 600,
-                  margin: '0 0 32px 0',
-                  letterSpacing: '0.05em',
-                }}
-              >
+            <div key={i} className="bhiw-step" style={{
+              padding: '40px 40px 48px',
+              borderRight: i < 2 ? '1px solid #1f2229' : 'none',
+            }}>
+              <p style={{
+                fontSize: '13px',
+                fontFamily: '"SF Mono","Fira Code","Courier New",monospace',
+                color: '#2d3139', fontWeight: 600,
+                margin: '0 0 32px 0', letterSpacing: '0.05em',
+              }}>
                 {step.number}
               </p>
-
-              {/* Icon */}
-              <div
-                style={{
-                  color: '#a5b4fc',
-                  marginBottom: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
+              <div style={{ color: '#a5b4fc', marginBottom: '24px', display: 'flex', alignItems: 'center' }}>
                 {step.icon}
               </div>
-
-              {/* Title */}
-              <h3
-                style={{
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                  color: '#e6edf3',
-                  margin: '0 0 10px 0',
-                  letterSpacing: '-0.01em',
-                }}
-              >
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#e6edf3', margin: '0 0 10px 0' }}>
                 {step.title}
               </h3>
-
-              {/* Description */}
-              <p
-                style={{
-                  fontSize: '0.9rem',
-                  color: '#6b7280',
-                  lineHeight: 1.65,
-                  margin: 0,
-                }}
-              >
+              <p style={{ fontSize: '0.9rem', color: '#6b7280', lineHeight: 1.65, margin: 0 }}>
                 {step.desc}
               </p>
             </div>

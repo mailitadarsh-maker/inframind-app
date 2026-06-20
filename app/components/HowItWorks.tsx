@@ -41,7 +41,7 @@ const steps = [
     number: '01',
     icon: <IconLink />,
     title: 'Add your URL',
-    desc: 'Paste your website, API endpoint, or domain. InfraMind validates it and starts watching immediately.',
+    desc: 'Paste your website, API endpoint, or domain. Asko validates it and starts watching immediately.',
   },
   {
     number: '02',
@@ -53,116 +53,71 @@ const steps = [
     number: '03',
     icon: <IconCPU />,
     title: 'AI explains the fix',
-    desc: "No guessing what went wrong. InfraMind's AI reads the error, finds the cause, and gives you a step-by-step fix.",
+    desc: "No guessing what went wrong. Asko reads the error, finds the cause, and gives you a step-by-step fix.",
   },
 ];
 
 export default function HowItWorks() {
   return (
-    <section
-      id="monitoring"
-      style={{
-        background: '#13151a',
-        padding: '96px 40px',
-      }}
-    >
+    <section id="monitoring" style={{ background: '#13151a', padding: '72px 20px' }}>
+      <style>{`
+        @media (max-width: 760px) {
+          .hiw-grid { grid-template-columns: 1fr !important; }
+          .hiw-step { border-right: none !important; border-bottom: 1px solid #1f2229; padding: 32px 20px !important; }
+          .hiw-step:last-child { border-bottom: none; }
+          .hiw-headline { font-size: 2.2rem !important; margin-bottom: 40px !important; }
+        }
+      `}</style>
+
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        {/* Eyebrow */}
-        <p
-          style={{
-            textAlign: 'center',
-            fontSize: '11px',
-            fontFamily: '"SF Mono", "Fira Code", "Courier New", monospace',
-            letterSpacing: '0.18em',
-            color: '#4b5563',
-            textTransform: 'uppercase',
-            marginBottom: '24px',
-          }}
-        >
+        <p style={{
+          textAlign: 'center', fontSize: '11px',
+          fontFamily: '"SF Mono","Fira Code","Courier New",monospace',
+          letterSpacing: '0.18em', color: '#4b5563',
+          textTransform: 'uppercase', marginBottom: '20px',
+        }}>
           HOW IT WORKS — MONITORING
         </p>
 
-        {/* Headline */}
-        <h2
-          style={{
-            textAlign: 'center',
-            fontSize: 'clamp(2.4rem, 5vw, 3.6rem)',
-            fontWeight: 800,
-            color: '#f0f0f0',
-            letterSpacing: '-0.03em',
-            lineHeight: 1.05,
-            margin: '0 0 72px 0',
-          }}
-        >
+        <h2 className="hiw-headline" style={{
+          textAlign: 'center',
+          fontSize: 'clamp(2rem, 5vw, 3.6rem)',
+          fontWeight: 800, color: '#f0f0f0',
+          letterSpacing: '-0.03em', lineHeight: 1.05,
+          margin: '0 0 64px 0',
+        }}>
           Set up in under 3 minutes.
         </h2>
 
-        {/* Steps grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '0',
-            borderTop: '1px solid #1f2229',
-          }}
-        >
+        <div className="hiw-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '0',
+          borderTop: '1px solid #1f2229',
+        }}>
           {steps.map((step, i) => (
-            <div
-              key={i}
-              style={{
-                padding: '40px 40px 48px',
-                borderRight: i < 2 ? '1px solid #1f2229' : 'none',
-                position: 'relative',
-              }}
-            >
-              {/* Step number */}
-              <p
-                style={{
-                  fontSize: '13px',
-                  fontFamily: '"SF Mono", "Fira Code", "Courier New", monospace',
-                  color: '#2d3139',
-                  fontWeight: 600,
-                  margin: '0 0 32px 0',
-                  letterSpacing: '0.05em',
-                }}
-              >
+            <div key={i} className="hiw-step" style={{
+              padding: '40px 40px 48px',
+              borderRight: i < 2 ? '1px solid #1f2229' : 'none',
+            }}>
+              <p style={{
+                fontSize: '13px',
+                fontFamily: '"SF Mono","Fira Code","Courier New",monospace',
+                color: '#2d3139', fontWeight: 600,
+                margin: '0 0 32px 0', letterSpacing: '0.05em',
+              }}>
                 {step.number}
               </p>
-
-              {/* Icon */}
-              <div
-                style={{
-                  color: '#86efac',
-                  marginBottom: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
+              <div style={{ color: '#86efac', marginBottom: '24px' }}>
                 {step.icon}
               </div>
-
-              {/* Title */}
-              <h3
-                style={{
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                  color: '#e6edf3',
-                  margin: '0 0 10px 0',
-                  letterSpacing: '-0.01em',
-                }}
-              >
+              <h3 style={{
+                fontSize: '1.05rem', fontWeight: 700,
+                color: '#e6edf3', margin: '0 0 10px 0',
+              }}>
                 {step.title}
               </h3>
-
-              {/* Description */}
-              <p
-                style={{
-                  fontSize: '0.9rem',
-                  color: '#6b7280',
-                  lineHeight: 1.65,
-                  margin: 0,
-                }}
-              >
+              <p style={{ fontSize: '0.9rem', color: '#6b7280', lineHeight: 1.65, margin: 0 }}>
                 {step.desc}
               </p>
             </div>

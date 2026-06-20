@@ -2,179 +2,68 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-const monitoringPlans = [
+type Plan = {
+  id: string; name: string; price: string; period: string;
+  description: string; highlight: boolean; badge: string | null;
+  features: string[]; cta: string; ctaHref: string;
+  blogCount?: string; blogSub?: string; ctaFilled?: boolean;
+};
+
+const monitoringPlans: Plan[] = [
   {
-    id: 'm-starter',
-    name: 'Starter',
-    price: '₹0',
-    period: '/mo',
-    description: 'For founders getting started.',
-    highlight: false,
-    badge: null,
-    blogCount: null,
-    features: [
-      '3 monitors',
-      '30-min check intervals',
-      'Email alerts',
-      'Public status page',
-    ],
-    cta: 'Get started free',
-    ctaHref: '/signup',
+    id: 'm-starter', name: 'Starter', price: '₹0', period: '/mo',
+    description: 'For founders getting started.', highlight: false, badge: null,
+    features: ['3 monitors', '30-min check intervals', 'Email alerts', 'Public status page'],
+    cta: 'Get started free', ctaHref: '/signup',
   },
   {
-    id: 'm-growth',
-    name: 'Growth',
-    price: '₹999',
-    period: '/mo',
-    description: 'For growing SaaS & agencies.',
-    highlight: true,
-    badge: 'Most popular',
-    blogCount: null,
-    features: [
-      '25 monitors',
-      '30-second check intervals',
-      'AI incident reports',
-      'Blog service — 3 clients',
-      'SSL monitoring',
-    ],
-    cta: 'Start Growth plan',
-    ctaHref: '/signup?plan=growth',
+    id: 'm-growth', name: 'Growth', price: '₹999', period: '/mo',
+    description: 'For growing SaaS & agencies.', highlight: true, badge: 'Most popular',
+    features: ['25 monitors', '30-second check intervals', 'AI incident reports', 'Blog service — 3 clients', 'SSL monitoring'],
+    cta: 'Start Growth plan', ctaHref: '/signup?plan=growth',
   },
   {
-    id: 'm-pro',
-    name: 'Pro',
-    price: '₹2,499',
-    period: '/mo',
-    description: 'For established teams.',
-    highlight: false,
-    badge: null,
-    blogCount: null,
-    features: [
-      '100 monitors',
-      '15-second intervals',
-      'AI reports + Slack alerts',
-      'Blog service — 15 clients',
-      'Priority support',
-    ],
-    cta: 'Start Pro plan',
-    ctaHref: '/signup?plan=pro',
+    id: 'm-pro', name: 'Pro', price: '₹2,499', period: '/mo',
+    description: 'For established teams.', highlight: false, badge: null,
+    features: ['100 monitors', '15-second intervals', 'AI reports + Slack alerts', 'Blog service — 15 clients', 'Priority support'],
+    cta: 'Start Pro plan', ctaHref: '/signup?plan=pro',
   },
   {
-    id: 'm-agency',
-    name: 'Agency',
-    price: '₹4,999',
-    period: '/mo',
-    description: 'For digital agencies.',
-    highlight: false,
-    badge: null,
-    blogCount: null,
-    features: [
-      'Unlimited monitors',
-      '5-second intervals',
-      'White-label status pages',
-      'Blog service — unlimited',
-      'Dedicated onboarding',
-    ],
-    cta: 'Contact us',
-    ctaHref: '/contact',
+    id: 'm-agency', name: 'Agency', price: '₹4,999', period: '/mo',
+    description: 'For digital agencies.', highlight: false, badge: null,
+    features: ['Unlimited monitors', '5-second intervals', 'White-label status pages', 'Blog service — unlimited', 'Dedicated onboarding'],
+    cta: 'Contact us', ctaHref: '/contact',
   },
 ];
 
-const blogPlans = [
+const blogPlans: Plan[] = [
   {
-    id: 'b-starter',
-    name: 'Starter',
-    price: '₹999',
-    period: '/month',
-    description: 'Best for small businesses.',
-    highlight: false,
-    badge: null,
-    blogCount: '15 blogs/mo',
-    blogSub: 'Auto + manual',
-    features: [
-      '15 blogs per month',
-      'Daily auto-generation',
-      'Manual generation anytime',
-      'SEO keyword targeting',
-      'Approve & publish flow',
-      'Embed script delivery',
-      'Email support',
-    ],
-    cta: 'Get Started',
-    ctaHref: '/signup?plan=blog-starter',
-    ctaFilled: false,
+    id: 'b-starter', name: 'Starter', price: '₹999', period: '/month',
+    description: 'Best for small businesses.', highlight: false, badge: null,
+    blogCount: '15 blogs/mo', blogSub: 'Auto + manual',
+    features: ['15 blogs per month', 'Daily auto-generation', 'Manual generation anytime', 'SEO keyword targeting', 'Approve & publish flow', 'Embed script delivery', 'Email support'],
+    cta: 'Get Started', ctaHref: '/signup?plan=blog-starter', ctaFilled: false,
   },
   {
-    id: 'b-growth',
-    name: 'Growth',
-    price: '₹1,899',
-    period: '/month',
-    description: 'Most popular plan.',
-    highlight: true,
-    badge: 'Most Popular',
-    blogCount: '30 blogs/mo',
-    blogSub: 'Daily auto + manual',
-    features: [
-      '30 blogs per month',
-      'Daily auto-generation',
-      'Manual generation anytime',
-      'Advanced SEO strategy',
-      'Approve & publish flow',
-      'Embed script delivery',
-      'Priority support',
-      'Content performance insights',
-    ],
-    cta: 'Get Started',
-    ctaHref: '/signup?plan=blog-growth',
-    ctaFilled: true,
+    id: 'b-growth', name: 'Growth', price: '₹1,899', period: '/month',
+    description: 'Most popular plan.', highlight: true, badge: 'Most Popular',
+    blogCount: '30 blogs/mo', blogSub: 'Daily auto + manual',
+    features: ['30 blogs per month', 'Daily auto-generation', 'Manual generation anytime', 'Advanced SEO strategy', 'Approve & publish flow', 'Embed script delivery', 'Priority support', 'Content performance insights'],
+    cta: 'Get Started', ctaHref: '/signup?plan=blog-growth', ctaFilled: true,
   },
   {
-    id: 'b-pro',
-    name: 'Pro',
-    price: '₹2,499',
-    period: '/month',
-    description: 'For growing brands.',
-    highlight: false,
-    badge: null,
-    blogCount: '60 blogs/mo',
-    blogSub: '2 blogs/day auto + manual',
-    features: [
-      '60 blogs per month',
-      'Manual generation anytime',
-      'Embed + WordPress delivery',
-      'Content calendar',
-      '2 auto-generated blogs per day',
-      'Advanced SEO strategy',
-      'Dedicated support',
-      'Custom tone & style',
-    ],
-    cta: 'Get Started',
-    ctaHref: '/signup?plan=blog-pro',
-    ctaFilled: false,
+    id: 'b-pro', name: 'Pro', price: '₹2,499', period: '/month',
+    description: 'For growing brands.', highlight: false, badge: null,
+    blogCount: '60 blogs/mo', blogSub: '2 blogs/day auto + manual',
+    features: ['60 blogs per month', 'Manual generation anytime', 'Embed + WordPress delivery', 'Content calendar', '2 auto-generated blogs per day', 'Advanced SEO strategy', 'Dedicated support', 'Custom tone & style'],
+    cta: 'Get Started', ctaHref: '/signup?plan=blog-pro', ctaFilled: false,
   },
   {
-    id: 'b-enterprise',
-    name: 'Enterprise',
-    price: 'Custom',
-    period: 'on request',
-    description: 'For agencies & large teams.',
-    highlight: false,
-    badge: null,
-    blogCount: 'Unlimited',
-    blogSub: 'Custom schedule',
-    features: [
-      'Unlimited blogs',
-      'Multiple company profiles',
-      'API access',
-      'Custom integrations',
-      'Custom generation schedule',
-      'White label option',
-      'Dedicated account manager',
-      'SLA guarantee',
-    ],
-    cta: 'Contact Us',
-    ctaHref: '/contact',
-    ctaFilled: false,
+    id: 'b-enterprise', name: 'Enterprise', price: 'Custom', period: 'on request',
+    description: 'For agencies & large teams.', highlight: false, badge: null,
+    blogCount: 'Unlimited', blogSub: 'Custom schedule',
+    features: ['Unlimited blogs', 'Multiple company profiles', 'API access', 'Custom integrations', 'Custom generation schedule', 'White label option', 'Dedicated account manager', 'SLA guarantee'],
+    cta: 'Contact Us', ctaHref: '/contact', ctaFilled: false,
   },
 ];
 
@@ -210,90 +99,119 @@ export default function Pricing() {
 
   return (
     <section id="pricing" ref={ref} style={{ padding: '96px 40px', background: '#13151a' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      <style>{`
+        @media (max-width: 760px) {
+          .pricing-section { padding: 48px 0 48px !important; }
+          .pricing-inner { padding: 0 16px; }
+          .pricing-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: #13151a;
+            padding: 12px 16px 12px;
+            margin: 0 -16px;
+            border-bottom: 1px solid #1f2229;
+            margin-bottom: 16px;
+          }
+          .pricing-tab-wrap {
+            margin-bottom: 0;
+          }
+          .pricing-cards-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 16px !important;
+            padding: 0 !important;
+          }
+          .pricing-card {
+            margin-top: 0 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+        }
+      `}</style>
 
-        {/* Header */}
-        <div style={{
-          textAlign: 'center', marginBottom: '44px',
-          opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'opacity 0.6s, transform 0.6s',
-        }}>
-          <p style={{ fontSize: '11px', fontFamily: '"SF Mono","Fira Code",monospace', letterSpacing: '0.18em', color: '#4b5563', textTransform: 'uppercase', marginBottom: '18px' }}>
-            PRICING
-          </p>
-          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, letterSpacing: '-0.03em', color: '#f0f0f0', margin: '0 0 12px', lineHeight: 1.05 }}>
-            One platform, two products.
-          </h2>
-          <p style={{ fontSize: '1rem', color: '#6b7280', margin: 0 }}>
-            Start free. Upgrade when you're ready.
-          </p>
-        </div>
+      <div className="pricing-inner" style={{ maxWidth: '1280px', margin: '0 auto' }}>
 
-        {/* Toggle */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '36px' }}>
-          <div style={{ display: 'inline-flex', background: '#1a1d24', border: '1px solid #2a2d35', borderRadius: '12px', padding: '4px', gap: '4px' }}>
-            {(['monitoring', 'blog'] as const).map((tab) => {
-              const isActive = activeTab === tab;
-              const tabAccent = tab === 'monitoring' ? '#4ade80' : '#a5b4fc';
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  style={{
-                    padding: '10px 28px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                    fontSize: '13px', fontWeight: 600, letterSpacing: '0.01em',
-                    transition: 'all 0.2s',
-                    background: isActive ? tabAccent : 'transparent',
-                    color: isActive ? '#000' : '#6b7280',
-                  }}
-                >
-                  {tab === 'monitoring' ? 'App Monitoring' : 'Blog as a Service'}
-                </button>
-              );
-            })}
+        {/* Sticky Header + Tab + Banner */}
+        <div className="pricing-header">
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontFamily: '"SF Mono","Fira Code",monospace', letterSpacing: '0.18em', color: '#4b5563', textTransform: 'uppercase', marginBottom: '10px' }}>
+              PRICING
+            </p>
+            <h2 style={{ fontSize: 'clamp(1.6rem, 5vw, 3rem)', fontWeight: 800, letterSpacing: '-0.03em', color: '#f0f0f0', margin: '0 0 6px', lineHeight: 1.05 }}>
+              One platform, two products.
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: 0 }}>
+              Start free. Upgrade when you're ready.
+            </p>
           </div>
-        </div>
-
-        {/* 14-day trial banner - monitoring only */}
-        {isMonitoring && <div style={{
-          background: accentDim, border: `1px solid ${accentBorder}`, borderRadius: '12px',
-          padding: '18px 28px', marginBottom: '36px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          flexWrap: 'wrap', gap: '16px', transition: 'all 0.3s',
-        }}>
-          <div>
-            <div style={{ fontSize: '15px', fontWeight: 600, color: accent, marginBottom: '4px' }}>
-              Get 14 Extra Trial Days — Free
+          <div className="pricing-tab-wrap">
+          {/* Tab toggle */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+            <div style={{ display: 'inline-flex', background: '#1a1d24', border: '1px solid #2a2d35', borderRadius: '12px', padding: '4px', gap: '4px' }}>
+              {(['monitoring', 'blog'] as const).map((tab) => {
+                const isActive = activeTab === tab;
+                const tabAccent = tab === 'monitoring' ? '#4ade80' : '#a5b4fc';
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    style={{
+                      padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                      fontSize: '13px', fontWeight: 600, letterSpacing: '0.01em',
+                      transition: 'all 0.2s',
+                      background: isActive ? tabAccent : 'transparent',
+                      color: isActive ? '#000' : '#6b7280',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {tab === 'monitoring' ? 'Asko Watch' : 'Asko Write'}
+                  </button>
+                );
+              })}
             </div>
-            <div style={{ color: '#6b7280', fontSize: '13px', lineHeight: 1.6 }}>
-              Share InfraMind on LinkedIn and unlock 14 extra trial days + 10 monitors instantly. No card needed.
-            </div>
           </div>
-          <a href="/signup?redirect=/dashboard/linkedin-reward" style={{
-            background: accentDim, border: `1px solid ${accentBorder}`, color: accent,
-            fontWeight: 600, textDecoration: 'none', fontSize: '13px',
-            padding: '10px 20px', borderRadius: '8px', whiteSpace: 'nowrap', transition: 'all 0.3s',
-          }}>
-            Claim Free Reward →
-          </a>
-        </div>}
 
-        {/* Blog free trial note */}
-        {!isMonitoring && (
-          <div style={{
-            background: 'rgba(165,180,252,0.07)', border: '1px solid rgba(165,180,252,0.2)',
-            borderRadius: '12px', padding: '14px 24px', marginBottom: '28px',
-            display: 'flex', alignItems: 'center', gap: '10px',
-          }}>
-            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#a5b4fc', flexShrink: 0, display: 'inline-block' }} />
-            <span style={{ fontSize: '13px', color: '#a5b4fc', fontWeight: 600 }}>
-              All plans start with a 7-day free trial — 4 AI blogs included. No credit card needed.
-            </span>
+          {/* Sticky banner */}
+          {isMonitoring && (
+            <div style={{
+              background: accentDim, border: `1px solid ${accentBorder}`, borderRadius: '10px',
+              padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: '10px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                <span style={{ fontSize: '16px' }}>🎁</span>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: accent, whiteSpace: 'nowrap' }}>
+                  14 Extra Trial Days — Free
+                </span>
+              </div>
+              <a href="/signup?redirect=/dashboard/linkedin-reward" style={{
+                background: accent, color: '#000',
+                fontWeight: 700, textDecoration: 'none', fontSize: '11px',
+                padding: '7px 12px', borderRadius: '7px', whiteSpace: 'nowrap', flexShrink: 0,
+              }}>
+                Claim →
+              </a>
+            </div>
+          )}
+
+          {!isMonitoring && (
+            <div style={{
+              background: 'rgba(165,180,252,0.07)', border: '1px solid rgba(165,180,252,0.2)',
+              borderRadius: '12px', padding: '12px 16px',
+              display: 'flex', alignItems: 'center', gap: '10px',
+            }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#a5b4fc', flexShrink: 0, display: 'inline-block' }} />
+              <span style={{ fontSize: '13px', color: '#a5b4fc', fontWeight: 600 }}>
+                All plans start with a 7-day free trial — 4 AI blogs included. No credit card needed.
+              </span>
+            </div>
+          )}
           </div>
-        )}
+        </div>
 
         {/* Cards */}
-        <div className="scroll-carousel" style={{
+        <div className="pricing-cards-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '16px',
@@ -305,6 +223,7 @@ export default function Pricing() {
             return (
               <div
                 key={plan.id}
+                className="pricing-card"
                 onMouseEnter={() => setHovered(plan.id)}
                 onMouseLeave={() => setHovered(null)}
                 style={{
@@ -333,7 +252,6 @@ export default function Pricing() {
                   </div>
                 )}
 
-                {/* Plan name row */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                   <span style={{
                     fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em',
@@ -347,26 +265,21 @@ export default function Pricing() {
                   )}
                 </div>
 
-                {/* Blog count pill */}
                 {'blogCount' in plan && plan.blogCount && (
                   <div style={{
                     background: '#22252c', border: '1px solid #2a2d35', borderRadius: '8px',
-                    padding: '10px 14px', marginBottom: '16px', float: 'right',
-                    textAlign: 'right',
+                    padding: '10px 14px', marginBottom: '16px', float: 'right', textAlign: 'right',
                   }}>
                     <div style={{ fontSize: '13px', fontWeight: 700, color: '#e6edf3' }}>{plan.blogCount}</div>
                     {'blogSub' in plan && <div style={{ fontSize: '11px', color: '#4b5563', marginTop: '2px' }}>{plan.blogSub}</div>}
                   </div>
                 )}
 
-                {/* Price */}
                 <div style={{ marginBottom: '6px', clear: 'both' }}>
                   <span style={{ fontSize: plan.price === 'Custom' ? '2rem' : '2.4rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#f0f0f0', lineHeight: 1 }}>
                     {plan.price}
                   </span>
-                  <span style={{ fontSize: '13px', color: '#4b5563', marginLeft: '4px' }}>
-                    {plan.period}
-                  </span>
+                  <span style={{ fontSize: '13px', color: '#4b5563', marginLeft: '4px' }}>{plan.period}</span>
                 </div>
 
                 <p style={{ fontSize: '12px', color: '#4b5563', lineHeight: 1.5, margin: '0 0 18px', fontFamily: '"SF Mono","Fira Code",monospace' }}>
@@ -399,7 +312,6 @@ export default function Pricing() {
           })}
         </div>
 
-        {/* Blog bottom note */}
         {!isMonitoring && (
           <p style={{ textAlign: 'center', marginTop: '32px', color: '#4b5563', fontSize: '13px' }}>
             All plans include AI-powered blog generation, SEO optimization, and embed delivery.{' '}
@@ -412,7 +324,6 @@ export default function Pricing() {
         <p style={{ textAlign: 'center', marginTop: '24px', color: '#2d3139', fontSize: '12px', fontFamily: '"SF Mono","Fira Code",monospace' }}>
           Paid plans launching soon. You're on the free beta — enjoy it while it lasts.
         </p>
-
       </div>
     </section>
   );

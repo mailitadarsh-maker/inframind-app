@@ -4,7 +4,7 @@ export default function ProofBar() {
   const stats = [
     { value: "99.9%",        label: "uptime tracked" },
     { value: "<30s",         label: "alert latency" },
-    { value: "AI",           label: "plain-english diagnosis" },
+    { value: "Asko",         label: "plain-english diagnosis" },
     { value: "1-click",      label: "blog publishing" },
     { value: "Multi-client", label: "from one dashboard" },
   ];

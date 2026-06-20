@@ -5,59 +5,55 @@ import { useState } from 'react';
 const faqs = [
   {
     q: 'What is InfraMind?',
-    a: 'InfraMind is an AI-powered uptime, API, and SSL monitoring platform built for growing teams and agencies. It checks your websites, APIs, and SSL certificates every 30 seconds — 24/7 — and uses AI to explain exactly what broke and how to fix it, in plain English. No DevOps experience needed.',
+    a: 'InfraMind is an AI-powered uptime monitoring and Blog as a Service platform. It monitors your websites, APIs, and SSL certificates 24/7, sends instant alerts when something breaks, and uses AI to explain what went wrong and how to fix it — in plain English.',
+  },
+  {
+    q: 'Who is Asko?',
+    a: 'Asko is the AI agent that powers InfraMind. Asko Watch monitors your uptime, APIs, and SSL certificates around the clock and explains incidents in plain English. Asko Write generates and publishes SEO-ready blog posts to your clients\' subdomains. One agent, two jobs, available in every InfraMind plan.',
   },
   {
     q: 'How do I check if my website is down?',
-    a: 'Add your website URL to InfraMind in under 3 minutes. InfraMind immediately starts sending HTTP checks every 30 seconds. The moment your site goes down, you get an email alert with the status code, response time, and timestamp — before your customers notice.',
+    a: 'Just paste your URL into InfraMind. It starts checking every 30 seconds and emails you the moment your site goes down — with response time, status code, and timestamp included.',
   },
   {
     q: 'What types of monitoring does InfraMind support?',
-    a: 'InfraMind supports uptime monitoring (HTTP/HTTPS), API endpoint monitoring, SSL certificate monitoring with expiry warnings, and public status pages. Every monitor runs checks every 15–30 seconds depending on your plan, around the clock.',
+    a: 'InfraMind supports HTTP/HTTPS uptime monitoring, API endpoint checks, SSL certificate expiry tracking, and public status pages — all from one dashboard.',
   },
   {
-    q: 'How does InfraMind\'s AI incident analysis work?',
-    a: 'When an outage or slowdown is detected, InfraMind\'s AI reads the error, identifies the root cause — whether it\'s a server crash, DNS failure, SSL expiry, or API timeout — and gives you a clear, step-by-step fix in plain English. No log-diving, no guesswork.',
+    q: 'How does the AI incident report work?',
+    a: 'When downtime is detected, Asko identifies the root cause — server crash, DNS failure, SSL expiry, or API timeout — and gives you a clear step-by-step fix in plain English. No log-diving, no guesswork.',
   },
   {
     q: 'Is InfraMind free to use?',
-    a: 'Yes. InfraMind has a free Starter plan that includes 3 monitors with 30-minute check intervals, email alerts, and a public status page — no credit card required. Paid plans start at ₹999/month and unlock faster checks, more monitors, AI reports, and Blog as a Service.',
+    a: 'Yes. The free Starter plan includes 3 monitors, 30-minute check intervals, email alerts, and a public status page — no credit card required. Paid plans start at ₹999/month.',
   },
   {
     q: 'How quickly does InfraMind detect downtime?',
-    a: 'InfraMind detects downtime in as little as 15 seconds on Pro and Agency plans, and within 30 seconds on Growth plans. The free Starter plan checks every 30 minutes. You\'ll receive an alert the moment an incident is confirmed — typically within one check cycle.',
+    a: 'As little as 15 seconds on Pro and Agency plans, 30 seconds on Growth. You\'ll receive an alert the moment an incident is confirmed.',
   },
   {
     q: 'Can I share a public status page with my customers?',
-    a: 'Yes. Every InfraMind account includes a public status page you can share with customers and internal teams. It shows real-time service health, current incidents, and historical uptime — all updated automatically. No coding required to set it up.',
+    a: 'Yes. Every account includes a public status page showing real-time service health, current incidents, and historical uptime — updated automatically. No coding required.',
   },
   {
     q: 'Do I need technical or DevOps knowledge to use InfraMind?',
-    a: 'No. InfraMind is built for founders, agencies, and small teams who don\'t have a full-time DevOps engineer. You just paste a URL and InfraMind handles the rest — monitoring, alerting, and AI-powered incident reports all in plain English.',
+    a: 'No. InfraMind is built for founders, agencies, and small teams without a full-time DevOps engineer. Paste a URL and InfraMind handles the rest.',
   },
   {
     q: 'What is Blog as a Service in InfraMind?',
-    a: 'Blog as a Service lets you publish AI-generated SEO blog posts directly to your clients\' subdomains (e.g. blog.theirclient.com) from one InfraMind dashboard. You enter a topic or keyword, InfraMind writes the full article with a Pexels cover image, adds meta tags, canonical URLs, and Open Graph — then you publish in one click. No CMS, no deployment, no DNS headaches.',
+    a: 'It lets you publish AI-generated SEO blog posts directly to your clients\' subdomains from one dashboard. Enter a topic, Asko writes the article with a cover image, meta tags, and Open Graph — publish in one click.',
   },
   {
     q: 'How does InfraMind help with SEO for my clients?',
-    a: 'InfraMind\'s Blog as a Service generates SEO-ready content with proper meta titles, descriptions, canonical URLs, Open Graph tags, and keyword targeting built in. Each post is published to a client-owned subdomain, building their domain authority over time — all managed from your InfraMind dashboard.',
+    a: 'InfraMind generates SEO-ready content with proper meta titles, descriptions, canonical URLs, and keyword targeting. Each post is published to a client-owned subdomain, building their domain authority over time.',
   },
   {
     q: 'How is InfraMind different from other uptime monitoring tools?',
-    a: 'Most uptime tools just tell you something is down. InfraMind tells you what broke, why it broke, and how to fix it — using AI. It also combines uptime monitoring with Blog as a Service in a single dashboard, making it the only tool that helps agencies both keep clients\' apps running and grow their organic traffic.',
-  },
-  {
-    q: 'How do I get extra trial days or more monitors on InfraMind?',
-    a: 'Share InfraMind on LinkedIn and claim your free reward to unlock 14 extra trial days and 10 additional monitors instantly — no credit card needed. You can claim this from the Pricing section or directly inside your dashboard after signing up.',
+    a: 'Most tools just tell you something is down. InfraMind tells you what broke, why it broke, and how to fix it — using AI. It also combines uptime monitoring with Blog as a Service in a single dashboard.',
   },
   {
     q: 'Does InfraMind work for agencies managing multiple clients?',
-    a: 'Yes. InfraMind is built with agencies in mind. You can manage monitors for multiple client websites and publish blog content to multiple client subdomains — all from one dashboard. Agency and Pro plans support unlimited monitors and unlimited client blogs.',
-  },
-  {
-    q: 'What happens when my SSL certificate is about to expire?',
-    a: 'InfraMind tracks SSL expiry dates for every domain you monitor and sends you a warning email before your certificate expires. This prevents unexpected site outages and broken padlock warnings that hurt customer trust and SEO rankings.',
+    a: 'Yes. You can manage monitors for multiple client websites and publish blog content to multiple client subdomains — all from one dashboard. Agency and Pro plans support unlimited monitors and client blogs.',
   },
 ];
 
@@ -65,11 +61,27 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section
-      id="faq"
-      style={{ padding: '96px 40px', background: '#13151a', borderTop: '1px solid #1f2229' }}
-    >
-      {/* JSON-LD structured data for SEO */}
+    <section id="faq" style={{ padding: '96px 40px', background: '#13151a', borderTop: '1px solid #1f2229' }}>
+      <style>{`
+        @media (max-width: 760px) {
+          .faq-section { padding: 48px 16px !important; }
+          .faq-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: #13151a;
+            padding: 16px 16px 12px;
+            margin: 0 -16px 24px;
+            border-bottom: 1px solid #1f2229;
+          }
+          .faq-header h2 { font-size: 1.4rem !important; margin: 0 0 4px !important; }
+          .faq-header p { font-size: 0.82rem !important; margin: 0 !important; }
+          .faq-header .faq-eyebrow { display: none; }
+          .faq-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
+          .faq-col:last-child .faq-item:first-child { border-top: none !important; }
+        }
+      `}</style>
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -85,36 +97,36 @@ export default function FAQ() {
         }}
       />
 
-      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+      <div className="faq-section" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+        {/* Sticky Header */}
+        <div className="faq-header" style={{ textAlign: 'center', marginBottom: '48px' }}>
           <p style={{
             fontSize: '11px', fontFamily: '"SF Mono","Fira Code",monospace',
-            letterSpacing: '0.18em', color: '#4b5563', textTransform: 'uppercase', marginBottom: '18px',
-          }}>
-            FAQ
-          </p>
+            letterSpacing: '0.18em', color: '#4b5563', textTransform: 'uppercase', marginBottom: '10px',
+          }}>FAQ</p>
           <h2 style={{
-            fontSize: 'clamp(2rem, 5vw, 2.8rem)', fontWeight: 800,
-            letterSpacing: '-0.03em', color: '#f0f0f0', margin: '0 0 12px', lineHeight: 1.05,
+            fontSize: 'clamp(1.6rem, 5vw, 2.8rem)', fontWeight: 800,
+            letterSpacing: '-0.03em', color: '#f0f0f0', margin: '0 0 10px', lineHeight: 1.05,
           }}>
             Frequently asked questions
           </h2>
           <p style={{ fontSize: '1rem', color: '#6b7280', margin: 0 }}>
-            Everything you need to know about InfraMind monitoring and Blog as a Service.
+            Everything you need to know about InfraMind.
           </p>
         </div>
 
-        {/* Two-column accordion */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 48px', maxWidth: '1100px', margin: '0 auto' }}>
+        {/* Accordion grid */}
+        <div className="faq-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 48px' }}>
           {[faqs.slice(0, Math.ceil(faqs.length / 2)), faqs.slice(Math.ceil(faqs.length / 2))].map((col, colIdx) => (
-            <div key={colIdx} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div key={colIdx} className="faq-col" style={{ display: 'flex', flexDirection: 'column' }}>
               {col.map((faq, rowIdx) => {
                 const i = colIdx === 0 ? rowIdx : Math.ceil(faqs.length / 2) + rowIdx;
                 const isOpen = open === i;
                 return (
                   <div
                     key={i}
+                    className="faq-item"
                     style={{
                       borderBottom: '1px solid #1f2229',
                       borderTop: rowIdx === 0 ? '1px solid #1f2229' : 'none',
@@ -122,15 +134,14 @@ export default function FAQ() {
                   >
                     <button
                       onClick={() => setOpen(isOpen ? null : i)}
-                      aria-expanded={isOpen}
                       style={{
                         width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-                        padding: '20px 0', display: 'flex', alignItems: 'center',
-                        justifyContent: 'space-between', gap: '16px', textAlign: 'left',
+                        padding: '18px 0', display: 'flex', alignItems: 'center',
+                        justifyContent: 'space-between', gap: '12px', textAlign: 'left',
                       }}
                     >
                       <span style={{
-                        fontSize: '0.95rem', fontWeight: 600,
+                        fontSize: '0.92rem', fontWeight: 600,
                         color: isOpen ? '#f0f0f0' : '#c9d1d9',
                         lineHeight: 1.4, transition: 'color 0.2s',
                       }}>
@@ -156,8 +167,8 @@ export default function FAQ() {
                       transition: 'max-height 0.35s ease',
                     }}>
                       <p style={{
-                        fontSize: '0.9rem', color: '#6b7280', lineHeight: 1.75,
-                        margin: '0 0 20px', paddingRight: '8px',
+                        fontSize: '0.88rem', color: '#6b7280', lineHeight: 1.75,
+                        margin: '0 0 18px', paddingRight: '8px',
                       }}>
                         {faq.a}
                       </p>
@@ -169,27 +180,15 @@ export default function FAQ() {
           ))}
         </div>
 
-        {/* Bottom CTA */}
-        <div style={{ textAlign: 'center', marginTop: '56px' }}>
+        <div style={{ textAlign: 'center', marginTop: '48px' }}>
           <p style={{ fontSize: '0.95rem', color: '#6b7280', marginBottom: '16px' }}>
             Still have questions?
           </p>
-          <a
-            href="mailto:support@inframindhq.online"
-            style={{
-              display: 'inline-block', padding: '12px 28px', borderRadius: '10px',
-              border: '1px solid #2a2d35', color: '#9ca3af', fontSize: '14px',
-              fontWeight: 600, textDecoration: 'none', transition: 'border-color 0.2s, color 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(74,222,128,0.4)';
-              (e.currentTarget as HTMLAnchorElement).style.color = '#4ade80';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.borderColor = '#2a2d35';
-              (e.currentTarget as HTMLAnchorElement).style.color = '#9ca3af';
-            }}
-          >
+          <a href="mailto:support@inframindhq.online" style={{
+            display: 'inline-block', padding: '12px 28px', borderRadius: '10px',
+            border: '1px solid #2a2d35', color: '#9ca3af', fontSize: '14px',
+            fontWeight: 600, textDecoration: 'none',
+          }}>
             Contact support →
           </a>
         </div>

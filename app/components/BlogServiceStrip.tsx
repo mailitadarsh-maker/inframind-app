@@ -1,21 +1,21 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 
 const monitoringFeatures = [
   { title: 'Uptime monitoring', desc: 'HTTP, API, and SSL checks every 30 seconds, 24/7' },
-  { title: 'AI incident reports', desc: 'What broke, why it broke, how to fix it — in plain English' },
+  { title: 'AI incident reports', desc: 'What broke, why it broke, how to fix it in plain English' },
   { title: 'SSL expiry warnings', desc: 'Tracks your certificates and warns you before they expire' },
-  { title: 'Public status pages', desc: 'Share a live health page with your customers — no coding' },
+  { title: 'Public status pages', desc: 'Share a live health page with your customers, no coding' },
   { title: 'Incident history', desc: 'Auto-recorded outage and recovery timeline, forever' },
 ];
 
 const blogFeatures = [
-  { title: 'Client subdomain blog', desc: 'blog.theirclient.com — their brand, your control' },
-  { title: 'Auto domain setup', desc: 'Client saves subdomain → Vercel adds it automatically' },
-  { title: 'AI blog generation', desc: 'One prompt → full post with Pexels cover image, published live' },
-  { title: 'SEO-ready out of the box', desc: 'Meta tags, canonical URLs, Open Graph — all auto-generated' },
-  { title: 'Multi-client from one place', desc: "Manage all your clients' blogs from your InfraMind dashboard" },
+  { title: 'Client subdomain blog', desc: 'blog.theirclient.com, their brand, your control' },
+  { title: 'Auto domain setup', desc: 'Client saves subdomain, Vercel adds it automatically' },
+  { title: 'AI blog generation', desc: 'One prompt, full post with Pexels cover image, published live' },
+  { title: 'SEO-ready out of the box', desc: 'Meta tags, canonical URLs, Open Graph, all auto-generated' },
+  { title: 'Multi-client from one place', desc: 'Manage all your clients blogs from your InfraMind dashboard' },
 ];
 
 function CheckIcon({ color }: { color: string }) {
@@ -27,39 +27,35 @@ function CheckIcon({ color }: { color: string }) {
   );
 }
 
-interface PanelContentProps {
-  eyebrow: string;
-  headline: string;
-  subtext: string;
-  features: { title: string; desc: string }[];
-  accentColor: string;
-  borderColor: string;
-}
-
-function PanelContent({ eyebrow, headline, subtext, features, accentColor, borderColor }: PanelContentProps) {
+type Feature = { title: string; desc: string };
+function PanelContent({
+  eyebrow, headline, subtext, features, accentColor, borderColor
+}: {
+  eyebrow: string; headline: string; subtext: string;
+  features: Feature[]; accentColor: string; borderColor: string;
+}) {
   return (
     <>
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+      <div style={{ marginBottom: '14px' }}>
         <span style={{
-          border: `1px solid ${borderColor}`, borderRadius: '4px', padding: '4px 10px',
-          fontSize: '11px', fontFamily: '"SF Mono","Fira Code","Courier New",monospace',
-          letterSpacing: '0.12em', color: accentColor, textTransform: 'uppercase',
-          background: `${accentColor}0d`,
+          border: '1px solid ' + borderColor, borderRadius: '4px', padding: '3px 8px',
+          fontSize: '10px', fontFamily: 'monospace', letterSpacing: '0.10em',
+          color: accentColor, textTransform: 'uppercase', background: accentColor + '1a',
         }}>{eyebrow}</span>
       </div>
       <h2 style={{
-        fontSize: 'clamp(1.5rem, 6vw, 2.6rem)', fontWeight: 800, lineHeight: 1.1,
-        color: '#f5f5f5', margin: '0 0 16px 0', letterSpacing: '-0.02em', whiteSpace: 'pre-line',
+        fontSize: 'clamp(1.5rem, 6vw, 2.6rem)', fontWeight: 800, lineHeight: 1.15,
+        color: '#f5f5f5', margin: '0 0 10px 0', letterSpacing: '-0.02em',
       }}>{headline}</h2>
-      <p style={{ fontSize: '0.95rem', lineHeight: 1.6, color: '#8b949e', margin: '0 0 28px 0', maxWidth: '480px' }}>{subtext}</p>
-      <div style={{ width: '40px', height: '2px', background: accentColor, borderRadius: '2px', marginBottom: '24px', opacity: 0.6 }} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <p style={{ fontSize: '0.84rem', lineHeight: 1.6, color: '#8b949e', margin: '0 0 14px 0' }}>{subtext}</p>
+      <div style={{ width: '32px', height: '2px', background: accentColor, borderRadius: '2px', marginBottom: '14px', opacity: 0.6 }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {features.map((f, i) => (
-          <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
             <CheckIcon color={accentColor} />
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#e6edf3', marginBottom: '2px', letterSpacing: '-0.01em' }}>{f.title}</div>
-              <div style={{ fontSize: '0.8rem', color: '#6b7280', lineHeight: 1.5 }}>{f.desc}</div>
+              <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#e6edf3', marginBottom: '2px' }}>{f.title}</div>
+              <div style={{ fontSize: '0.75rem', color: '#6b7280', lineHeight: 1.5 }}>{f.desc}</div>
             </div>
           </div>
         ))}
@@ -69,139 +65,40 @@ function PanelContent({ eyebrow, headline, subtext, features, accentColor, borde
 }
 
 export default function BlogServiceStrip() {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [progress, setProgress] = useState(0); // 0 = panel1 fully visible, 1 = panel2 fully visible
-
-  useEffect(() => {
-    function onScroll() {
-      const track = trackRef.current;
-      if (!track) return;
-      if (window.innerWidth > 760) return; // crossfade only on mobile
-
-      const rect = track.getBoundingClientRect();
-      const trackHeight = track.offsetHeight - window.innerHeight;
-      if (trackHeight <= 0) return;
-
-      // How far we've scrolled into the pinned track, 0 to 1
-      const scrolled = -rect.top;
-      const p = Math.min(1, Math.max(0, scrolled / trackHeight));
-      setProgress(p);
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   return (
     <section style={{ background: '#16181d' }}>
       <style>{`
-        .bss-row {
-          display: flex;
-          max-width: 1200px;
-          margin: 0 auto;
+        @keyframes bssUp {
+          from { opacity: 0; transform: translateY(56px); }
+          to   { opacity: 1; transform: translateY(0px); }
         }
-        .bss-panel {
-          flex: 1;
-          padding: 72px 56px;
-          display: flex;
-          flex-direction: column;
-        }
-        .bss-crossfade-track { display: none; }
-
         @media (max-width: 760px) {
-          .bss-row { display: none; }
-          .bss-crossfade-track {
-            display: block;
-            position: relative;
-            height: 220vh; /* scroll distance for the crossfade to play out */
-          }
-          .bss-crossfade-pin {
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow: hidden;
-          }
-          .bss-crossfade-card {
-            position: absolute;
-            inset: 0;
-            padding: 28px 22px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            overflow-y: auto;
-          }
+          .bss-desk { display: none !important; }
+          .bss-mob  { display: flex !important; }
+          .bss-c1   { animation: bssUp 0.65s cubic-bezier(0.22,1,0.36,1) 0.05s both; }
+          .bss-c2   { animation: bssUp 0.65s cubic-bezier(0.22,1,0.36,1) 0.22s both; }
+        }
+        @media (min-width: 761px) {
+          .bss-desk { display: flex; }
+          .bss-mob  { display: none !important; }
         }
       `}</style>
 
-      {/* Desktop: side-by-side, unchanged */}
-      <div className="bss-row">
-        <div className="bss-panel" style={{ borderRight: '1px solid #2a2d35' }}>
-          <PanelContent
-            eyebrow="Product 1 — App Monitoring"
-            headline={`Know the moment\nsomething breaks.`}
-            subtext="Your site goes down at 3am. Your customer notices before you do. InfraMind ends that. Every endpoint, checked every 30 seconds. Every alert, in your inbox before damage is done."
-            features={monitoringFeatures}
-            accentColor="#4ade80"
-            borderColor="#2a2d35"
-          />
+      <div className="bss-desk" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ flex: 1, padding: '72px 56px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #2a2d35' }}>
+          <PanelContent eyebrow="Asko Watch — App Monitoring" headline="Know the moment something breaks." subtext="Your site goes down at 3am. Your customer notices before you do. Asko ends that. Every endpoint, checked every 30 seconds. Every alert, in your inbox before damage is done." features={monitoringFeatures} accentColor="#4ade80" borderColor="#2a2d35" />
         </div>
-        <div className="bss-panel">
-          <PanelContent
-            eyebrow="Product 2 — Blog as a Service"
-            headline={`Fresh content,\nzero effort.`}
-            subtext="Your clients need SEO content. You need a scalable product. InfraMind generates AI blog posts, publishes them to your client's subdomain, and tracks the organic growth — all from one dashboard."
-            features={blogFeatures}
-            accentColor="#818cf8"
-            borderColor="#2d3148"
-          />
+        <div style={{ flex: 1, padding: '72px 56px', display: 'flex', flexDirection: 'column' }}>
+          <PanelContent eyebrow="Asko Write — Blog as a Service" headline="Fresh content, zero effort." subtext="Your clients need SEO content. You need a scalable product. Asko writes AI blog posts and tracks organic growth from one dashboard." features={blogFeatures} accentColor="#818cf8" borderColor="#2d3148" />
         </div>
       </div>
 
-      {/* Mobile: pinned crossfade */}
-      <div className="bss-crossfade-track" ref={trackRef}>
-        <div className="bss-crossfade-pin">
-          <div style={{
-            position: 'fixed', top: 8, right: 8, zIndex: 999,
-            background: 'red', color: 'white', padding: '4px 8px',
-            fontSize: '12px', fontFamily: 'monospace'
-          }}>
-            progress: {progress.toFixed(2)}
-          </div>
-          <div
-            className="bss-crossfade-card"
-            style={{
-              background: '#16181d',
-              opacity: 1 - progress,
-              pointerEvents: progress > 0.5 ? 'none' : 'auto',
-            }}
-          >
-            <PanelContent
-              eyebrow="Product 1 — App Monitoring"
-              headline={`Know the moment\nsomething breaks.`}
-              subtext="Your site goes down at 3am. Your customer notices before you do. InfraMind ends that. Every endpoint, checked every 30 seconds. Every alert, in your inbox before damage is done."
-              features={monitoringFeatures}
-              accentColor="#4ade80"
-              borderColor="#2a2d35"
-            />
-          </div>
-          <div
-            className="bss-crossfade-card"
-            style={{
-              background: '#12141a',
-              opacity: progress,
-              pointerEvents: progress > 0.5 ? 'auto' : 'none',
-            }}
-          >
-            <PanelContent
-              eyebrow="Product 2 — Blog as a Service"
-              headline={`Fresh content,\nzero effort.`}
-              subtext="Your clients need SEO content. You need a scalable product. InfraMind generates AI blog posts, publishes them to your client's subdomain, and tracks the organic growth — all from one dashboard."
-              features={blogFeatures}
-              accentColor="#818cf8"
-              borderColor="#2d3148"
-            />
-          </div>
+      <div className="bss-mob" style={{ flexDirection: 'column', gap: '16px', padding: '28px 16px 44px' }}>
+        <div className="bss-c1" style={{ background: '#1a1d24', border: '1px solid #2a2d35', borderRadius: '18px', padding: '26px 20px 30px' }}>
+          <PanelContent eyebrow="Asko Watch — App Monitoring" headline="Know the moment something breaks." subtext="Your site goes down at 3am. Your customer notices before you do. Asko ends that. Every endpoint, checked every 30 seconds. Every alert, in your inbox before damage is done." features={monitoringFeatures} accentColor="#4ade80" borderColor="#2a2d35" />
+        </div>
+        <div className="bss-c2" style={{ background: '#13152a', border: '1px solid #2d3148', borderRadius: '18px', padding: '26px 20px 30px' }}>
+          <PanelContent eyebrow="Asko Write — Blog as a Service" headline="Fresh content, zero effort." subtext="Your clients need SEO content. You need a scalable product. Asko writes AI blog posts and tracks organic growth from one dashboard." features={blogFeatures} accentColor="#818cf8" borderColor="#2d3148" />
         </div>
       </div>
     </section>

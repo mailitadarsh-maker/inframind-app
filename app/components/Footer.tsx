@@ -14,7 +14,7 @@ export default function Footer() {
               <span className="font-sans font-semibold text-sm text-text">InfraMind</span>
             </div>
             <p className="text-text-2 text-xs leading-relaxed">
-              AI-powered uptime, API and SSL monitoring for growing teams — without a full-time dev.
+              AI-powered uptime, API &amp; SSL monitoring plus automated SEO blog publishing for client subdomains — everything growing teams and agencies need, without a full-time dev.
             </p>
           </div>
 
@@ -70,7 +70,7 @@ export default function Footer() {
 
         <div className="border-t border-white/[0.05] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-text-2 text-xs">© 2026 InfraMind · Made in India 🇮🇳</p>
-          <p className="text-text-2 text-xs">Uptime monitoring, API monitoring &amp; SSL monitoring for modern teams.</p>
+          <p className="text-text-2 text-xs">Uptime, API &amp; SSL monitoring + AI-powered Blog as a Service for modern teams and agencies.</p>
         </div>
       </div>
     </footer>
