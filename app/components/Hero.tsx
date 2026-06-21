@@ -55,7 +55,7 @@ export default function Hero() {
       <div style={{ textAlign: "center", padding: "0 24px", marginBottom: "20px" }}>
         <h1
           style={{
-            fontSize: "60px", fontWeight: 900, lineHeight: 1.08,
+            fontSize: "clamp(2.1rem, 8vw, 3.75rem)", fontWeight: 900, lineHeight: 1.08,
             letterSpacing: "-0.03em", margin: "0 auto", maxWidth: "900px",
             
           }}
@@ -110,19 +110,22 @@ export default function Hero() {
       <div style={{ maxWidth: "780px", margin: "0 auto", padding: "0 24px" }}>
         <div style={{ background: "#1a1b22", border: "1px solid #3a3b44", borderRadius: "14px", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.5)" }}>
           {/* Window bar */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px", background: "#222330", borderBottom: "1px solid #3a3b44" }}>
-            <div style={{ display: "flex", gap: "7px" }}>
-              {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
-                <span key={c} style={{ width: 12, height: 12, borderRadius: "50%", background: c, display: "inline-block" }} />
-              ))}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2" style={{ padding: "12px 18px", background: "#222330", borderBottom: "1px solid #3a3b44" }}>
+            <div className="flex items-center gap-2">
+              <div style={{ display: "flex", gap: "7px" }}>
+                {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
+                  <span key={c} style={{ width: 12, height: 12, borderRadius: "50%", background: c, display: "inline-block" }} />
+                ))}
+              </div>
+              <span className="sm:hidden" style={{ fontSize: "0.72rem", color: "#9a9ba8", fontFamily: "monospace" }}>dashboard</span>
             </div>
-            <span style={{ fontSize: "0.78rem", color: "#9a9ba8", fontFamily: "monospace" }}>inframindhq.online — dashboard</span>
+            <span className="hidden sm:inline" style={{ fontSize: "0.78rem", color: "#9a9ba8", fontFamily: "monospace" }}>inframindhq.online — dashboard</span>
             <span style={{ fontSize: "0.75rem", color: "#4ade80", fontFamily: "monospace", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80", display: "inline-block" }} />
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80", display: "inline-block", flexShrink: 0 }} />
               {activeTab === "monitoring" ? (
-                <><span style={askoGradient}>Asko</span> is watching 3 services</>
+                <><span style={askoGradient}>Asko</span>&nbsp;is watching 3 services</>
               ) : (
-                <><span style={askoGradient}>Asko</span> is writing...</>
+                <><span style={askoGradient}>Asko</span>&nbsp;is writing...</>
               )}
             </span>
           </div>
@@ -135,17 +138,17 @@ export default function Hero() {
               { name: "Main Website",    url: "myapp.com",            ms: "68 ms",  status: "UP",   color: "#4ade80", slow: false },
               { name: "Payment Gateway", url: "payments.myapp.com",   ms: "891 ms", status: "SLOW", color: "#f5c542", slow: true  },
             ].map((m) => (
-              <div key={m.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#222330", border: "1px solid #3a3b44", borderRadius: "10px", padding: "14px 18px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div key={m.name} className="flex-wrap" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", background: "#222330", border: "1px solid #3a3b44", borderRadius: "10px", padding: "14px 18px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
                   <span style={{ width: 9, height: 9, borderRadius: "50%", background: m.color, boxShadow: `0 0 6px ${m.color}`, display: "inline-block", flexShrink: 0 }} />
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "#f0f0f0" }}>{m.name}</div>
                     <div style={{ fontSize: "0.75rem", color: "#9a9ba8", fontFamily: "monospace" }}>{m.url}</div>
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <span style={{ fontFamily: "monospace", fontSize: "0.82rem", color: m.color }}>{m.ms}</span>
-                  <span style={{ fontSize: "0.7rem", fontWeight: 700, padding: "3px 10px", borderRadius: "6px", letterSpacing: "0.05em", background: m.slow ? "rgba(245,197,66,0.15)" : "rgba(74,222,128,0.15)", color: m.color }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0, marginLeft: "auto" }}>
+                  <span style={{ fontFamily: "monospace", fontSize: "0.82rem", color: m.color, whiteSpace: "nowrap" }}>{m.ms}</span>
+                  <span style={{ fontSize: "0.7rem", fontWeight: 700, padding: "3px 10px", borderRadius: "6px", letterSpacing: "0.05em", background: m.slow ? "rgba(245,197,66,0.15)" : "rgba(74,222,128,0.15)", color: m.color, whiteSpace: "nowrap" }}>
                     {m.status}
                   </span>
                 </div>
