@@ -17,7 +17,8 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState('');
-  const [tab, setTab] = useState<'blogs' | 'settings' | 'embed'>('blogs');
+  const [tab, setTab] = useState<'blogs' | 'embed' | 'settings'>('blogs');
+  const [settingsSection, setSettingsSection] = useState<'embed' | 'domain' | 'company'>('company');
   const [saving, setSaving] = useState(false);
   const [savingDomain, setSavingDomain] = useState(false);
   const [domainInput, setDomainInput] = useState('');
@@ -187,8 +188,9 @@ export default function ClientDashboard() {
   );
 
   return (
+    <>
     <div className="min-h-screen bg-[#1e2128] px-4 py-12">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
 
         <button
           onClick={() => router.push("/dashboard")}
@@ -203,6 +205,7 @@ export default function ClientDashboard() {
             <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Blog Dashboard</p>
             <h1 className="text-2xl font-bold text-white">{client.company_name}</h1>
             <p className="text-sm text-white/40 mt-0.5">{client.website}</p>
+            {blogs.length > 0 && <p className="text-xs text-[#4ade80]/70 mt-1">✓ {blogs.filter(b => b.status === 'published').length} blog{blogs.filter(b => b.status === 'published').length !== 1 ? 's' : ''} live</p>}
           </div>
           <button
             onClick={requestBlog}
@@ -225,17 +228,41 @@ export default function ClientDashboard() {
         )}
 
         <div className="grid grid-cols-3 gap-4 mb-6">
-          {[
-            { label: 'Total Blogs', value: blogs.length },
-            { label: 'Published', value: blogs.filter(b => b.status === 'published').length },
-            { label: 'Plan', value: planLabel },
-          ].map(s => (
-            <div key={s.label} className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-5">
-              <p className="text-xs text-white/40 uppercase tracking-widest mb-1">{s.label}</p>
-              <p className="text-2xl font-bold text-white">{s.value}</p>
-            </div>
-          ))}
+          <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-5">
+            <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Total Blogs</p>
+            <p className="text-2xl font-bold text-white">{blogs.length}</p>
+            <p className="text-xs text-white/30 mt-1">{blogs.length === 0 ? 'No blogs yet — generate your first!' : `${blogs.filter(b => b.status === 'approved').length} pending review`}</p>
+          </div>
+          <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-5">
+            <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Published</p>
+            <p className="text-2xl font-bold text-white">{blogs.filter(b => b.status === 'published').length}</p>
+            <p className="text-xs text-white/30 mt-1">{blogs.filter(b => b.status === 'published').length === 0 ? 'Nothing live yet' : 'Live on your site'}</p>
+          </div>
+          <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-5">
+            <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Plan</p>
+            <p className="text-2xl font-bold text-white">{planLabel}</p>
+            <button onClick={() => router.push('/upgrade')} className="text-xs text-[#4ade80] hover:text-[#22c55e] mt-1 block transition-colors">
+              {isTrial ? 'Upgrade for more →' : 'View plans →'}
+            </button>
+          </div>
         </div>
+
+        {blogs.length === 0 && (
+          <div className="bg-gradient-to-r from-[#4ade80]/10 to-[#22c55e]/5 border border-[#4ade80]/20 rounded-2xl p-6 mb-6">
+            <div className="flex items-start gap-4">
+              <div className="text-2xl">👋</div>
+              <div className="flex-1">
+                <h3 className="text-white font-semibold mb-1">Welcome! Let's get your first blog live.</h3>
+                <p className="text-white/50 text-sm mb-4">It takes less than a minute. We'll write it for you — just click Generate.</p>
+                <div className="flex gap-6 flex-wrap">
+                  <div className="flex items-center gap-2 text-sm text-white/60"><span className="w-5 h-5 rounded-full bg-[#4ade80]/20 text-[#4ade80] flex items-center justify-center text-xs font-bold">1</span> Generate a blog</div>
+                  <div className="flex items-center gap-2 text-sm text-white/40"><span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">2</span> We review & publish</div>
+                  <div className="flex items-center gap-2 text-sm text-white/40"><span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">3</span> Embed on your site</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {isTrial && (
           <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-6 mb-8">
@@ -286,7 +313,7 @@ export default function ClientDashboard() {
         )}
 
         <div className="flex gap-2 mb-6">
-          {(['blogs', 'settings', 'embed'] as const).map(t => (
+          {(['blogs', 'embed', 'settings'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -300,7 +327,8 @@ export default function ClientDashboard() {
         </div>
 
         {tab === 'blogs' && (
-          <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl overflow-hidden">
+          <div className="flex gap-6 items-start">
+          <div className="flex-1 min-w-0 bg-[#26292f] border border-white/[0.08] rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-white/[0.06]">
               <h2 className="text-sm font-semibold text-white">Your Blogs</h2>
             </div>
@@ -337,16 +365,263 @@ export default function ClientDashboard() {
               </div>
             )}
           </div>
+
+          {/* Right sidebar */}
+          <div className="w-80 flex-shrink-0">
+            <div className="mb-5">
+              <p className="text-xs font-bold text-white/30 uppercase tracking-widest px-1 mb-2">Integrations</p>
+              <div className="flex flex-col gap-1">
+                {([
+                  { id: 'embed', label: '📋 How to embed', desc: 'Add blogs to your site' },
+                  { id: 'domain', label: '🌐 Custom domain', desc: 'Use your own blog URL' },
+                  { id: 'wordpress', label: '🔌 WordPress', desc: 'Auto-publish to WordPress' },
+                ] as const).map(s => (
+                  <button key={s.id} onClick={() => setSettingsSection(s.id)}
+                    className={`text-left px-4 py-3 rounded-xl transition-all border ${
+                      settingsSection === s.id
+                        ? 'bg-[#4ade80]/10 border-[#4ade80]/30 text-white'
+                        : 'border-white/[0.06] bg-white/[0.02] text-white/60 hover:text-white hover:bg-white/[0.06] hover:border-white/10'
+                    }`}>
+                    <div className="text-sm font-semibold">{s.label}</div>
+                    <div className="text-xs text-white/30 mt-0.5">{s.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {settingsSection === 'embed' && (
+              <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-5">
+                <h2 className="text-sm font-semibold text-white mb-1">Add blogs to your website</h2>
+                <p className="text-white/40 text-xs mb-4">No coding needed. Works on any website builder.</p>
+
+                <div className="flex gap-2 items-center mb-2">
+                  <span className="w-5 h-5 rounded-full bg-[#4ade80] text-black text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+                  <p className="text-white text-xs font-semibold">Copy your embed code</p>
+                </div>
+                <div className="bg-[#1e2128] border border-white/[0.06] rounded-xl p-3 mb-4">
+                  <div className="font-mono text-xs text-[#4ade80] break-all mb-3 leading-relaxed">
+                    {`<div id="inframind-blog"></div>`}<br/>
+                    {`<script src="https://inframindhq.online/embed.js" data-client="${client?.slug || 'your-slug'}" defer></script>`}
+                  </div>
+                  <button onClick={() => { navigator.clipboard.writeText(`<div id="inframind-blog"></div>\n<script src="https://inframindhq.online/embed.js" data-client="${client?.slug || 'your-slug'}" defer></script>`); alert('Copied!'); }}
+                    className="text-xs bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold px-3 py-1.5 rounded-lg transition-colors w-full text-center">
+                    📋 Copy Code
+                  </button>
+                </div>
+
+                <div className="flex gap-2 items-center mb-2">
+                  <span className="w-5 h-5 rounded-full bg-[#4ade80] text-black text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+                  <p className="text-white text-xs font-semibold">Paste it in your website builder</p>
+                </div>
+                <div className="flex flex-col gap-2 mb-4">
+                  {([
+                    { icon: '🔵', name: 'Wix', steps: 'Editor → + Add → Embed → Custom Code → paste & save' },
+                    { icon: '🟣', name: 'Webflow', steps: 'Page Settings → Custom Code → Before body end → paste' },
+                    { icon: '🟠', name: 'WordPress', steps: 'Appearance → Theme Editor → footer.php → paste before body end' },
+                    { icon: '🟢', name: 'Shopify', steps: 'Online Store → Themes → Edit code → theme.liquid → paste before body end' },
+                  ] as const).map(p => (
+                    <div key={p.name} className="bg-[#1e2128] border border-white/[0.05] rounded-xl p-3">
+                      <p className="text-white text-xs font-semibold mb-1">{p.icon} {p.name}</p>
+                      <p className="text-white/40 text-xs leading-relaxed">{p.steps}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 items-center mb-2">
+                  <span className="w-5 h-5 rounded-full bg-[#4ade80] text-black text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+                  <p className="text-white text-xs font-semibold">Your blogs appear automatically ✓</p>
+                </div>
+                <p className="text-white/30 text-xs mb-4">Once pasted, every published blog shows up on your site with no extra steps.</p>
+
+                <div className="border-t border-white/[0.06] pt-4">
+                  <p className="text-white/30 text-xs mb-2">Need help? We'll set it up for you.</p>
+                  <div className="flex gap-2">
+                    <a href="https://wa.me/919633474645?text=Hi%2C%20I%20need%20help%20connecting%20my%20blogs%20to%20my%20website" target="_blank" rel="noopener noreferrer"
+                      className="flex-1 text-center bg-[#4ade80] hover:bg-[#22c55e] text-black text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+                      💬 WhatsApp
+                    </a>
+                    <a href="mailto:hello@inframindhq.online?subject=Help connecting my site"
+                      className="flex-1 text-center border border-white/20 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors hover:bg-white/5">
+                      ✉️ Email
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {settingsSection === 'domain' && (
+              <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-5">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h2 className="text-sm font-semibold text-white">Custom Domain</h2>
+                  <span className="text-xs bg-[#4ade80]/10 text-[#4ade80] border border-[#4ade80]/20 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Premium</span>
+                </div>
+                <p className="text-white/40 text-xs mb-4">Show your blogs at your own URL like <span className="font-mono text-white/60">blog.yoursite.com</span></p>
+
+                <div className="flex gap-2 items-center mb-2">
+                  <span className="w-5 h-5 rounded-full bg-[#4ade80] text-black text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+                  <p className="text-white text-xs font-semibold">Enter your subdomain</p>
+                </div>
+                <div className="flex gap-2 mb-4">
+                  <input type="text" placeholder="blog.yourwebsite.com" value={domainInput} onChange={e => setDomainInput(e.target.value)}
+                    className="flex-1 bg-[#1e2128] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-xs outline-none focus:border-[#4ade80] font-mono" />
+                  <button onClick={saveDomain} disabled={savingDomain || !domainInput.trim()}
+                    className="bg-[#4ade80] hover:bg-[#22c55e] disabled:opacity-40 text-black font-bold px-4 py-2 rounded-xl text-xs transition-colors flex-shrink-0">
+                    {savingDomain ? 'Saving...' : 'Update'}
+                  </button>
+                </div>
+                {client?.custom_domain && <p className="text-xs text-[#4ade80]/70 mb-4">✓ Current: <span className="font-mono">{client.custom_domain}</span></p>}
+                {domainMessage && <div className={`mb-4 text-xs rounded-xl px-3 py-2 ${domainMessage.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>{domainMessage.text}</div>}
+
+                <div className="flex gap-2 items-center mb-2">
+                  <span className="w-5 h-5 rounded-full bg-[#4ade80] text-black text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+                  <p className="text-white text-xs font-semibold">Add this DNS record in your domain provider</p>
+                </div>
+                <p className="text-white/30 text-xs mb-2">Go to your domain provider (GoDaddy, Namecheap, Cloudflare, etc.) and add:</p>
+                <div className="bg-[#1e2128] border border-white/[0.08] rounded-xl p-3 font-mono text-xs grid grid-cols-2 gap-x-4 gap-y-2 mb-2">
+                  <span className="text-white/40">Type</span><span className="text-[#4ade80]">CNAME</span>
+                  <span className="text-white/40">Name</span><span className="text-[#4ade80]">{domainInput ? domainInput.split('.')[0] : 'blog'}</span>
+                  <span className="text-white/40">Value</span><span className="text-[#4ade80] break-all">{vercelCname || 'cname.vercel-dns.com'}</span>
+                  <span className="text-white/40">TTL</span><span className="text-[#4ade80]">Auto</span>
+                </div>
+                <p className="text-white/20 text-xs mb-4">DNS changes can take 5–30 minutes to go live.</p>
+
+                <div className="flex gap-2 items-center mb-2">
+                  <span className="w-5 h-5 rounded-full bg-[#4ade80] text-black text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+                  <p className="text-white text-xs font-semibold">Your blog goes live automatically ✓</p>
+                </div>
+                <p className="text-white/30 text-xs mb-4">Once DNS propagates, your blogs will be accessible at your custom domain.</p>
+
+                <div className="border-t border-white/[0.06] pt-4">
+                  <p className="text-white/30 text-xs mb-2">Need help setting this up?</p>
+                  <a href="https://wa.me/919633474645?text=Hi%2C%20I%20want%20to%20connect%20my%20own%20domain%20for%20my%20blog" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 bg-[#4ade80] hover:bg-[#22c55e] text-black text-xs font-bold px-3 py-2 rounded-xl transition-colors w-full">
+                    💬 WhatsApp Us — We'll set it up for you
+                  </a>
+                </div>
+              </div>
+            )}
+
+
+            {settingsSection === 'wordpress' && (
+              <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-5">
+                <h2 className="text-sm font-semibold text-white mb-1">WordPress Auto-Publish</h2>
+                <p className="text-white/40 text-xs mb-4">Blogs approved by us get published to your WordPress site automatically.</p>
+
+                <div className="flex gap-2 items-center mb-2">
+                  <span className="w-5 h-5 rounded-full bg-[#4ade80] text-black text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+                  <p className="text-white text-xs font-semibold">Select delivery mode</p>
+                </div>
+                <div className="mb-4">
+                  <select className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+                    value={form.delivery_mode} onChange={e => setForm(f => ({ ...f, delivery_mode: e.target.value }))}>
+                    <option value="embed">Embed (show on InfraMind page)</option>
+                    <option value="wordpress">WordPress (auto-publish to my site)</option>
+                  </select>
+                </div>
+
+                {form.delivery_mode === 'wordpress' && (<>
+                  <div className="flex gap-2 items-center mb-2">
+                    <span className="w-5 h-5 rounded-full bg-[#4ade80] text-black text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+                    <p className="text-white text-xs font-semibold">Enter your WordPress details</p>
+                  </div>
+                  <div className="flex flex-col gap-3 mb-4">
+                    <div>
+                      <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">WordPress Site URL</label>
+                      <input className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+                        placeholder="https://yourblog.com" value={form.wordpress_url} onChange={e => setForm(f => ({ ...f, wordpress_url: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">WordPress Username</label>
+                      <input className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+                        placeholder="admin" value={form.wordpress_username} onChange={e => setForm(f => ({ ...f, wordpress_username: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Application Password</label>
+                      <input type="password" className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+                        placeholder="xxxx xxxx xxxx xxxx" value={form.wordpress_app_password} onChange={e => setForm(f => ({ ...f, wordpress_app_password: e.target.value }))} />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 items-center mb-2">
+                    <span className="w-5 h-5 rounded-full bg-[#4ade80] text-black text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+                    <p className="text-white text-xs font-semibold">How to get your Application Password</p>
+                  </div>
+                  <div className="bg-[#1e2128] border border-white/[0.05] rounded-xl p-3 mb-4">
+                    {[
+                      'Log in to your WordPress admin panel',
+                      'Go to Users → Your Profile',
+                      'Scroll down to Application Passwords',
+                      'Enter a name (e.g. "InfraMind") and click Add New',
+                      'Copy the generated password and paste it above',
+                    ].map((step, i) => (
+                      <div key={i} className="flex gap-2 items-start mb-2 last:mb-0">
+                        <span className="text-[#4ade80] text-xs font-bold flex-shrink-0 mt-0.5">{i + 1}.</span>
+                        <p className="text-white/50 text-xs">{step}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>)}
+
+                <button onClick={saveSettings} disabled={saving}
+                  className="w-full bg-[#4ade80] hover:bg-[#22c55e] disabled:opacity-40 text-black font-bold px-4 py-2.5 rounded-xl text-sm transition-colors mb-4">
+                  {saving ? 'Saving...' : 'Save Settings'}
+                </button>
+
+                <div className="border-t border-white/[0.06] pt-4">
+                  <p className="text-white/30 text-xs mb-2">Need help connecting WordPress?</p>
+                  <a href="https://wa.me/919633474645?text=Hi%2C%20I%20need%20help%20connecting%20WordPress%20to%20InfraMind" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 bg-[#4ade80] hover:bg-[#22c55e] text-black text-xs font-bold px-3 py-2 rounded-xl transition-colors w-full">
+                    💬 WhatsApp Us — We'll connect it for you
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Support Section */}
+            <div className="mt-4 bg-[#26292f] border border-white/[0.08] rounded-2xl p-5">
+              <p className="text-xs font-bold text-white/30 uppercase tracking-widest mb-3">Need Help?</p>
+              <p className="text-white text-xs font-semibold mb-1">We're here for you 👋</p>
+              <p className="text-white/40 text-xs mb-4">Reach out anytime — we usually reply in minutes.</p>
+
+              <div className="flex flex-col gap-2">
+                <a href="https://wa.me/919633474645?text=Hi%2C%20I%20need%20help%20with%20InfraMind" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/20 text-white px-4 py-3 rounded-xl transition-all group">
+                  <span className="text-lg">💬</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-white">WhatsApp</p>
+                    <p className="text-xs text-white/40">Chat with us directly</p>
+                  </div>
+                  <span className="text-white/20 group-hover:text-white/60 text-xs transition-colors">→</span>
+                </a>
+
+                <a href="mailto:hello@inframindhq.online?subject=Support Request"
+                  className="flex items-center gap-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-white px-4 py-3 rounded-xl transition-all group">
+                  <span className="text-lg">✉️</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-white">Email Support</p>
+                    <p className="text-xs text-white/40">hello@inframindhq.online</p>
+                  </div>
+                  <span className="text-white/20 group-hover:text-white/60 text-xs transition-colors">→</span>
+                </a>
+
+
+              </div>
+
+              <p className="text-white/20 text-xs text-center mt-4">Typical reply time: under 10 minutes</p>
+            </div>
+          </div>
+
+          </div>
         )}
 
         {tab === 'embed' && (
-          <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-6">
-            <h2 className="text-base font-semibold text-white mb-2">Embed Your Blog</h2>
-            <p className="text-white/40 text-sm mb-6">Paste this script tag anywhere on your website to display your published blogs.</p>
+          <div className="flex flex-col gap-6">
 
-            <div className="mb-6">
-              <p className="text-xs text-white/40 uppercase tracking-widest mb-2">Your Embed Code</p>
-              <div className="bg-[#1e2128] border border-white/[0.08] rounded-xl p-4 font-mono text-xs text-[#4ade80] break-all">
+            {/* Embed Code */}
+            <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-6">
+              <h2 className="text-base font-semibold text-white mb-1">Your Embed Code</h2>
+              <p className="text-white/40 text-sm mb-4">Paste this on any page to display your blogs.</p>
+              <div className="bg-[#1e2128] border border-white/[0.08] rounded-xl p-4 font-mono text-xs text-[#4ade80] break-all mb-3">
                 {`<div id="inframind-blog"></div>`}<br/>
                 {`<script src="https://inframindhq.online/embed.js" data-client="${client?.slug || 'your-slug'}" defer></script>`}
               </div>
@@ -354,219 +629,69 @@ export default function ClientDashboard() {
                 onClick={() => {
                   const code = `<div id="inframind-blog"></div>\n<script src="https://inframindhq.online/embed.js" data-client="${client?.slug || 'your-slug'}" defer></script>`;
                   navigator.clipboard.writeText(code);
-                  alert('Copied to clipboard!');
+                  alert('Copied!');
                 }}
-                className="mt-3 text-xs bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold px-4 py-2 rounded-lg transition-colors"
+                className="text-xs bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold px-4 py-2 rounded-lg transition-colors"
               >
                 Copy Code
               </button>
             </div>
 
-            <div className="bg-[#1e2128] border border-white/[0.08] rounded-xl p-5">
-              <p className="text-xs text-white/40 uppercase tracking-widest mb-3">How it works</p>
-              <div className="flex flex-col gap-3">
-                {[
-                  'Copy the embed code above',
-                  'Paste it on any page of your website where you want blogs to appear',
-                  'Your approved blogs will automatically show up there',
-                ].map((step, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-[#4ade80]/10 text-[#4ade80] text-xs flex items-center justify-center flex-shrink-0">{i + 1}</span>
-                    <p className="text-white/60 text-sm">{step}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+
           </div>
         )}
 
         {tab === 'settings' && (
-          <>
-            {/* How to show blogs */}
-            <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-6 mb-6">
-              <h2 className="text-base font-semibold text-white mb-1">How to show blogs on your website</h2>
-              <p className="text-white/40 text-sm mb-6">No technical skills needed — just copy and paste. We'll help you if you get stuck.</p>
-
-              <div className="flex flex-col gap-4 mb-6">
-                {[
-                  { title: 'Go to the Embed tab above', desc: 'You\'ll find a small piece of code there. Click "Copy Code" — that\'s all you need.' },
-                  { title: 'Open your website editor', desc: 'This works on any website builder — Wix, Squarespace, WordPress, Webflow, Shopify, or a custom site. Open the page where you want your blogs to appear.' },
-                  { title: 'Paste the code & save', desc: 'Look for an "HTML block", "Custom code", or "Embed" section in your editor. Paste the code there and save. Your approved blogs will automatically appear on that page.' },
-                ].map((step, i) => (
-                  <div key={i} className="bg-[#1e2128] border border-white/[0.06] rounded-xl p-5 flex gap-4 items-start">
-                    <span className="w-7 h-7 rounded-full bg-[#4ade80]/10 text-[#4ade80] text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
-                    <div>
-                      <p className="text-white font-semibold text-sm mb-1">{step.title}</p>
-                      <p className="text-white/40 text-sm">{step.desc}</p>
-                    </div>
-                  </div>
-                ))}
+          <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-6">
+            <h2 className="text-base font-semibold text-white mb-6">Company Settings</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Company Name</label>
+                <input className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+                  value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} />
               </div>
-
-              <div className="bg-[#4ade80]/[0.05] border border-[#4ade80]/20 rounded-xl p-5 flex items-start gap-4 mb-4">
-                <span className="text-xl flex-shrink-0">🙋</span>
-                <div>
-                  <p className="text-white font-semibold text-sm mb-1">Not sure how to do this? We'll do it for you — for free.</p>
-                  <p className="text-white/50 text-sm">Just send us a WhatsApp or email and we'll connect your blogs to your website.</p>
-                </div>
+              <div>
+                <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Website URL</label>
+                <input className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+                  value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} />
               </div>
-              <div className="flex gap-3 flex-wrap">
-                <a href="https://wa.me/919633474645?text=Hi%2C%20I%20need%20help%20connecting%20my%20blogs%20to%20my%20website" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-[#4ade80] hover:bg-[#22c55e] text-black text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
-                  💬 WhatsApp Us
-                </a>
-                <a href="mailto:hello@inframindhq.online?subject=Help connecting my site"
-                  className="flex items-center gap-2 border border-white/20 hover:border-white/40 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
-                  ✉️ Email Support
-                </a>
+              <div>
+                <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Industry</label>
+                <select className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+                  value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}>
+                  {industries.map(i => <option key={i} value={i}>{i}</option>)}
+                </select>
               </div>
-            </div>
-
-            {/* Custom Domain Section */}
-            <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-6 mb-6">
-              <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
-                <div>
-                  <h2 className="text-base font-semibold text-white mb-1">Get your own blog domain</h2>
-                  <p className="text-white/40 text-sm">Show your blogs at <span className="text-white/70">blog.yourwebsite.com</span> instead of inframindhq.online.</p>
-                </div>
-                <span className="text-xs bg-[#4ade80]/10 text-[#4ade80] border border-[#4ade80]/20 px-3 py-1 rounded-full font-semibold flex-shrink-0">Premium</span>
+              <div>
+                <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Blog Tone</label>
+                <select className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+                  value={form.tone} onChange={e => setForm(f => ({ ...f, tone: e.target.value }))}>
+                  {tones.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
               </div>
-
-              {/* Step 1: Enter domain */}
-              <div className="bg-[#1e2128] border border-white/[0.06] rounded-xl p-5 mb-3">
-                <div className="flex gap-4 items-start mb-4">
-                  <span className="w-7 h-7 rounded-full bg-[#4ade80]/10 text-[#4ade80] text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
-                  <div className="flex-1">
-                    <p className="text-white font-semibold text-sm mb-1">Enter your blog subdomain</p>
-                    <p className="text-white/40 text-sm mb-3">Type the subdomain you want to use — usually <span className="text-white/60">blog.yourwebsite.com</span></p>
-                    <div className="flex gap-2 flex-wrap">
-                      <input
-                        type="text"
-                        placeholder="blog.yourwebsite.com"
-                        value={domainInput}
-                        onChange={e => setDomainInput(e.target.value)}
-                        className="flex-1 min-w-[200px] bg-[#26292f] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-[#4ade80] transition-colors placeholder:text-white/20 font-mono"
-                      />
-                      <button
-                        onClick={saveDomain}
-                        disabled={savingDomain || !domainInput.trim()}
-                        className="bg-[#4ade80] hover:bg-[#22c55e] disabled:opacity-40 text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-colors flex-shrink-0"
-                      >
-                        {savingDomain ? 'Saving...' : client?.custom_domain ? 'Update Domain' : 'Save Domain'}
-                      </button>
-                    </div>
-
-                    {domainMessage && (
-                      <div className={`mt-3 text-sm rounded-xl px-4 py-3 ${
-                        domainMessage.type === 'success'
-                          ? 'bg-green-500/10 border border-green-500/20 text-green-400'
-                          : 'bg-red-500/10 border border-red-500/20 text-red-400'
-                      }`}>
-                        {domainMessage.text}
-                      </div>
-                    )}
-
-                    {client?.custom_domain && !domainMessage && (
-                      <p className="mt-2 text-xs text-[#4ade80]/70">
-                        ✓ Current domain: <span className="font-mono">{client.custom_domain}</span>
-                      </p>
-                    )}
-                  </div>
-                </div>
+              <div className="md:col-span-2">
+                <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Target Audience</label>
+                <input className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+                  placeholder="e.g. retail investors, first-time gold buyers"
+                  value={form.target_audience} onChange={e => setForm(f => ({ ...f, target_audience: e.target.value }))} />
               </div>
-
-              {/* Step 2: DNS instructions */}
-              <div className="bg-[#1e2128] border border-white/[0.06] rounded-xl p-5 mb-3">
-                <div className="flex gap-4 items-start">
-                  <span className="w-7 h-7 rounded-full bg-[#4ade80]/10 text-[#4ade80] text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
-                  <div className="flex-1">
-                    <p className="text-white font-semibold text-sm mb-1">Add this DNS record in Hostinger / GoDaddy</p>
-                    <p className="text-white/40 text-sm mb-3">Go to your domain provider → DNS Settings → Add Record with these exact values:</p>
-                    <div className="bg-[#26292f] border border-white/[0.08] rounded-lg p-3 font-mono text-xs grid grid-cols-2 gap-x-6 gap-y-2">
-                      <span className="text-white/40">Type</span><span className="text-[#4ade80]">CNAME</span>
-                      <span className="text-white/40">Name / Host</span><span className="text-[#4ade80]">{domainInput ? domainInput.split(".")[0] : "blog"}</span>
-                      <span className="text-white/40">Value / Points to</span><span className="text-[#4ade80]">{vercelCname || 'cname.vercel-dns.com'}</span>
-                      <span className="text-white/40">TTL</span><span className="text-[#4ade80]">Auto (or 3600)</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Step 3: Done */}
-              <div className="bg-[#1e2128] border border-white/[0.06] rounded-xl p-5 mb-5">
-                <div className="flex gap-4 items-start">
-                  <span className="w-7 h-7 rounded-full bg-[#4ade80]/10 text-[#4ade80] text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-                  <div>
-                    <p className="text-white font-semibold text-sm mb-1">Wait 5–30 minutes & you're live!</p>
-                    <p className="text-white/40 text-sm">Once DNS updates, your blog will automatically appear at your domain. Any blog you publish goes live there instantly — no more steps needed.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#4ade80]/[0.05] border border-[#4ade80]/20 rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap">
-                <p className="text-white/60 text-sm">Confused about DNS? We'll do it for you — just send us a WhatsApp.</p>
-                <a
-                  href="https://wa.me/919633474645?text=Hi%2C%20I%20want%20to%20connect%20my%20own%20domain%20for%20my%20blog"
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-[#4ade80] hover:bg-[#22c55e] text-black text-sm font-bold px-5 py-2.5 rounded-xl transition-colors flex-shrink-0"
-                >
-                  💬 WhatsApp Us
-                </a>
+              <div className="md:col-span-2">
+                <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Company Description</label>
+                <textarea rows={3} className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors resize-none"
+                  placeholder="e.g. Gold Vault is a fintech platform that lets anyone buy and invest in digital gold safely."
+                  value={form.company_description} onChange={e => setForm(f => ({ ...f, company_description: e.target.value }))} />
               </div>
             </div>
-
-            {/* Company Settings */}
-            <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-6">
-              <h2 className="text-base font-semibold text-white mb-6">Company Settings</h2>
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Company Name</label>
-                  <input className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
-                    value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Website URL</label>
-                  <input className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
-                    value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} />
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Company Description</label>
-                  <textarea rows={3} className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors resize-none"
-                    placeholder="e.g. Gold Vault is a fintech platform that lets anyone buy and invest in digital gold safely."
-                    value={form.company_description} onChange={e => setForm(f => ({ ...f, company_description: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Target Audience</label>
-                  <input className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
-                    placeholder="e.g. retail investors, first-time gold buyers"
-                    value={form.target_audience} onChange={e => setForm(f => ({ ...f, target_audience: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Industry</label>
-                  <select className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
-                    value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}>
-                    {industries.map(i => <option key={i} value={i}>{i}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Blog Tone</label>
-                  <select className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
-                    value={form.tone} onChange={e => setForm(f => ({ ...f, tone: e.target.value }))}>
-                    {tones.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="col-span-2">
-                  <button onClick={saveSettings} disabled={saving}
-                    className="bg-[#4ade80] hover:bg-[#22c55e] disabled:opacity-40 text-black font-bold px-6 py-2.5 rounded-xl text-sm transition-colors">
-                    {saving ? 'Saving...' : 'Save Settings'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
+            <button onClick={saveSettings} disabled={saving}
+              className="mt-5 w-full bg-[#4ade80] hover:bg-[#22c55e] disabled:opacity-40 text-black font-bold px-4 py-3 rounded-xl text-sm transition-colors">
+              {saving ? 'Saving...' : 'Save Settings'}
+            </button>
+          </div>
         )}
 
       </div>
     </div>
+
+    </>
   );
 }

@@ -33,8 +33,8 @@ export default function RootLayout({
       </head>
       <body className="bg-[#07090d] text-[#eef1f6] antialiased h-full">
         {children}
-
-        </body>
+        <ChatWidget />
+      </body>
     </html>
   );
 }
