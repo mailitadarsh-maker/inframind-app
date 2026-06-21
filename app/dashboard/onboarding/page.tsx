@@ -91,6 +91,10 @@ export default function OnboardingPage() {
   if (step === 'form') return (
     <div className="min-h-screen bg-[#1e2128] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
+        <a href="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 hover:text-white/80 bg-white/[0.04] border border-white/[0.08] rounded-lg px-2.5 py-1.5 mb-5 transition-colors">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="11" height="11"><path d="M10 8H3M6 5l-3 3 3 3" /></svg>
+          Dashboard
+        </a>
         <div className="mb-8">
           <p className="text-xs text-[#4ade80] uppercase tracking-widest mb-2">Step 1 of 2</p>
           <h1 className="text-2xl font-bold text-white">Tell us about your company</h1>

@@ -18,7 +18,7 @@ export default function ClientDashboard() {
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState('');
   const [tab, setTab] = useState<'blogs' | 'embed' | 'settings'>('blogs');
-  const [settingsSection, setSettingsSection] = useState<'embed' | 'domain' | 'company'>('company');
+  const [settingsSection, setSettingsSection] = useState<'embed' | 'domain' | 'company' | 'wordpress'>('company');
   const [saving, setSaving] = useState(false);
   const [savingDomain, setSavingDomain] = useState(false);
   const [domainInput, setDomainInput] = useState('');
@@ -327,8 +327,8 @@ export default function ClientDashboard() {
         </div>
 
         {tab === 'blogs' && (
-          <div className="flex gap-6 items-start">
-          <div className="flex-1 min-w-0 bg-[#26292f] border border-white/[0.08] rounded-2xl overflow-hidden">
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full bg-[#26292f] border border-white/[0.08] rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-white/[0.06]">
               <h2 className="text-sm font-semibold text-white">Your Blogs</h2>
             </div>
@@ -367,7 +367,7 @@ export default function ClientDashboard() {
           </div>
 
           {/* Right sidebar */}
-          <div className="w-80 flex-shrink-0">
+          <div className="w-full lg:w-80 lg:flex-shrink-0">
             <div className="mb-5">
               <p className="text-xs font-bold text-white/30 uppercase tracking-widest px-1 mb-2">Integrations</p>
               <div className="flex flex-col gap-1">

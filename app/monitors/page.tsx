@@ -214,7 +214,9 @@ const CSS = `
 .im-mob-logo span { font-size: 13px; font-weight: 600; color: #e2e6f0; }
 .im-mob-link { padding: 6px 9px; border-radius: 7px; font-size: 12px; font-weight: 500; color: #6b7280; text-decoration: none; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
 .im-mob-link.on { color: #34d399 !important; background: rgba(52,211,153,0.08); }
-.im-mob-logout { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 6px 8px; flex-shrink: 0; }
+.im-mob-logout { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 6px 8px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
+.im-mob-back { display: flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 7px; font-size: 12px; font-weight: 600; color: #c4c9d8; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); text-decoration: none; flex-shrink: 0; font-family: 'DM Sans', sans-serif; }
+.im-mob-back svg { width: 11px; height: 11px; flex-shrink: 0; }
 
 @media (max-width: 768px) {
   /* root becomes column so nav stacks above main */
@@ -397,16 +399,16 @@ export default function DashboardPage() {
 
         {/* Mobile nav */}
         <nav className="im-mob-nav">
-          <div className="im-mob-logo">
-            <div className="im-mob-logo-mark">
-              <svg viewBox="0 0 15 15" fill="#09090f" width="13" height="13"><path d="M7.5 1l2 4.5H14l-3.5 3 1.5 4.5L7.5 11 3.5 13 5 8.5 1.5 5.5H5.5L7.5 1Z"/></svg>
-            </div>
-            <span>InfraMind</span>
-          </div>
+          <Link href="/dashboard" className="im-mob-back">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="11" height="11"><path d="M10 8H3M6 5l-3 3 3 3" /></svg>
+            Dashboard
+          </Link>
           <Link href="/monitors" className="im-mob-link on">Monitors</Link>
           <Link href="/incidents" className="im-mob-link">Incidents</Link>
           <Link href="/settings" className="im-mob-link">Settings</Link>
-          <button onClick={handleLogout} className="im-mob-logout">↩</button>
+          <button onClick={handleLogout} className="im-mob-logout">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="13" height="13"><path d="M10 8H2M7 5l-3 3 3 3" /><path d="M6 3H13V13H6" /></svg>
+          </button>
         </nav>
 
         {/* Main */}

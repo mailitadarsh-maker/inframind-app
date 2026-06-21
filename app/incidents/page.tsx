@@ -49,6 +49,27 @@ const CSS = `
 .im-sb-back { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; color: #6b7280; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); text-decoration: none; margin-bottom: 16px; transition: background 0.12s, color 0.12s; }
 .im-sb-back:hover { background: rgba(255,255,255,0.04); color: #6b7280; }
 .im-main { flex: 1; margin-left: 216px; padding: 32px 32px 64px; }
+
+.im-mob-nav { display: none; background: #0d0f16; border-bottom: 1px solid rgba(255,255,255,0.07); padding: 10px 14px; align-items: center; gap: 4px; position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 50px; }
+.im-mob-logo { display: flex; align-items: center; gap: 8px; margin-right: auto; }
+.im-mob-logo-mark { width: 26px; height: 26px; border-radius: 7px; background: #34d399; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.im-mob-logo-mark svg { width: 13px; height: 13px; }
+.im-mob-logo span { font-size: 13px; font-weight: 600; color: #e2e6f0; }
+.im-mob-link { padding: 6px 9px; border-radius: 7px; font-size: 12px; font-weight: 500; color: #6b7280; text-decoration: none; white-space: nowrap; }
+.im-mob-link.on { color: #34d399; background: rgba(52,211,153,0.08); }
+.im-mob-logout { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; padding: 6px 8px; flex-shrink: 0; }
+.im-mob-back { display: flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 7px; font-size: 12px; font-weight: 600; color: #c4c9d8; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); text-decoration: none; flex-shrink: 0; }
+.im-mob-back svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  .im { flex-direction: column; }
+  .im-sb { display: none !important; }
+  .im-mob-nav { display: flex; }
+  .im-main { margin-left: 0 !important; margin-top: 50px; padding: 20px 14px 60px !important; max-width: 100%; width: 100%; }
+  .im-inc-head { flex-wrap: wrap !important; }
+  .im-inc-badges { width: 100%; justify-content: flex-end !important; margin-top: 6px; }
+  .im-inc-name { font-size: 12.5px !important; }
+}
 `;
 
 export default function IncidentsPage() {
@@ -120,6 +141,23 @@ export default function IncidentsPage() {
           </div>
         </aside>
 
+        {/* Mobile nav */}
+        <nav className="im-mob-nav">
+          <div className="im-mob-logo">
+            <div className="im-mob-logo-mark">
+              <svg viewBox="0 0 15 15" fill="#09090f" width="13" height="13"><path d="M7.5 1l2 4.5H14l-3.5 3 1.5 4.5L7.5 11 3.5 13 5 8.5 1.5 5.5H5.5L7.5 1Z" /></svg>
+            </div>
+            <span>InfraMind</span>
+          </div>
+          <Link href="/monitors" className="im-mob-back">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" width="11" height="11"><path d="M10 8H3M6 5l-3 3 3 3" /></svg>
+            Monitors
+          </Link>
+          <Link href="/incidents" className="im-mob-link on">Incidents</Link>
+          <Link href="/settings" className="im-mob-link">Settings</Link>
+          <button onClick={handleLogout} className="im-mob-logout">Logout</button>
+        </nav>
+
         {/* Main */}
         <main className="im-main">
           <div style={{ marginBottom: 28 }}>
@@ -156,17 +194,17 @@ export default function IncidentsPage() {
 
               return (
                 <div key={inc.id} style={{ background: '#0d1117', border: `1px solid ${isOpen ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 12, overflow: 'hidden' }}>
-                  <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div className="im-inc-head" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: isOpen ? '#ef4444' : '#22c55e', boxShadow: isOpen ? '0 0 0 3px rgba(239,68,68,0.15)' : '0 0 0 3px rgba(34,197,94,0.15)' }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#eef1f6', marginBottom: 4 }}>{monitorName}</div>
+                      <div className="im-inc-name" style={{ fontSize: 13, fontWeight: 600, color: '#eef1f6', marginBottom: 4 }}>{monitorName}</div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: 11, color: '#8a95a3' }}>
                         <span>▶ {formatDate(inc.started_at)}</span>
                         {inc.resolved_at && <span>✓ {formatDate(inc.resolved_at)}</span>}
                         {inc.duration_seconds && <span>⏱ {formatDuration(inc.duration_seconds)}</span>}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    <div className="im-inc-badges" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                       {hasAI && (
                         <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: ss.bg, border: `1px solid ${ss.border}`, color: ss.text, letterSpacing: '0.05em' }}>
                           🤖 AI
