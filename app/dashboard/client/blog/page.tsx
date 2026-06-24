@@ -132,6 +132,9 @@ function BlogReviewContent() {
             <p className="text-xs text-gray-400 uppercase tracking-widest mb-3 font-medium">
               {new Date(blog.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
+            {blog.cover_image && (
+              <img src={blog.cover_image} alt={blog.title} className="w-full h-56 object-cover rounded-xl mb-6" />
+            )}
             <h1 className="text-3xl font-black text-gray-900 mb-6 leading-tight">{blog.title}</h1>
             <div
               className="prose prose-gray max-w-none text-gray-700 leading-relaxed"

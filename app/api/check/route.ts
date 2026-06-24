@@ -180,7 +180,7 @@ async function performMonitorCheck(monitor: any) {
 
     if (!existingIncident) {
       const statusCode = detailedError.match(/HTTP (\d+)/)?.[1] || detailedError.match(/got (\d+)/)?.[1];
-      const ai = await generateIncidentAnalysis(monitor.target_url, statusCode ? parseInt(statusCode) : 0, detailedError, monitor.type ?? "website");
+      const ai = await generateIncidentAnalysis(monitor.target_url, statusCode ? parseInt(statusCode) : 0, detailedError, monitor.type ?? "website", monitor.client_id ?? undefined);
       
       await supabase.from("incidents").insert({
         monitor_id: monitor.id, started_at: new Date().toISOString(),

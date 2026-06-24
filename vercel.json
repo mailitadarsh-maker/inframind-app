@@ -1,12 +1,15 @@
 {
+  "functions": {
+    "app/api/client/generate-blog/route.ts": { "maxDuration": 60 },
+    "app/api/client/generate-post/route.ts": { "maxDuration": 60 },
+    "app/api/admin/regenerate-image/route.ts": { "maxDuration": 60 },
+    "app/api/client/generate-image/route.ts": { "maxDuration": 60 },
+    "app/api/client/extract-colors/route.ts": { "maxDuration": 30 },
+    "app/api/cron/generate-client-blogs/route.ts": { "maxDuration": 300 },
+    "app/api/cron/special-day-posts/route.ts": { "maxDuration": 300 }
+  },
   "crons": [
-    {
-      "path": "/api/cron/generate-blog",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/generate-client-blogs",
-      "schedule": "0 8 * * *"
-    }
+    { "path": "/api/cron/generate-client-blogs", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/special-day-posts", "schedule": "0 7 * * *" }
   ]
 }

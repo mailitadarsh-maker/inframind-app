@@ -19,7 +19,7 @@ export default async function BlogPage({ params }: { params: Promise<{ clientSlu
 
   const { data: blog } = await supabase
     .from('client_blogs')
-    .select('id, title, content, slug, created_at')
+    .select('id, title, content, slug, created_at, cover_image')
     .eq('client_id', client.id)
     .eq('slug', slug)
     .eq('status', 'published')
@@ -199,6 +199,17 @@ export default async function BlogPage({ params }: { params: Promise<{ clientSlu
           </div>
         </div>
 
+        {/* Cover Image */}
+        {blog.cover_image && (
+          <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
+            <img
+              src={blog.cover_image}
+              alt={blog.title}
+              style={{ width: '100%', height: 380, objectFit: 'cover', borderRadius: 12, marginTop: 36, display: 'block' }}
+            />
+          </div>
+        )}
+
         {/* Content */}
         <div className="blog-body">
           <div
@@ -235,7 +246,7 @@ export async function generateMetadata({ params }: { params: Promise<{ clientSlu
 
   const { data: blog } = await supabase
     .from('client_blogs')
-    .select('title, content')
+    .select('title, content, cover_image')
     .eq('client_id', client.id)
     .eq('slug', slug)
     .single();

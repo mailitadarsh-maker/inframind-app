@@ -60,6 +60,22 @@ export async function POST(request: Request) {
       }
     }
 
+    // ── Daily blog limit check ──────────────────────────────────────────────
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const dailyLimit = client.blogs_per_day ?? 4;
+    const { count: todayCount } = await supabase
+      .from('client_blogs')
+      .select('*', { count: 'exact', head: true })
+      .eq('client_id', client_id)
+      .gte('created_at', todayStart.toISOString());
+    if ((todayCount || 0) >= dailyLimit) {
+      return NextResponse.json({
+        error: `Daily limit reached. You can generate up to ${dailyLimit} blogs per day. Try again tomorrow.`,
+        limitReached: true,
+      }, { status: 429 });
+    }
+
     const { data: recentBlogs } = await supabase
       .from('client_blogs')
       .select('title')
@@ -89,14 +105,14 @@ Write in valid HTML using only <h2>, <p>, <ul>, <li>, <strong> tags. 500-700 wor
 Respond ONLY with valid JSON, no markdown fences:
 {"title": "...", "description": "...", "content": "<p>...</p>..."}`;
 
-    const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+    const aiRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'meta/llama-4-maverick-17b-128e-instruct',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.8,
       }),
@@ -115,6 +131,28 @@ Respond ONLY with valid JSON, no markdown fences:
       .trim()
       .replace(/\s+/g, '-');
 
+    // Generate cover image inline
+    let cover_image: string | null = null;
+    try {
+      const imgPrompt = `Professional blog cover image for "${parsed.title}". Company: ${client.company_name}, Industry: ${client.industry}. ${(client.brand_images && client.brand_images.length > 0) ? 'Warm gold tones, premium feel, dark rich backgrounds, cinematic lighting.' : 'Dark background, modern professional aesthetic.'} Clean composition, no text, no logos.`;
+      const imgRes = await fetch('https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
+        body: JSON.stringify({ prompt: imgPrompt, width: 1024, height: 1024 }),
+      });
+      const imgData = await imgRes.json();
+      const b64 = imgData.artifacts?.[0]?.base64;
+      if (b64) {
+        const buffer = Buffer.from(b64, 'base64');
+        const fileName = `flux-${client.id}-${Date.now()}.jpg`;
+        const { error: uploadErr } = await supabase.storage.from('brand-images').upload(fileName, buffer, { contentType: 'image/jpeg', upsert: true });
+        if (!uploadErr) {
+          const { data: urlData } = supabase.storage.from('brand-images').getPublicUrl(fileName);
+          cover_image = urlData.publicUrl || null;
+        }
+      }
+    } catch(e) { console.log('Image error:', e); }
+
     const { error: insertErr } = await supabase.from('client_blogs').insert({
       client_id,
       title: parsed.title,
@@ -122,6 +160,7 @@ Respond ONLY with valid JSON, no markdown fences:
       description: parsed.description,
       content: parsed.content,
       status: 'pending',
+      cover_image,
     });
 
     if (insertErr) throw new Error(insertErr.message);

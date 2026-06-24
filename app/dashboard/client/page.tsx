@@ -18,8 +18,16 @@ export default function ClientDashboard() {
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState('');
   const [tab, setTab] = useState<'blogs' | 'embed' | 'settings'>('blogs');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get('tab');
+    if (t === 'embed' || t === 'settings') setTab(t as any);
+  }, []);
   const [settingsSection, setSettingsSection] = useState<'embed' | 'domain' | 'company' | 'wordpress'>('company');
   const [saving, setSaving] = useState(false);
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [analysing, setAnalysing] = useState(false);
   const [savingDomain, setSavingDomain] = useState(false);
   const [domainInput, setDomainInput] = useState('');
   const [domainMessage, setDomainMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -35,6 +43,9 @@ export default function ClientDashboard() {
     wordpress_url: '',
     wordpress_username: '',
     wordpress_app_password: '',
+    frequency: 'weekly',
+    competitors: '',
+    brand_notes: '',
   });
 
   const industries = ['Technology', 'Healthcare', 'Finance', 'Retail', 'Education', 'Fintech', 'Real Estate', 'Other'];
@@ -70,8 +81,10 @@ export default function ClientDashboard() {
         wordpress_url: clientData.wordpress_url || '',
         wordpress_username: clientData.wordpress_username || '',
         wordpress_app_password: clientData.wordpress_app_password || '',
+        frequency: clientData.frequency || 'weekly',
+        competitors: clientData.competitors || '',
+        brand_notes: clientData.brand_notes || '',
       });
-
       const { data: blogData } = await supabase
         .from('client_blogs')
         .select('*')
@@ -131,6 +144,29 @@ export default function ClientDashboard() {
     }
   }
 
+  async function uploadBrandImages(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length || !client?.id) return;
+    const uploaded: string[] = [];
+    for (const file of files.slice(0, 5)) {
+      const ext = file.name.split('.').pop();
+      const path = `brand-ref/${client.id}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from('brand-images').upload(path, file, { upsert: true });
+      console.log('Upload result:', error ? error.message : 'OK', path);
+      if (!error) {
+        const { data } = supabase.storage.from('brand-images').getPublicUrl(path);
+        uploaded.push(data.publicUrl);
+      } else {
+        console.error('Upload error:', error.message, error);
+      }
+    }
+    if (uploaded.length) {
+      const newUrls = [...(client?.brand_images || []), ...uploaded];
+      await supabase.from('clients').update({ brand_images: newUrls }).eq('id', client.id);
+      setClient((c: any) => ({ ...c, brand_images: newUrls }));
+    }
+  }
+
   async function saveSettings() {
     setSaving(true);
     const { error } = await supabase
@@ -146,12 +182,35 @@ export default function ClientDashboard() {
         wordpress_url: form.wordpress_url || null,
         wordpress_username: form.wordpress_username || null,
         wordpress_app_password: form.wordpress_app_password || null,
+        frequency: form.frequency,
+        competitors: form.competitors || null,
+        brand_notes: form.brand_notes || null,
       })
       .eq('id', client.id);
     setSaving(false);
     if (!error) {
       setClient({ ...client, ...form });
       setMessage('Settings saved!');
+
+      // Run AI analysis
+      setAnalysing(true);
+      setAnalysis(null);
+      try {
+        const res = await fetch('/api/client/analyse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            company_name: form.company_name,
+            industry: form.industry,
+            target_audience: form.target_audience,
+            company_description: form.company_description,
+            tone: form.tone,
+          })
+        });
+        const data = await res.json();
+        setAnalysis(data.analysis || 'Could not load analysis.');
+      } catch(e) { setAnalysis('Could not load analysis.'); }
+      setAnalysing(false);
     } else {
       setMessage('Error: ' + error.message);
     }
@@ -208,7 +267,7 @@ export default function ClientDashboard() {
             {blogs.length > 0 && <p className="text-xs text-[#4ade80]/70 mt-1">✓ {blogs.filter(b => b.status === 'published').length} blog{blogs.filter(b => b.status === 'published').length !== 1 ? 's' : ''} live</p>}
           </div>
           <button
-            onClick={requestBlog}
+            onClick={() => limitReached ? window.open(`https://wa.me/919633474645?text=Hi%2C%20I%20want%20to%20upgrade%20my%20InfraMind%20plan.%20My%20account%20email%20is%20${client?.company_name || ''}`, '_blank') : requestBlog()}
             disabled={generating}
             title={limitReached ? 'Free trial limit reached — upgrade to generate more blogs' : undefined}
             className={`font-bold px-6 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-40 ${
@@ -217,7 +276,7 @@ export default function ClientDashboard() {
                 : 'bg-[#4ade80] hover:bg-[#22c55e] text-black'
             }`}
           >
-            {generating ? 'Generating...' : limitReached ? 'Upgrade to Generate' : '+ Generate Blog'}
+            {generating ? 'Generating...' : limitReached ? '⬆ Upgrade to Generate' : '+ Generate Blog'}
           </button>
         </div>
 
@@ -241,7 +300,7 @@ export default function ClientDashboard() {
           <div className="bg-[#26292f] border border-white/[0.08] rounded-2xl p-5">
             <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Plan</p>
             <p className="text-2xl font-bold text-white">{planLabel}</p>
-            <button onClick={() => router.push('/upgrade')} className="text-xs text-[#4ade80] hover:text-[#22c55e] mt-1 block transition-colors">
+            <button onClick={() => window.open(`https://wa.me/919633474645?text=Hi%2C%20I%20want%20to%20upgrade%20my%20InfraMind%20plan.%20My%20account%20email%20is%20${client?.company_name || ''}`, '_blank')} className="text-xs text-[#4ade80] hover:text-[#22c55e] mt-1 block transition-colors">
               {isTrial ? 'Upgrade for more →' : 'View plans →'}
             </button>
           </div>
@@ -281,7 +340,7 @@ export default function ClientDashboard() {
                 )}
               </div>
               <button
-                onClick={() => router.push('/upgrade')}
+                onClick={() => window.open(`https://wa.me/919633474645?text=Hi%2C%20I%20want%20to%20upgrade%20my%20InfraMind%20plan.%20My%20account%20email%20is%20${client?.company_name || ''}`, '_blank')}
                 className="bg-[#4ade80] hover:bg-[#22c55e] text-black text-sm font-bold px-5 py-2.5 rounded-xl transition-colors flex-shrink-0"
               >
                 Upgrade Plan →
@@ -313,15 +372,20 @@ export default function ClientDashboard() {
         )}
 
         <div className="flex gap-2 mb-6">
-          {(['blogs', 'embed', 'settings'] as const).map(t => (
+          {([
+            { id: 'blogs', label: 'Blogs' },
+            { id: 'social', label: '✦ Social' },
+            { id: 'embed', label: 'Embed' },
+            { id: 'settings', label: 'Settings' },
+          ] as const).map(t => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-5 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${
-                tab === t ? 'bg-[#4ade80] text-black' : 'bg-white/5 text-white/50 hover:text-white'
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-5 py-2 rounded-xl text-sm font-medium transition-colors ${
+                tab === t.id ? 'bg-[#4ade80] text-black' : 'bg-white/5 text-white/50 hover:text-white'
               }`}
             >
-              {t}
+              {t.label}
             </button>
           ))}
         </div>
@@ -339,14 +403,19 @@ export default function ClientDashboard() {
             ) : (
               <div className="divide-y divide-white/[0.06]">
                 {blogs.map(blog => (
-                  <div key={blog.id} className="px-6 py-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-white font-medium">{blog.title}</p>
-                      <p className="text-xs text-white/30 mt-0.5">
-                        {new Date(blog.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
+                  <div key={blog.id} className="px-6 py-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="w-16 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-white/5 border border-white/[0.06]">
+                        {blog.cover_image ? <img src={blog.cover_image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/10 text-lg">🖼</div>}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm text-white font-medium truncate">{blog.title}</p>
+                        <p className="text-xs text-white/30 mt-0.5">
+                          {new Date(blog.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <span className={`text-xs font-medium px-3 py-1 rounded-full border capitalize ${
                         blog.status === 'published' ? 'bg-green-400/10 text-green-400 border-green-400/20' :
                         blog.status === 'pending' ? 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20' :
@@ -355,6 +424,20 @@ export default function ClientDashboard() {
                       }`}>
                         {blog.status}
                       </span>
+                      <button
+                        title="Regenerate cover image"
+                        onClick={async (e) => {
+                          const btn = e.currentTarget;
+                          btn.disabled = true;
+                          btn.textContent = '…';
+                          const res = await fetch('/api/admin/regenerate-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ blog_id: blog.id }) });
+                          const data = await res.json();
+                          if (data.cover_image) setBlogs(prev => prev.map(b => b.id === blog.id ? { ...b, cover_image: data.cover_image } : b));
+                          btn.disabled = false;
+                          btn.textContent = '↺';
+                        }}
+                        className="text-xs text-white/30 hover:text-white border border-white/[0.08] hover:border-white/20 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+                      >↺</button>
                       <a
                         href={`/dashboard/client/blog?id=${blog.id}`}
                         className="text-xs text-white/30 hover:text-white border border-white/[0.08] hover:border-white/20 px-3 py-1.5 rounded-lg transition-colors"
@@ -564,7 +647,31 @@ export default function ClientDashboard() {
 
                 <button onClick={saveSettings} disabled={saving}
                   className="w-full bg-[#4ade80] hover:bg-[#22c55e] disabled:opacity-40 text-black font-bold px-4 py-2.5 rounded-xl text-sm transition-colors mb-4">
-                  {saving ? 'Saving...' : 'Save Settings'}
+                  <div className="md:col-span-2">
+  <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Publishing Frequency</label>
+  <select className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors"
+    value={form.frequency} onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))}>
+    <option value="daily1">Daily · 1 post/day</option>
+    <option value="daily2">Daily · 2 posts/day</option>
+    <option value="daily3">Daily · 3 posts/day</option>
+    <option value="2/week">2× / week</option>
+    <option value="weekly">Weekly</option>
+    <option value="biweekly">Bi-weekly</option>
+    <option value="monthly">Monthly</option>
+  </select>
+</div>
+<div className="md:col-span-2">
+  <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Top Competitors (optional)</label>
+  <textarea rows={2} className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors resize-none"
+    placeholder="e.g. competitor1.com, competitor2.com"
+    value={form.competitors} onChange={e => setForm(f => ({ ...f, competitors: e.target.value }))} />
+</div>
+<div className="md:col-span-2">
+  <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Brand Notes (optional)</label>
+  <textarea rows={2} className="w-full bg-[#1e2128] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] transition-colors resize-none"
+    placeholder="e.g. Avoid dark topics, prefer upbeat tone, brand color is green"
+    value={form.brand_notes} onChange={e => setForm(f => ({ ...f, brand_notes: e.target.value }))} />
+</div>
                 </button>
 
                 <div className="border-t border-white/[0.06] pt-4">
@@ -611,6 +718,154 @@ export default function ClientDashboard() {
             </div>
           </div>
 
+          </div>
+        )}
+
+
+        {tab === 'social' && (
+          <div className="space-y-6">
+            {/* Create Post Panel */}
+            <div className="bg-[#1a1d23] border border-white/[0.06] rounded-2xl p-6">
+              <h2 className="text-sm font-semibold text-white mb-5">✦ Generate Social Post</h2>
+
+              {/* Platform */}
+              <div className="mb-4">
+                <p className="text-xs text-white/40 uppercase tracking-widest mb-2">Platform</p>
+                <div className="flex gap-2">
+                  {(['instagram','linkedin','twitter'] as const).map(p => (
+                    <button key={p} onClick={() => setSocialPlatform(p)}
+                      className={`flex-1 py-2 rounded-xl text-xs font-semibold capitalize transition-colors ${socialPlatform === p ? 'bg-[#4ade80] text-black' : 'bg-white/5 text-white/50 hover:text-white'}`}>
+                      {p === 'instagram' ? '📸 Instagram' : p === 'linkedin' ? '💼 LinkedIn' : '𝕏 Twitter'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Format */}
+              <div className="mb-4">
+                <p className="text-xs text-white/40 uppercase tracking-widest mb-2">Format</p>
+                <div className="flex gap-2">
+                  {(['post','story'] as const).map(f => (
+                    <button key={f} onClick={() => setSocialFormat(f)}
+                      className={`px-5 py-2 rounded-xl text-xs font-semibold capitalize transition-colors ${socialFormat === f ? 'bg-[#4ade80] text-black' : 'bg-white/5 text-white/50 hover:text-white'}`}>
+                      {f === 'post' ? '⬛ Post / Poster' : '📱 Story'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Suggestion */}
+              <div className="mb-5">
+                <p className="text-xs text-white/40 uppercase tracking-widest mb-2">Your Suggestion <span className="normal-case text-white/20">(optional)</span></p>
+                <textarea
+                  value={socialSuggestion}
+                  onChange={e => setSocialSuggestion(e.target.value)}
+                  placeholder="e.g. 'Highlight our new gold savings feature' or 'Something motivational about wealth building'"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 resize-none focus:outline-none focus:border-[#4ade80]/40"
+                  rows={2}
+                />
+              </div>
+
+              {postMessage && (
+                <div className="mb-4 text-xs text-[#4ade80] bg-[#4ade80]/10 border border-[#4ade80]/20 rounded-xl px-4 py-3">{postMessage}</div>
+              )}
+
+              <button
+                disabled={generatingPost}
+                onClick={async () => {
+                  if (!client) return;
+                  setGeneratingPost(true);
+                  setPostMessage('');
+                  try {
+                    const res = await fetch('/api/client/generate-post', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ client_id: client.id, platform: socialPlatform, format: socialFormat, suggestion: socialSuggestion }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      setPostMessage('Post generated! Review it below.');
+                      setSocialSuggestion('');
+                      const { data: fresh } = await supabase.from('social_posts').select('*').eq('client_id', client.id).order('created_at', { ascending: false });
+                      setSocialPosts(fresh || []);
+                    } else {
+                      setPostMessage(data.error || 'Failed to generate post.');
+                    }
+                  } catch(e) { setPostMessage('Something went wrong.'); }
+                  setGeneratingPost(false);
+                }}
+                className="w-full bg-[#4ade80] hover:bg-[#22c55e] disabled:opacity-40 text-black font-bold py-3 rounded-xl text-sm transition-colors"
+              >
+                {generatingPost ? '✦ Generating...' : '+ Generate Post'}
+              </button>
+            </div>
+
+            {/* Posts List */}
+            {socialPosts.length > 0 && (
+              <div className="bg-[#1a1d23] border border-white/[0.06] rounded-2xl p-6">
+                <h2 className="text-sm font-semibold text-white mb-4">Your Posts</h2>
+                <div className="space-y-4">
+                  {socialPosts.map(post => (
+                    <div key={post.id} className="flex gap-4 p-4 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+                      {/* Image */}
+                      <div className={`flex-shrink-0 bg-white/5 rounded-xl overflow-hidden ${post.format === 'story' ? 'w-16 h-28' : 'w-20 h-20'}`}>
+                        {post.image_url
+                          ? <img src={post.image_url} alt="" className="w-full h-full object-cover" />
+                          : <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">No img</div>
+                        }
+                      </div>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs text-white/40 capitalize">{post.platform === 'twitter' ? '𝕏 Twitter' : post.platform === 'instagram' ? '📸 Instagram' : '💼 LinkedIn'}</span>
+                          <span className="text-white/20">·</span>
+                          <span className="text-xs text-white/30 capitalize">{post.format}</span>
+                          <span className={`ml-auto text-xs px-2 py-0.5 rounded-full font-medium ${post.status === 'published' ? 'bg-[#4ade80]/10 text-[#4ade80]' : post.status === 'approved' ? 'bg-blue-400/10 text-blue-400' : 'bg-yellow-400/10 text-yellow-400'}`}>
+                            {post.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-white/60 leading-relaxed line-clamp-3">{post.caption}</p>
+                        <div className="flex gap-2 mt-3">
+                          {post.status === 'pending' && (
+                            <button
+                              onClick={async () => {
+                                await supabase.from('social_posts').update({ status: 'approved' }).eq('id', post.id);
+                                setSocialPosts(prev => prev.map(p => p.id === post.id ? { ...p, status: 'approved' } : p));
+                              }}
+                              className="text-xs bg-[#4ade80]/10 hover:bg-[#4ade80]/20 text-[#4ade80] border border-[#4ade80]/20 px-3 py-1.5 rounded-lg transition-colors">
+                              ✓ Approve
+                            </button>
+                          )}
+                          {post.status === 'approved' && (
+                            <button
+                              onClick={async () => {
+                                await supabase.from('social_posts').update({ status: 'published', published_at: new Date().toISOString() }).eq('id', post.id);
+                                setSocialPosts(prev => prev.map(p => p.id === post.id ? { ...p, status: 'published' } : p));
+                              }}
+                              className="text-xs bg-blue-400/10 hover:bg-blue-400/20 text-blue-400 border border-blue-400/20 px-3 py-1.5 rounded-lg transition-colors">
+                              ↑ Publish
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(post.caption);
+                            }}
+                            className="text-xs text-white/30 hover:text-white border border-white/[0.08] hover:border-white/20 px-3 py-1.5 rounded-lg transition-colors">
+                            Copy Caption
+                          </button>
+                          {post.image_url && (
+                            <a href={post.image_url} download target="_blank"
+                              className="text-xs text-white/30 hover:text-white border border-white/[0.08] hover:border-white/20 px-3 py-1.5 rounded-lg transition-colors">
+                              ↓ Image
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -682,10 +937,53 @@ export default function ClientDashboard() {
                   value={form.company_description} onChange={e => setForm(f => ({ ...f, company_description: e.target.value }))} />
               </div>
             </div>
+            {/* Brand Reference Images */}
+            <div className="mt-6">
+              <label className="text-xs text-white/40 uppercase tracking-widest mb-1.5 block">Brand Reference Images</label>
+              <p className="text-xs text-white/30 mb-3">Used to match your brand style when generating blog cover images.</p>
+              <div className="flex flex-wrap gap-3 mb-3">
+                {(client?.brand_images || []).map((url: string, i: number) => (
+                  <div key={i} className="relative w-20 h-14 rounded-lg overflow-hidden border border-white/[0.08]">
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+              <label className="cursor-pointer inline-flex items-center gap-2 text-xs text-white/50 hover:text-white border border-white/[0.08] hover:border-white/20 px-4 py-2 rounded-lg transition-colors">
+                <span>+ Upload Images</span>
+                <input type="file" accept="image/*" multiple className="hidden" onChange={uploadBrandImages} />
+              </label>
+            </div>
+
             <button onClick={saveSettings} disabled={saving}
               className="mt-5 w-full bg-[#4ade80] hover:bg-[#22c55e] disabled:opacity-40 text-black font-bold px-4 py-3 rounded-xl text-sm transition-colors">
               {saving ? 'Saving...' : 'Save Settings'}
             </button>
+
+            {/* AI Analysis Panel */}
+            {(analysing || analysis) && (
+              <div className="mt-6 rounded-2xl border border-[#4ade80]/20 bg-[#4ade80]/5 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-[#4ade80] text-sm font-bold">✦ Content Strategy Analysis</span>
+                  {analysing && <span className="text-white/30 text-xs animate-pulse">Analysing...</span>}
+                </div>
+                {analysing && (
+                  <div className="space-y-2">
+                    {[1,2,3].map(i => <div key={i} className="h-3 bg-white/5 rounded-full animate-pulse" style={{width: `${70+i*10}%`}} />)}
+                  </div>
+                )}
+                {analysis && (
+                  <div className="text-sm text-white/70 space-y-3">
+                    {analysis.split('\n').filter(Boolean).map((line, i) =>
+                      line.startsWith('##') ? (
+                        <p key={i} className="text-white font-semibold text-xs uppercase tracking-widest mt-4 first:mt-0">{line.replace(/^##\s*/, '')}</p>
+                      ) : (
+                        <p key={i} className="text-white/60 text-sm leading-relaxed">{line}</p>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 

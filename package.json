@@ -15,6 +15,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "resend": "^6.12.4",
+    "sharp": "^0.35.2",
     "ssl-checker": "^3.0.1"
   },
   "devDependencies": {

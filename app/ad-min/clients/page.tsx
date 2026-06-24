@@ -25,7 +25,7 @@ function daysLeft(dateStr: string) {
 }
 
 function isGmail(email: string) {
-  return /@gmail\\.com$/i.test(email || '');
+  return /@gmail\.com$/i.test(email || '');
 }
 
 export default function AdminClientsPage() {
@@ -271,7 +271,7 @@ export default function AdminClientsPage() {
                       <p style={{ fontSize: 11, color: '#34d399', fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                         Blog-as-a-Service
                       </p>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 18 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 18 }}>
                         <div>
                           <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>Plan</label>
                           <select
@@ -302,6 +302,84 @@ export default function AdminClientsPage() {
                             onBlur={e => updateClient(c.id, a.user_id, { blogs_per_month: parseInt(e.target.value) || 0 })}
                             style={{ ...selectStyle, width: '100%' }}
                           />
+                            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginBottom: 3 }}>Blogs/day limit</div>
+                                <input type="number" min="1" max="20"
+                                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '4px 8px', color: '#fff', fontSize: 12 }}
+                                  defaultValue={c.blogs_per_day ?? 4}
+                                  onBlur={e => updateClient(c.id, a.user_id, { blogs_per_day: parseInt(e.target.value) || 4 })}
+                                />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginBottom: 3 }}>Regen limit/day</div>
+                                <input type="number" min="0" max="20"
+                                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '4px 8px', color: '#fff', fontSize: 12 }}
+                                  defaultValue={c.regen_limit ?? 3}
+                                  onBlur={e => updateClient(c.id, a.user_id, { regen_limit: parseInt(e.target.value) || 3 })}
+                                />
+                              </div>
+                            </div>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>Image Generation</label>
+                          <select
+                            value={c.image_generation || 'unsplash'}
+                            onChange={e => updateClient(c.id, a.user_id, { image_generation: e.target.value })}
+                            style={{ ...selectStyle, width: '100%',
+                              color: c.image_generation === 'dalle' ? '#a78bfa' : c.image_generation === 'dalle_openai' ? '#f87171' : '#34d399',
+                            }}
+                          >
+                            <option value="unsplash">Unsplash (free)</option>
+                            <option value="dalle">NVIDIA FLUX (free)</option>
+                            <option value="dalle_openai">DALL·E (paid)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>AI — Blogs</label>
+                          <select
+                            value={c.ai_provider_blogs || 'global'}
+                            onChange={e => updateClient(c.id, a.user_id, { ai_provider_blogs: e.target.value })}
+                            style={{ ...selectStyle, width: '100%',
+                              color: c.ai_provider_blogs === 'openai' ? '#f87171' : c.ai_provider_blogs === 'nvidia' ? '#a78bfa' : '#8a95a3',
+                            }}
+                          >
+                            <option value="global">Global default</option>
+                            <option value="nvidia">⚡ NVIDIA (Llama 4)</option>
+                            <option value="openai">🤖 OpenAI (GPT-4o)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>AI — Social</label>
+                          <select
+                            value={c.ai_provider_social || 'global'}
+                            onChange={e => updateClient(c.id, a.user_id, { ai_provider_social: e.target.value })}
+                            style={{ ...selectStyle, width: '100%',
+                              color: c.ai_provider_social === 'openai' ? '#f87171' : c.ai_provider_social === 'nvidia' ? '#a78bfa' : '#8a95a3',
+                            }}
+                          >
+                            <option value="global">Global default</option>
+                            <option value="nvidia">⚡ NVIDIA (Llama 4)</option>
+                            <option value="openai">🤖 OpenAI (GPT-4o)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>AI — Incident Diagnosis</label>
+                          <select
+                            value={c.ai_provider_incidents || 'global'}
+                            onChange={e => updateClient(c.id, a.user_id, { ai_provider_incidents: e.target.value })}
+                            style={{ ...selectStyle, width: '100%',
+                              color: c.ai_provider_incidents === 'openai' ? '#f87171' : c.ai_provider_incidents === 'nvidia' ? '#a78bfa' : '#8a95a3',
+                            }}
+                          >
+                            <option value="global">Global default</option>
+                            <option value="nvidia">⚡ NVIDIA (Llama 4)</option>
+                            <option value="openai">🤖 OpenAI (GPT-4o)</option>
+                          </select>
                         </div>
                       </div>
 
@@ -331,6 +409,72 @@ export default function AdminClientsPage() {
                           {deletingId === a.user_id ? 'Deleting…' : 'Delete Blog Data'}
                         </button>
                       </div>
+                      {/* SOCIAL MEDIA SECTION */}
+                <div style={{ background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.12)', borderRadius: 12, padding: '18px 20px', marginTop: 12 }}>
+                  <p style={{ fontSize: 11, color: '#a78bfa', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Social Media
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 14 }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>Posts / Day limit</label>
+                      <input
+                        type="number" min="1" max="20"
+                        defaultValue={c?.social_posts_per_day ?? 4}
+                        onBlur={e => updateClient(c!.id, a.user_id, { social_posts_per_day: parseInt(e.target.value) || 4 })}
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 10px', color: '#fff', fontSize: 12 }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>AI — Social</label>
+                      <select
+                        value={c?.ai_provider_social || 'global'}
+                        onChange={e => updateClient(c!.id, a.user_id, { ai_provider_social: e.target.value })}
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 10px', fontSize: 12,
+                          color: c?.ai_provider_social === 'openai' ? '#f87171' : c?.ai_provider_social === 'nvidia' ? '#a78bfa' : '#8a95a3' }}
+                      >
+                        <option value="global">Global default</option>
+                        <option value="nvidia">⚡ NVIDIA (Llama 4)</option>
+                        <option value="openai">🤖 OpenAI (GPT-4o)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>Total Posts</label>
+                      <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 10px', fontSize: 12, color: '#a78bfa' }}>
+                        {c?.social_stats?.total ?? 0} posts generated
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* LINKS SECTION */}
+                <div style={{ background: 'rgba(96,165,250,0.04)', border: '1px solid rgba(96,165,250,0.12)', borderRadius: 12, padding: '18px 20px', marginTop: 12 }}>
+                  <p style={{ fontSize: 11, color: '#60a5fa', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Links
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {[
+                      { key: 'website', label: '🌐 Website' },
+                      { key: 'instagram_url', label: '📸 Instagram' },
+                      { key: 'linkedin_url', label: '💼 LinkedIn' },
+                      { key: 'twitter_url', label: '🐦 Twitter / X' },
+                    ].map(({ key, label }) => (
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 11, color: '#8a95a3', width: 110, flexShrink: 0 }}>{label}</span>
+                        <input
+                          type="url"
+                          defaultValue={(c as any)?.[key] || ''}
+                          onBlur={e => updateClient(c!.id, a.user_id, { [key]: e.target.value || null })}
+                          placeholder={`https://`}
+                          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 10px', color: '#eef1f6', fontSize: 12 }}
+                        />
+                        {(c as any)?.[key] && (
+                          <a href={(c as any)[key]} target="_blank" rel="noreferrer"
+                            style={{ fontSize: 11, color: '#60a5fa', textDecoration: 'none', flexShrink: 0 }}>↗</a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
                     </>
                   ) : (
                     <p style={{ fontSize: 12.5, color: '#8a95a3', fontStyle: 'italic' }}>

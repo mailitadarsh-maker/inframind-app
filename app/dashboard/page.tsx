@@ -154,6 +154,36 @@ export default function DashboardHome() {
             </div>
           </div>
 
+          {/* Social Media */}
+          <div className="dash-card dash-card-hover"
+            onClick={() => router.push('/dashboard/social')}
+            style={{ background: '#0d0f16', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, cursor: 'pointer' }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.3)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+              <div style={{ width: 50, height: 50, borderRadius: 13, background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg viewBox="0 0 20 20" fill="none" stroke="#a855f7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
+                  <circle cx="7" cy="10" r="3"/><circle cx="15" cy="5" r="2"/><circle cx="15" cy="15" r="2"/>
+                  <path d="M10 10l3-3.5M10 10l3 3.5"/>
+                </svg>
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#a855f7', background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.18)', borderRadius: 99, padding: '5px 13px', letterSpacing: '0.06em' }}>NEW</span>
+            </div>
+            <h2 style={{ fontSize: 19, fontWeight: 600, color: '#e2e6f0', marginBottom: 10, letterSpacing: '-0.01em' }}>Social Media AI</h2>
+            <p style={{ fontSize: 14.5, color: '#6b7280', lineHeight: 1.7, marginBottom: 24 }}>Generate on-brand posts and stories for Instagram, LinkedIn and Twitter — with AI images matching your brand style.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 11, marginBottom: 28 }}>
+              {['AI caption + image generation', 'Instagram, LinkedIn & Twitter', 'Story & post formats'].map((f: string) => (
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 11, fontSize: 14, color: '#4a5068' }}>
+                  <svg viewBox="0 0 12 12" fill="#a855f7" width="9" height="9"><circle cx="6" cy="6" r="3.5" /></svg>{f}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: '#a855f7' }}>
+              Go to Social Studio
+              <svg viewBox="0 0 16 16" fill="none" stroke="#a855f7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+            </div>
+          </div>
+
           {/* Monitoring */}
           <div className="dash-card dash-card-hover"
             onClick={() => router.push('/monitors')}
