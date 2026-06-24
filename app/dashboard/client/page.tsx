@@ -17,7 +17,13 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState('');
-  const [tab, setTab] = useState<'blogs' | 'embed' | 'settings'>('blogs');
+  const [tab, setTab] = useState<'blogs' | 'social' | 'embed' | 'settings'>('blogs');
+  const [socialPlatform, setSocialPlatform] = useState<'instagram' | 'linkedin' | 'twitter'>('instagram');
+  const [socialFormat, setSocialFormat] = useState<'post' | 'story'>('post');
+  const [socialSuggestion, setSocialSuggestion] = useState('');
+  const [generatingPost, setGeneratingPost] = useState(false);
+  const [postMessage, setPostMessage] = useState('');
+  const [socialPosts, setSocialPosts] = useState<any[]>([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

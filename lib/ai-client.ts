@@ -15,7 +15,7 @@ export async function getAIProvider(service: 'blogs' | 'social', clientId?: stri
   if (clientId) {
     const col = service === 'blogs' ? 'ai_provider_blogs' : 'ai_provider_social';
     const { data } = await supabase.from('clients').select(col).eq('id', clientId).single();
-    const override = data?.[col];
+    const override = (data as any)?.[col];
     if (override && override !== 'global') return override as 'nvidia' | 'openai';
   }
   return getGlobalProvider(service);

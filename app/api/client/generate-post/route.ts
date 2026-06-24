@@ -135,7 +135,7 @@ Color palette: primary ${primary}, secondary ${secondary}, white text, dark shad
       const b64 = imgData.artifacts?.[0]?.base64;
 
       if (b64) {
-        let imageBuffer = Buffer.from(b64, 'base64');
+        let imageBuffer: any = Buffer.from(b64, 'base64');
 
         // Step 4: Overlay logo if client has one
         if (client.logo_url) {
@@ -148,10 +148,10 @@ Color palette: primary ${primary}, secondary ${secondary}, white text, dark shad
               .resize(logoSize, logoSize, { fit: 'inside' })
               .png()
               .toBuffer();
-            imageBuffer = await sharp(Buffer.from(imageBuffer))
+            imageBuffer = (await sharp(imageBuffer as any)
               .composite([{ input: resizedLogo, top: 28, left: 28, blend: 'over' }])
               .jpeg({ quality: 95 })
-              .toBuffer();
+              .toBuffer()) as any;
           } catch(e) { console.log('Logo overlay error:', e); }
         }
 
