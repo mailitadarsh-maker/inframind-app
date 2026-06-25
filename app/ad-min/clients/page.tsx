@@ -15,6 +15,7 @@ const statusColor: Record<string, { bg: string; text: string; border: string }> 
 
 const productTag: Record<string, { bg: string; text: string; label: string }> = {
   blog: { bg: 'rgba(52,211,153,0.08)', text: '#34d399', label: 'Blog' },
+  social: { bg: 'rgba(167,139,250,0.08)', text: '#a78bfa', label: 'Social' },
   monitoring: { bg: 'rgba(96,165,250,0.08)', text: '#60a5fa', label: 'Monitoring' },
 };
 
@@ -113,6 +114,7 @@ export default function AdminClientsPage() {
   const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   const totalBlog = accounts.filter(a => a.products.includes('blog')).length;
+  const totalSocial = accounts.filter(a => a.products.includes('social')).length;
   const totalMonitoring = accounts.filter(a => a.products.includes('monitoring')).length;
   const totalNeither = accounts.filter(a => a.products.length === 0).length;
 
@@ -130,6 +132,7 @@ export default function AdminClientsPage() {
         {[
           { key: 'all', label: `All (${accounts.length})` },
           { key: 'blog', label: `Blog (${totalBlog})` },
+          { key: 'social', label: `Social (${totalSocial})` },
           { key: 'monitoring', label: `Monitoring (${totalMonitoring})` },
           { key: 'neither', label: `Inactive (${totalNeither})` },
         ].map(f => (
@@ -409,7 +412,13 @@ export default function AdminClientsPage() {
                           {deletingId === a.user_id ? 'Deleting…' : 'Delete Blog Data'}
                         </button>
                       </div>
-                      {/* SOCIAL MEDIA SECTION */}
+
+                    </>
+                  ) : (
+                    <p style={{ fontSize: 12.5, color: '#8a95a3', fontStyle: 'italic' }}>
+                      Not using Blog-as-a-Service.
+                    </p>
+                  )}
                 <div style={{ background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.12)', borderRadius: 12, padding: '18px 20px', marginTop: 12 }}>
                   <p style={{ fontSize: 11, color: '#a78bfa', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Social Media
@@ -420,7 +429,7 @@ export default function AdminClientsPage() {
                       <input
                         type="number" min="1" max="20"
                         defaultValue={c?.social_posts_per_day ?? 4}
-                        onBlur={e => updateClient(c!.id, a.user_id, { social_posts_per_day: parseInt(e.target.value) || 4 })}
+                        onBlur={e => c && updateClient(c.id, a.user_id, { social_posts_per_day: parseInt(e.target.value) || 4 })}
                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 10px', color: '#fff', fontSize: 12 }}
                       />
                     </div>
@@ -428,7 +437,7 @@ export default function AdminClientsPage() {
                       <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>AI — Social</label>
                       <select
                         value={c?.ai_provider_social || 'global'}
-                        onChange={e => updateClient(c!.id, a.user_id, { ai_provider_social: e.target.value })}
+                        onChange={e => c && updateClient(c.id, a.user_id, { ai_provider_social: e.target.value })}
                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 10px', fontSize: 12,
                           color: c?.ai_provider_social === 'openai' ? '#f87171' : c?.ai_provider_social === 'nvidia' ? '#a78bfa' : '#8a95a3' }}
                       >
@@ -443,7 +452,19 @@ export default function AdminClientsPage() {
                         {c?.social_stats?.total ?? 0} posts generated
                       </div>
                     </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>Image Provider (last post)</label>
+                      <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 10px', fontSize: 11,
+                        color: c?.last_social_provider === 'nvidia_flux' ? '#a78bfa' : c?.last_social_provider === 'pollinations' ? '#34d399' : '#8a95a3' }}>
+                        {c?.last_social_provider === 'nvidia_flux' ? '⚡ NVIDIA FLUX' : c?.last_social_provider === 'pollinations' ? '🌸 Pollinations' : '—'}
+                      </div>
+                    </div>
                   </div>
+                  {c?.last_social_error && (
+                    <div style={{ marginTop: 10, padding: '8px 12px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 8, fontSize: 11, color: '#f87171' }}>
+                      ⚠ Last error: {c.last_social_error}
+                    </div>
+                  )}
                 </div>
 
                 {/* LINKS SECTION */}
@@ -475,12 +496,6 @@ export default function AdminClientsPage() {
                     ))}
                   </div>
                 </div>
-                    </>
-                  ) : (
-                    <p style={{ fontSize: 12.5, color: '#8a95a3', fontStyle: 'italic' }}>
-                      Not using Blog-as-a-Service.
-                    </p>
-                  )}
                 </div>
               )}
             </div>

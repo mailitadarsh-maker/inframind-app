@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   try {
     const imgPrompt = `Professional blog cover image for "${title}". Company: ${client.company_name}, Industry: ${client.industry}. ${(client.brand_images && client.brand_images.length > 0) ? 'Warm gold tones, premium feel, dark rich backgrounds, cinematic lighting.' : 'Dark background, modern professional aesthetic.'} Clean composition, no text, no logos.`;
 
-    const imgRes = await fetch('https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev', {
+    const imgRes = await fetch('https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
       body: JSON.stringify({ prompt: imgPrompt, width: 1024, height: 1024 }),

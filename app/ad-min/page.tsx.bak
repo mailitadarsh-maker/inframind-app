@@ -1,64 +1,5 @@
 'use client';
 
-
-const fmt2 = (ts: string) => {
-  if (!ts) return '—';
-  const d = new Date(ts);
-  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) + ' ' +
-    d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-};
-
-function HealthCard({ icon, label, status, statusLabel, sub, last }: {
-  icon: string; label: string; status: 'ok' | 'error' | 'unknown';
-  statusLabel: string; sub?: string; last?: string;
-}) {
-  const color = status === 'ok' ? '#34d399' : status === 'error' ? '#f87171' : '#fbbf24';
-  return (
-    <div style={{ background: '#0d0f16', border: `1px solid ${color}30`, borderRadius: 12, padding: '16px 18px', flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-        <span style={{ fontSize: 18 }}>{icon}</span>
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#8a95a3', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
-        <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: `${color}18`, color }}>{statusLabel}</span>
-      </div>
-      {sub && <p style={{ fontSize: 13, color: '#eef1f6', marginBottom: 4 }}>{sub}</p>}
-      {last && <p style={{ fontSize: 11, color: '#555f6e' }}>Last: {last}</p>}
-    </div>
-  );
-}
-
-function SystemHealthStrip() {
-  const [health, setHealth] = useState<any>(null);
-
-  useEffect(() => {
-    fetch('/api/admin/content-health').then(r => r.json()).then(d => setHealth(d.systemHealth));
-  }, []);
-
-  if (!health) return (
-    <div style={{ marginTop: 32, padding: '16px 20px', background: '#0d0f16', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', color: '#555f6e', fontSize: 13 }}>
-      Loading system health…
-    </div>
-  );
-
-  const imgStatus = health.image.last_error ? 'error' : health.image.last_provider ? 'ok' : 'unknown';
-  const imgLabel = health.image.last_provider === 'nvidia_flux' ? '⚡ NVIDIA FLUX' : health.image.last_provider === 'pollinations' ? '🌸 Pollinations' : 'No data';
-  const imgSub = `Today: ${health.image.today_success} ok / ${health.image.today_fail} failed`;
-  const blogStatus = health.blogs.last_status === 'success' ? 'ok' : health.blogs.last_status === 'failed' ? 'error' : 'unknown';
-  const incStatus = health.incidents.last_status === 'success' ? 'ok' : health.incidents.last_status === 'failed' ? 'error' : 'unknown';
-
-  return (
-    <div style={{ marginTop: 32 }}>
-      <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#8a95a3', marginBottom: 12 }}>System Health</p>
-      <div style={{ display: 'flex', gap: 12 }}>
-        <HealthCard icon="🖼️" label="Image Generation" status={imgStatus} statusLabel={imgLabel} sub={imgSub} last={fmt2(health.image.last_at)} />
-        <HealthCard icon="📝" label="Blog Generation" status={blogStatus} statusLabel={health.blogs.last_status?.toUpperCase() || 'No data'} sub={health.blogs.last_message?.slice(0, 60) || '—'} last={fmt2(health.blogs.last_at)} />
-        <HealthCard icon="🔴" label="Incident AI" status={incStatus} statusLabel={health.incidents.last_status?.toUpperCase() || 'No data'} sub={health.incidents.last_message?.slice(0, 60) || '—'} last={fmt2(health.incidents.last_at)} />
-      </div>
-    </div>
-  );
-}
-
-
-
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
@@ -179,9 +120,6 @@ export default function AdminHomePage() {
           {providerMsg && <p style={{ fontSize: 12, color: '#34d399' }}>{providerMsg}</p>}
         </div>
       </div>
-      {/* ── SYSTEM HEALTH STRIP ── */}
-      <SystemHealthStrip />
-
     </div>
   );
 }

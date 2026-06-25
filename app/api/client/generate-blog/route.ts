@@ -134,24 +134,51 @@ Respond ONLY with valid JSON, no markdown fences:
     // Generate cover image inline
     let cover_image: string | null = null;
     try {
-      const imgPrompt = `Professional blog cover image for "${parsed.title}". Company: ${client.company_name}, Industry: ${client.industry}. ${(client.brand_images && client.brand_images.length > 0) ? 'Warm gold tones, premium feel, dark rich backgrounds, cinematic lighting.' : 'Dark background, modern professional aesthetic.'} Clean composition, no text, no logos.`;
-      const imgRes = await fetch('https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
-        body: JSON.stringify({ prompt: imgPrompt, width: 1024, height: 1024 }),
-      });
-      const imgData = await imgRes.json();
-      const b64 = imgData.artifacts?.[0]?.base64;
-      if (b64) {
-        const buffer = Buffer.from(b64, 'base64');
-        const fileName = `flux-${client.id}-${Date.now()}.jpg`;
-        const { error: uploadErr } = await supabase.storage.from('brand-images').upload(fileName, buffer, { contentType: 'image/jpeg', upsert: true });
+      const imgPrompt = `Abstract professional photograph related to gold investing and finance, for use as a blog cover image. ${(client.brand_images && client.brand_images.length > 0) ? 'Warm gold tones, premium feel, dark rich backgrounds, cinematic lighting.' : 'Dark background, modern professional aesthetic.'} Photography only, no typography, no text, no words, no letters, no titles, no captions, no watermark, no logos, no signage.`;
+      let imgBuffer: Buffer | null = null;
+
+      const nvEndpoints = [
+        'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell',
+        'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev',
+      ];
+      for (const endpoint of nvEndpoints) {
+        if (imgBuffer) break;
+        try {
+          const imgRes = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
+            body: JSON.stringify({ prompt: imgPrompt, mode: 'base', cfg_scale: 3.5, width: 1024, height: 1024, seed: Math.floor(Math.random() * 9999), steps: 30 }),
+          });
+          console.log(`Blog image ${endpoint.split('/').pop()} status:`, imgRes.status);
+          if (imgRes.ok) {
+            const imgData = await imgRes.json();
+            const b64 = imgData.artifacts?.[0]?.base64;
+            if (b64) { imgBuffer = Buffer.from(b64, 'base64'); console.log('Blog image: NVIDIA', endpoint.split('/').pop()); }
+          }
+        } catch(e) { console.log('Blog image endpoint failed:', endpoint, e); }
+      }
+      if (!imgBuffer) {
+        console.log('Blog image: NVIDIA failed, falling back to Pollinations');
+        const encodedPrompt = encodeURIComponent(imgPrompt.slice(0, 500));
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            const polRes = await fetch(`https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random()*99999)}`);
+            console.log(`Pollinations blog attempt ${attempt} status:`, polRes.status);
+            if (polRes.ok) { imgBuffer = Buffer.from(await polRes.arrayBuffer()); console.log('Blog image: Pollinations OK'); break; }
+            else if (attempt < 2) { await new Promise(r => setTimeout(r, 2000)); }
+          } catch(e) { if (attempt < 2) await new Promise(r => setTimeout(r, 2000)); }
+        }
+      }
+
+      if (imgBuffer) {
+        const fileName = `blog-${client.id}-${Date.now()}.jpg`;
+        const { error: uploadErr } = await supabase.storage.from('brand-images').upload(fileName, imgBuffer, { contentType: 'image/jpeg', upsert: true });
         if (!uploadErr) {
           const { data: urlData } = supabase.storage.from('brand-images').getPublicUrl(fileName);
           cover_image = urlData.publicUrl || null;
         }
       }
-    } catch(e) { console.log('Image error:', e); }
+    } catch(e) { console.log('Blog image error:', e); }
 
     const { error: insertErr } = await supabase.from('client_blogs').insert({
       client_id,

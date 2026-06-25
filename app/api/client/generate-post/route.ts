@@ -106,36 +106,93 @@ Design a professional social media poster. Return ONLY valid JSON:
     raw = raw.trim().replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
     const concept = JSON.parse(raw);
 
-    // Step 2: Build the full poster prompt
-    const fullPosterPrompt = `Professional social media advertising poster design, NOT a photograph, graphic design artwork. 
-${isStory ? 'Vertical 9:16 story format' : 'Square 1:1 post format'}.
-Background: bold gradient or solid color using ${primary} as dominant color with ${secondary} accents.
-Large bold white typography headline text "${concept.headline}" centered on poster.
-Small subtext line "${concept.subtext}" below headline.
-Bottom section: CTA button shape with text "${concept.cta}", website text "${client.website || ''}".
-Top area: small company name text "${client.company_name}".
-Visual style: premium ${client.industry} brand advertisement, geometric shapes, subtle 3D elements or icons relevant to ${client.industry}, cinematic lighting effects, luxury feel.
-Style reference: high-end Pinterest social media poster, Canva Pro template quality, bold typography layout.
-NOT a stock photo. This is a DESIGNED POSTER with text and graphics. Sharp edges, clean layout, professional advertising design.
-Color palette: primary ${primary}, secondary ${secondary}, white text, dark shadows for depth.`;
+    // Step 2: Pinterest-quality prompt with dominant 3D hero object
+    const industryHero: Record<string, string> = {
+      technology: 'a massive glowing 3D server rack with neon blue light beams shooting upward, holographic data panels floating around it, circuit board ground, cyberpunk atmosphere',
+      finance: 'a giant golden 3D coin stack with light rays bursting through, floating bar chart bars made of glass, dark marble floor reflection, luxury financial aesthetic',
+      health: 'a large glowing 3D DNA double helix floating center, soft blue and white particle clouds, clean medical aesthetic, depth of field bokeh background',
+      education: 'a glowing open 3D book with light rays emanating from pages, floating graduation cap, golden particle dust, deep space starfield background',
+      marketing: 'a giant 3D megaphone exploding with colorful particles and social icons, dynamic light streaks, vibrant energy burst, bold advertising aesthetic',
+      retail: 'a luxury 3D product podium with spotlight, gold particle bokeh floating around, glossy reflective dark surface, premium brand showcase lighting',
+      food: 'a beautifully lit 3D dish centerpiece with steam rising, cinematic dark moody background, golden hour warm lighting, bokeh restaurant ambiance',
+      monitoring: 'a large glowing 3D shield with circuit patterns, neon green uptime graph lines, server tower silhouettes, dark tech background with blue glow',
+      infrastructure: 'a massive glowing 3D network node cluster, green status indicators, dark server room background, holographic uptime metrics floating around',
+      default: 'a dramatic 3D geometric crystal floating center with internal light refraction, neon glow rings around it, deep dark background, luxury tech aesthetic',
+    };
+    const industryKey = (client.industry || '').toLowerCase();
+    const heroTheme = Object.keys(industryHero).find(k => industryKey.includes(k)) || 'default';
+    const heroVisual = industryHero[heroTheme];
 
-    // Step 3: Generate poster via FLUX
+    // Detect if brand is light or dark based on primary color
+    const isLightBrand = ['#f', '#e', '#d', '#c', '#b', '#ff', '#fe', '#fd', '#fc', '#fb', '#fa', '#df', '#de', '#dd', '#dc', '#db', '#da', 'gold', 'yell', 'fff', 'ffd', 'ffe', 'deca', 'f1af'].some(l => primary.toLowerCase().includes(l));
+    console.log('Brand colors — primary:', primary, '| secondary:', secondary, '| isLightBrand:', isLightBrand);
+
+    // Convert hex to readable color name for flux (flux responds better to color words than hex codes)
+    const colorDesc = (hex: string) => {
+      const h = hex.toLowerCase().replace('#','');
+      if (h.startsWith('ff') || h.startsWith('fd') || h.startsWith('fe')) return 'bright golden yellow';
+      if (h.startsWith('d4af') || h.startsWith('ffd7') || h.startsWith('ffc') || h.includes('gold')) return 'rich gold';
+      if (h.startsWith('f') && parseInt(h[1],16) < 8) return 'warm amber gold';
+      if (h.startsWith('1a') || h.startsWith('0a') || h.startsWith('00')) return 'deep navy black';
+      return 'warm golden';
+    };
+    const primaryDesc = colorDesc(primary);
+    const fullPosterPrompt = isLightBrand
+      ? `Luxury fintech poster background. ${primaryDesc} warm gradient, darker at bottom. CENTER-RIGHT: large prominent stack of 3D gold coins or gold bars, occupying upper-right quadrant, realistic metallic reflections, soft drop shadow, floating above surface. Coins are BIG and clearly visible. Lower-left area intentionally darker and empty for text. Studio lighting, premium minimal. No text, no people, no phones, no logos.`
+      : `Premium fintech poster background. ${heroVisual} centered right. ${primaryDesc} glow lighting. Dark background, cinematic. Empty left side for text. 3D render, photorealistic. No text, no logos, no people.`;
+
+    // Step 3: Generate poster — NVIDIA FLUX (schnell → dev), no fallback
     let image_url: string | null = null;
+    let imageProvider = '';
+    let generationError = '';
     try {
-      const imgRes = await fetch('https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
-        body: JSON.stringify({
-          prompt: fullPosterPrompt,
-          width: isStory ? 1024 : 1024,
-          height: isStory ? 1344 : 1024,
-        }),
-      });
-      const imgData = await imgRes.json();
-      const b64 = imgData.artifacts?.[0]?.base64;
+      const width = isStory ? 1024 : 1024;
+      const height = isStory ? 1344 : 1024;
+      let imageBuffer: any = null;
 
-      if (b64) {
-        let imageBuffer: any = Buffer.from(b64, 'base64');
+      const nvConfigs = [
+        { url: 'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell', body: { prompt: fullPosterPrompt, width, height, seed: Math.floor(Math.random() * 9999), steps: 4 } },
+        { url: 'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev', body: { prompt: fullPosterPrompt, mode: 'base', cfg_scale: 3.5, width, height, seed: Math.floor(Math.random() * 9999), steps: 30 } },
+      ];
+      for (const { url, body } of nvConfigs) {
+        if (imageBuffer) break;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s timeout
+          const fluxRes = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          console.log(`Post image ${url.split('/').pop()} status:`, fluxRes.status);
+          if (fluxRes.ok) {
+            const fluxData = await fluxRes.json();
+            const b64 = fluxData.artifacts?.[0]?.base64 ?? fluxData[0]?.base64 ?? fluxData.image;
+            if (b64) { imageBuffer = Buffer.from(b64, 'base64'); imageProvider = 'nvidia_flux'; console.log('Image: NVIDIA', url.split('/').pop()); }
+          } else {
+            const errText = await fluxRes.text().catch(() => '');
+            console.log('NVIDIA error body:', errText.slice(0, 500));
+          }
+        } catch(e) { generationError = 'NVIDIA failed: ' + String(e); console.log('Post image endpoint failed:', url, e); }
+      }
+      if (!imageBuffer) {
+        console.log('Post image: NVIDIA failed, falling back to Pollinations');
+        const encodedPrompt = encodeURIComponent(fullPosterPrompt.slice(0, 500));
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            const polRes = await fetch(`https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&seed=${Math.floor(Math.random()*99999)}`);
+            console.log(`Pollinations attempt ${attempt} status:`, polRes.status);
+            if (polRes.ok) { imageBuffer = Buffer.from(await polRes.arrayBuffer()); imageProvider = 'pollinations'; console.log('Image: Pollinations OK'); break; }
+            else if (attempt < 2) { await new Promise(r => setTimeout(r, 2000)); }
+          } catch(e) { if (attempt < 2) await new Promise(r => setTimeout(r, 2000)); }
+        }
+      }
+
+      if (imageBuffer) {
+        // Resize to exact dimensions so SVG overlay matches
+        imageBuffer = await sharp(imageBuffer).resize(width, height, { fit: 'cover' }).toBuffer();
 
         // Step 4: Overlay logo if client has one
         if (client.logo_url) {
@@ -143,17 +200,132 @@ Color palette: primary ${primary}, secondary ${secondary}, white text, dark shad
             const logoRes = await fetch(client.logo_url);
             const logoBuffer = Buffer.from(await logoRes.arrayBuffer());
             const posterMeta = await sharp(imageBuffer).metadata();
-            const logoSize = Math.round((posterMeta.width || 1024) * 0.18);
+            const posterW = (posterMeta.width || 1024);
+            const logoMaxW = Math.round(posterW * 0.22);
+            const logoMaxH = Math.round(posterW * 0.10);
             const resizedLogo = await sharp(logoBuffer)
-              .resize(logoSize, logoSize, { fit: 'inside' })
+              .resize(logoMaxW, logoMaxH, { fit: 'inside', background: { r: 0, g: 0, b: 0, alpha: 0 } })
               .png()
               .toBuffer();
+            const logoMeta = await sharp(resizedLogo).metadata();
+            const logoLeft = posterW - (logoMeta.width || logoMaxW) - 32;
             imageBuffer = (await sharp(imageBuffer as any)
-              .composite([{ input: resizedLogo, top: 28, left: 28, blend: 'over' }])
+              .composite([{ input: resizedLogo, top: 32, left: logoLeft, blend: 'over' }])
               .jpeg({ quality: 95 })
               .toBuffer()) as any;
           } catch(e) { console.log('Logo overlay error:', e); }
         }
+
+        // Premium Sharp text overlay with dark panel, drop shadows, visual hierarchy
+        const websiteClean = (client.website || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+        const hl = concept.headline || '';
+        const fontSize = hl.length > 30 ? 58 : hl.length > 20 ? 68 : 80;
+        // Dynamic spacing: calculate headline line count first, then flow subtext + CTA below it
+        const hlWords = hl.split(' ');
+        const maxCharsHL = fontSize > 68 ? 12 : fontSize > 58 ? 15 : 18;
+        let hlLines = 0, hlCurrent = '';
+        for (const w of hlWords) {
+          if ((hlCurrent + ' ' + w).trim().length > maxCharsHL && hlCurrent) { hlLines++; hlCurrent = w; }
+          else { hlCurrent = (hlCurrent + ' ' + w).trim(); }
+        }
+        if (hlCurrent) hlLines++;
+        const hlStartY = Math.round(height * 0.28);
+        const hlEndY = hlStartY + hlLines * Math.round(fontSize * 1.15);
+        const subtextStartY = hlEndY + 28;
+        const panelY = Math.round(height * 0.22);
+        const panelH = Math.round(height * 0.65);
+        const ctaY = subtextStartY + 80;
+        const textSvg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="black" stop-opacity="0"/>
+              <stop offset="30%" stop-color="black" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="black" stop-opacity="0.85"/>
+            </linearGradient>
+            <linearGradient id="ctaGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="${primary}"/>
+              <stop offset="100%" stop-color="${secondary}"/>
+            </linearGradient>
+            <filter id="shadow">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="black" flood-opacity="0.8"/>
+            </filter>
+            <filter id="glow">
+              <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="${primary}" flood-opacity="0.6"/>
+            </filter>
+          </defs>
+
+          <!-- Dark gradient panel for text readability -->
+          <rect x="0" y="${panelY}" width="${width}" height="${panelH}" fill="url(#panel)"/>
+
+          <!-- Company name top left — only show text if no logo -->
+          ${!client.logo_url ? `
+          <rect x="44" y="34" width="4" height="24" rx="2" fill="${primary}" opacity="0.9"/>
+          <text x="58" y="53" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="white" opacity="0.95" filter="url(#shadow)">${client.company_name}</text>
+          ` : ''}
+
+          <!-- Accent line above headline -->
+          <rect x="60" y="${Math.round(height * 0.32)}" width="50" height="3" rx="2" fill="${primary}" opacity="0.9" filter="url(#glow)"/>
+
+          <!-- Headline text — SVG text with manual wrap -->
+          ${(function() {
+            const words = hl.split(' ');
+            const maxCharsPerLine = fontSize > 68 ? 12 : fontSize > 58 ? 15 : 18;
+            const lines = [];
+            let current = '';
+            for (const word of words) {
+              if ((current + ' ' + word).trim().length > maxCharsPerLine && current) {
+                lines.push(current.trim());
+                current = word;
+              } else {
+                current = (current + ' ' + word).trim();
+              }
+            }
+            if (current) lines.push(current.trim());
+            const lineHeight = fontSize * 1.15;
+            const startY = hlStartY;
+            return lines.map((line, i) =>
+              `<text x="60" y="${startY + i * lineHeight}" font-family="Arial Black, Arial, sans-serif" font-size="${fontSize}" font-weight="900" fill="white" filter="url(#shadow)">${line}</text>`
+            ).join('\n');
+          })()}
+
+          <!-- Subtext -->
+          ${(function() {
+            const words = (concept.subtext || '').split(' ');
+            const lines = [];
+            let current = '';
+            for (const word of words) {
+              if ((current + ' ' + word).trim().length > 42 && current) {
+                lines.push(current.trim());
+                current = word;
+              } else {
+                current = (current + ' ' + word).trim();
+              }
+            }
+            if (current) lines.push(current.trim());
+            const startY = subtextStartY;
+            return lines.map((line, i) =>
+              `<text x="60" y="${startY + i * 34}" font-family="Arial, sans-serif" font-size="24" font-weight="400" fill="rgba(255,255,255,0.88)" filter="url(#shadow)">${line}</text>`
+            ).join('\n');
+          })()}
+
+          <!-- CTA button with gradient — dynamic width based on text length -->
+          ${(function() {
+            const ctaText = concept.cta || 'Learn More';
+            const ctaWidth = Math.max(170, ctaText.length * 13 + 64);
+            const ctaCenterX = 58 + ctaWidth / 2;
+            return `<rect x="58" y="${ctaY}" width="${ctaWidth}" height="56" rx="28" fill="url(#ctaGrad)" filter="url(#glow)"/>
+          <text x="${ctaCenterX}" y="${ctaY + 36}" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="white" text-anchor="middle" letter-spacing="0.3" filter="url(#shadow)">${ctaText}</text>`;
+          })()}
+
+          <!-- Brand color bottom bar -->
+          <rect x="0" y="${height - 52}" width="${width}" height="52" fill="${primary}" opacity="0.92"/>
+          <!-- Website bottom center -->
+          <text x="${width / 2}" y="${height - 18}" font-family="Arial, sans-serif" font-size="19" font-weight="600" fill="white" text-anchor="middle">${websiteClean}</text>
+        </svg>`;
+        imageBuffer = (await sharp(Buffer.from(imageBuffer))
+          .composite([{ input: Buffer.from(textSvg), blend: 'over' }])
+          .jpeg({ quality: 95 })
+          .toBuffer()) as any;
 
         const fileName = `social-${client_id}-${Date.now()}.jpg`;
         const { error: uploadErr } = await supabase.storage
@@ -164,7 +336,7 @@ Color palette: primary ${primary}, secondary ${secondary}, white text, dark shad
           image_url = urlData.publicUrl || null;
         }
       }
-    } catch(e) { console.log('Image error:', e); }
+    } catch(e) { console.log('Image generation error:', String(e)); generationError = String(e); }
 
     // Step 5: Insert post
     const { data: post, error: insertErr } = await supabase.from('social_posts').insert({
@@ -174,12 +346,21 @@ Color palette: primary ${primary}, secondary ${secondary}, white text, dark shad
       caption: concept.caption,
       headline: concept.headline || null,
       image_url,
+      image_provider: imageProvider || null,
+      generation_error: generationError || null,
       suggestion: suggestion || special_day || null,
       status: 'pending',
       post_type: special_day ? 'special_day' : 'manual',
     }).select('id').single();
 
     if (insertErr) throw new Error(insertErr.message);
+
+    // Update client with last provider/error for admin visibility
+    await supabase.from('clients').update({
+      last_social_provider: imageProvider || null,
+      last_social_error: generationError || null,
+    }).eq('id', client_id);
+
     return NextResponse.json({ success: true, post_id: post.id, caption: concept.caption, image_url });
   } catch(e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });

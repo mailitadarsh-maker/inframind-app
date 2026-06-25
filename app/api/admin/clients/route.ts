@@ -58,7 +58,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Missing client_id or updates' }, { status: 400 });
   }
 
-  const allowedFields = ['plan', 'blogs_per_month', 'payment_status', 'notes', 'trial_ends_at'];
+  const allowedFields = ['plan', 'blogs_per_month', 'blogs_per_day', 'payment_status', 'notes', 'trial_ends_at'];
   const safeUpdates: Record<string, any> = {};
   for (const key of allowedFields) {
     if (key in updates) safeUpdates[key] = updates[key];

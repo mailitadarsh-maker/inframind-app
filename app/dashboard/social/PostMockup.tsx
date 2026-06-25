@@ -9,6 +9,9 @@ type Post = {
 
 type Client = {
   company_name?: string;
+  instagram_url?: string;
+  linkedin_url?: string;
+  twitter_url?: string;
 };
 
 function initials(name?: string) {
@@ -23,6 +26,95 @@ function Avatar({ name, size = 32 }: { name?: string; size?: number }) {
       className="rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold flex-shrink-0"
     >
       <span style={{ fontSize: size * 0.4 }}>{initials(name)}</span>
+    </div>
+  );
+}
+
+function ShareBar({ post, client }: { post: Post; client?: Client }) {
+  const caption = encodeURIComponent(post.caption || '');
+  const imageUrl = post.image_url || '';
+
+  const shares = [
+    {
+      label: 'Instagram',
+      color: '#E1306C',
+      bg: 'rgba(225,48,108,0.12)',
+      border: 'rgba(225,48,108,0.25)',
+      icon: '📸',
+      onClick: () => {
+        navigator.clipboard.writeText(post.caption || '');
+        alert('Caption copied! Now paste it in Instagram after opening the app.');
+        window.open('https://www.instagram.com/', '_blank');
+      },
+    },
+    {
+      label: 'LinkedIn',
+      color: '#0A66C2',
+      bg: 'rgba(10,102,194,0.12)',
+      border: 'rgba(10,102,194,0.25)',
+      icon: '💼',
+      onClick: () => {
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(imageUrl)}`, '_blank');
+      },
+    },
+    {
+      label: 'X',
+      color: '#ffffff',
+      bg: 'rgba(255,255,255,0.08)',
+      border: 'rgba(255,255,255,0.15)',
+      icon: '𝕏',
+      onClick: () => {
+        window.open(`https://twitter.com/intent/tweet?text=${caption}`, '_blank');
+      },
+    },
+    {
+      label: 'Copy',
+      color: '#4ade80',
+      bg: 'rgba(74,222,128,0.10)',
+      border: 'rgba(74,222,128,0.2)',
+      icon: '📋',
+      onClick: () => {
+        navigator.clipboard.writeText(post.caption || '');
+        alert('Caption copied to clipboard!');
+      },
+    },
+  ];
+
+  return (
+    <div className="px-3 py-3 border-t border-white/10">
+      <p className="text-xs text-white/40 mb-2 font-medium uppercase tracking-wide">Share to</p>
+      <div className="flex gap-2 flex-wrap">
+        {shares.map(s => (
+          <button
+            key={s.label}
+            onClick={s.onClick}
+            style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80"
+          >
+            <span>{s.icon}</span>
+            {s.label}
+          </button>
+        ))}
+        {imageUrl && (
+          <button
+            onClick={async () => {
+              try {
+                const res = await fetch(imageUrl);
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'poster.jpg';
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch { window.open(imageUrl, '_blank'); }
+            }}
+            style={{ color: '#a78bfa', background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.2)' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80">
+            <span>⬇</span> Download
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -65,20 +157,17 @@ export function PostMockup({
           <span className="text-white/60 text-lg leading-none">•••</span>
         </div>
         <Image />
+        <div className="flex items-center gap-4 px-3 py-2 text-xl">
+          <span>♡</span><span>💬</span><span>➤</span>
+          <span className="ml-auto">⚹</span>
+        </div>
         {variant === 'full' && (
-          <>
-            <div className="flex items-center gap-4 px-3 py-2.5 text-xl">
-              <span>♡</span>
-              <span>💬</span>
-              <span>➤</span>
-              <span className="ml-auto">⚹</span>
-            </div>
-            <div className="px-3 pb-3 text-sm">
-              <span className="font-semibold">{name.toLowerCase().replace(/\s+/g, '')}</span>{' '}
-              <span className="text-white/80">{post.caption}</span>
-            </div>
-          </>
+          <div className="px-3 pb-2 text-sm">
+            <span className="font-semibold">{name.toLowerCase().replace(/\s+/g, '')}</span>{' '}
+            <span className="text-white/80">{post.caption}</span>
+          </div>
         )}
+        <ShareBar post={post} client={client} />
       </div>
     );
   }
@@ -91,7 +180,7 @@ export function PostMockup({
           <Avatar name={name} size={36} />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold truncate">{name}</p>
-            <p className="text-xs text-white/50 truncate">Company • 1,204 followers</p>
+            <p className="text-xs text-white/50">Company • 1,204 followers</p>
             <p className="text-xs text-white/40">2h · 🌐</p>
           </div>
           <span className="text-white/60 text-lg leading-none">•••</span>
@@ -100,14 +189,10 @@ export function PostMockup({
           <p className="px-3 pb-2 text-sm text-white/85 whitespace-pre-wrap">{post.caption}</p>
         )}
         <Image />
-        {variant === 'full' && (
-          <div className="flex items-center justify-between px-3 py-2.5 text-xs text-white/60 border-t border-white/10 mt-1">
-            <span>👍 Like</span>
-            <span>💬 Comment</span>
-            <span>↻ Repost</span>
-            <span>➤ Send</span>
-          </div>
-        )}
+        <div className="flex items-center justify-between px-3 py-2 text-xs text-white/50 border-t border-white/10">
+          <span>👍 Like</span><span>💬 Comment</span><span>↻ Repost</span><span>➤ Send</span>
+        </div>
+        <ShareBar post={post} client={client} />
       </div>
     );
   }
@@ -127,18 +212,11 @@ export function PostMockup({
             )}
           </div>
         </div>
-        <div className="px-3">
-          <Image />
+        <div className="px-3"><Image /></div>
+        <div className="flex items-center justify-between px-4 py-2 text-xs text-white/50">
+          <span>💬 24</span><span>↻ 12</span><span>♡ 318</span><span>📊 4.2K</span><span>➤</span>
         </div>
-        {variant === 'full' && (
-          <div className="flex items-center justify-between px-4 py-2.5 text-xs text-white/50">
-            <span>💬 24</span>
-            <span>↻ 12</span>
-            <span>♡ 318</span>
-            <span>📊 4.2K</span>
-            <span>➤</span>
-          </div>
-        )}
+        <ShareBar post={post} client={client} />
       </div>
     );
   }
@@ -158,13 +236,10 @@ export function PostMockup({
         <p className="px-3 pb-2 text-sm text-white/85 whitespace-pre-wrap">{post.caption}</p>
       )}
       <Image />
-      {variant === 'full' && (
-        <div className="flex items-center justify-between px-3 py-2.5 text-xs text-white/60 border-t border-white/10 mt-1">
-          <span>👍 Like</span>
-          <span>💬 Comment</span>
-          <span>↗ Share</span>
-        </div>
-      )}
+      <div className="flex items-center justify-between px-3 py-2 text-xs text-white/60 border-t border-white/10">
+        <span>👍 Like</span><span>💬 Comment</span><span>↗ Share</span>
+      </div>
+      <ShareBar post={post} client={client} />
     </div>
   );
 }

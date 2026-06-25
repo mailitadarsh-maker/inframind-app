@@ -47,7 +47,8 @@ export async function GET(req: NextRequest) {
     const userMonitors = monitorsByUser[u.id] || [];
 
     const products: string[] = [];
-    if (client) products.push('blog');
+    if (client && (client.plan || client.blogs_per_month)) products.push('blog');
+    if (client && (client.social_posts_per_day || client.last_social_provider || client.ai_provider_social)) products.push('social');
     if (userMonitors.length > 0) products.push('monitoring');
 
     return {
@@ -82,7 +83,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Missing client_id or updates' }, { status: 400 });
   }
 
-  const allowedFields = ['plan', 'blogs_per_month', 'payment_status', 'notes', 'trial_ends_at', 'image_generation'];
+  const allowedFields = ['plan', 'blogs_per_month', 'payment_status', 'notes', 'trial_ends_at', 'image_generation', 'last_social_provider', 'last_social_error', 'social_posts_per_day', 'ai_provider_social', 'instagram_url', 'linkedin_url', 'twitter_url', 'website'];
   const safeUpdates: Record<string, any> = {};
   for (const key of allowedFields) {
     if (key in updates) safeUpdates[key] = updates[key];

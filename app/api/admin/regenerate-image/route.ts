@@ -23,7 +23,6 @@ export async function POST(request: Request) {
     .eq('id', blog.client_id)
     .single();
 
-  // ── Daily regen limit check ──────────────────────────────────────────────
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const regenLimit = client?.regen_limit ?? 3;
@@ -40,29 +39,33 @@ export async function POST(request: Request) {
   }
 
   const hasBrandImages = client?.brand_images?.length > 0;
+  const prompt = `Professional blog cover image for "${blog.title}". Company: ${client?.company_name}, Industry: ${client?.industry}. ${hasBrandImages ? 'Warm gold tones, premium feel, dark rich backgrounds, cinematic lighting.' : 'Dark background, modern professional aesthetic.'} Clean composition, no text, no logos, no watermarks.`;
 
-  const res = await fetch('https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev', {
+  const res = await fetch('https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.NVIDIA_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'gpt-image-1',
-      prompt: `Professional blog cover image for "${blog.title}". Company: ${client?.company_name}, Industry: ${client?.industry}. ${hasBrandImages ? 'Warm gold tones, premium feel, dark rich backgrounds, cinematic lighting.' : 'Dark background, modern professional aesthetic.'} Clean composition, no text, no logos.`,
-      n: 1,
-      size: '1536x1024',
-      output_format: 'png',
+      prompt,
+      mode: 'base',
+      cfg_scale: 3.5,
+      width: 1536,
+      height: 1024,
+      seed: Math.floor(Math.random() * 9999),
+      steps: 30,
     }),
   });
 
   const data = await res.json();
-  const b64 = data.data?.[0]?.b64_json;
-  if (!b64) return NextResponse.json({ error: 'Image generation failed' }, { status: 500 });
+  console.log('NVIDIA regen response status:', res.status, JSON.stringify(data).slice(0, 200));
+  const b64 = data.artifacts?.[0]?.base64;
+  if (!b64) return NextResponse.json({ error: 'Image generation failed: ' + JSON.stringify(data).slice(0, 200) }, { status: 500 });
 
   const buffer = Buffer.from(b64, 'base64');
-  const fileName = `dalle-${client?.id}-${Date.now()}.png`;
-  await supabase.storage.from('brand-images').upload(fileName, buffer, { contentType: 'image/png', upsert: true });
+  const fileName = `blog-regen-${client?.id}-${Date.now()}.jpg`;
+  await supabase.storage.from('brand-images').upload(fileName, buffer, { contentType: 'image/jpeg', upsert: true });
   const { data: urlData } = supabase.storage.from('brand-images').getPublicUrl(fileName);
   const cover_image = urlData.publicUrl;
 
