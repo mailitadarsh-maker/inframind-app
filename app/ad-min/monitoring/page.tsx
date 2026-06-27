@@ -33,10 +33,11 @@ function StatCard({ label, value, color, loading }: any) {
 function TabBtn({ active, onClick, children }: any) {
   return (
     <button onClick={onClick} style={{
-      padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+      padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
       background: active ? 'rgba(167,139,250,0.15)' : 'transparent',
       color: active ? '#a78bfa' : '#555f6e',
       borderBottom: active ? '2px solid #a78bfa' : '2px solid transparent',
+      whiteSpace: 'nowrap',
     }}>{children}</button>
   );
 }
@@ -63,7 +64,7 @@ function CronTab() {
 
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 20 }}>
         <StatCard label="Total Runs" value={summary?.total} loading={loading} />
         <StatCard label="Successful" value={summary?.success} color="#34d399" loading={loading} />
         <StatCard label="Failed" value={summary?.failed} color="#f87171" loading={loading} />
@@ -87,13 +88,14 @@ function CronTab() {
           }}>{j === 'all' ? 'All Jobs' : JOB_LABEL[j]}</button>
         ))}
       </div>
-      <div style={{ background: '#0d0f16', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ background: '#0d0f16', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
+        <div style={{ minWidth: 560 }}>
         {loading ? <p style={{ padding: 24, color: '#555f6e', fontSize: 13 }}>Loading logs…</p>
           : filtered.length === 0 ? <p style={{ padding: 24, color: '#555f6e', fontSize: 13 }}>No logs found.</p>
           : filtered.map((log, i) => (
             <div key={log.id}>
               <div onClick={() => setExpanded(expanded === log.id ? null : log.id)} style={{
-                display: 'grid', gridTemplateColumns: '90px 140px 1fr 120px 80px',
+                display: 'grid', gridTemplateColumns: '80px 120px 1fr 110px 70px',
                 gap: 12, padding: '12px 16px', cursor: 'pointer', alignItems: 'center',
                 borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                 background: expanded === log.id ? 'rgba(255,255,255,0.03)' : 'transparent',
@@ -111,6 +113,7 @@ function CronTab() {
               )}
             </div>
           ))}
+        </div>
       </div>
     </>
   );
@@ -177,7 +180,7 @@ function SocialTab({ posts, summary, loading }: any) {
 
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
         <StatCard label="Total Posts" value={summary?.total} loading={loading} />
         <StatCard label="With Image" value={summary?.with_image} color="#34d399" loading={loading} />
         <StatCard label="No Image" value={summary?.no_image} color="#f87171" loading={loading} />
@@ -229,7 +232,8 @@ function SocialTab({ posts, summary, loading }: any) {
           ))}
         </div>
       ) : (
-        <div style={{ background: '#0d0f16', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ background: '#0d0f16', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
+        <div style={{ minWidth: 560 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '64px 100px 120px 1fr 110px 110px', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             {['Image','Platform','Date','Caption','Client','Provider'].map(h => (
               <span key={h} style={{ fontSize: 10, fontWeight: 700, color: '#555f6e', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
@@ -262,6 +266,7 @@ function SocialTab({ posts, summary, loading }: any) {
                 </span>
               </div>
             ))}
+        </div>
         </div>
       )}
     </>
@@ -326,7 +331,8 @@ function BlogsTab({ blogs, summary, loading }: any) {
           ))}
         </div>
       ) : (
-        <div style={{ background: '#0d0f16', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ background: '#0d0f16', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
+        <div style={{ minWidth: 560 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '80px 100px 120px 1fr 130px', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             {['Cover','Status','Date','Title','Client'].map(h => (
               <span key={h} style={{ fontSize: 10, fontWeight: 700, color: '#555f6e', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
@@ -336,7 +342,7 @@ function BlogsTab({ blogs, summary, loading }: any) {
             : filtered.length === 0 ? <p style={{ padding: 24, color: '#555f6e', fontSize: 13 }}>No blogs match.</p>
             : filtered.map((b: any, i: number) => (
               <div key={b.id} style={{
-                display: 'grid', gridTemplateColumns: '80px 100px 120px 1fr 130px',
+                display: 'grid', gridTemplateColumns: '70px 90px 110px 1fr 120px',
                 gap: 12, padding: '10px 16px', alignItems: 'center',
                 borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
               }}>
@@ -356,6 +362,7 @@ function BlogsTab({ blogs, summary, loading }: any) {
                 <span style={{ fontSize: 11, color: '#8a95a3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.client_name || '—'}</span>
               </div>
             ))}
+        </div>
         </div>
       )}
     </>
@@ -390,7 +397,7 @@ function LogDrawer({ log, onClose }: { log: any; onClose: () => void }) {
     <div style={{ position:'fixed', inset:0, zIndex:200, display:'flex' }} onClick={onClose}>
       <div style={{ flex:1, background:'rgba(0,0,0,0.55)' }} />
       <div onClick={e => e.stopPropagation()} style={{
-        width:500, background:'#0d0f16', borderLeft:'1px solid rgba(255,255,255,0.08)',
+        width:'min(500px,100vw)', background:'#0d0f16', borderLeft:'1px solid rgba(255,255,255,0.08)',
         display:'flex', flexDirection:'column', overflow:'hidden',
       }}>
         <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.06)', display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
@@ -511,7 +518,7 @@ function GenerationLogsTab() {
       {selectedLog && <LogDrawer log={selectedLog} onClose={() => setSelectedLog(null)} />}
 
       {/* stat strip */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:10, marginBottom:20 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:20 }}>
         {[
           { label:'Total', value:stats?.total, color:'#eef1f6' },
           { label:'Success', value:stats?.success, color:'#34d399' },
@@ -553,14 +560,15 @@ function GenerationLogsTab() {
       </div>
 
       {/* column headers */}
-      <div style={{ display:'grid', gridTemplateColumns:'20px 140px 1fr 100px 110px 60px 55px 55px 14px', gap:10, padding:'0 12px 8px' }}>
+      <div style={{ overflowX:'auto', WebkitOverflowScrolling:'touch' as any }}>
+      <div style={{ minWidth:700, display:'grid', gridTemplateColumns:'20px 140px 1fr 100px 110px 60px 55px 55px 14px', gap:10, padding:'0 12px 8px' }}>
         {['','CLIENT','TOPIC','ENGINE','STATUS','TIME','COST','TOKENS',''].map((h,i) => (
           <span key={i} style={{ fontSize:10, color:'#555f6e', fontWeight:700, letterSpacing:'0.1em', fontFamily:'monospace' }}>{h}</span>
         ))}
       </div>
 
       {/* rows */}
-      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+      <div style={{ minWidth:700, display:'flex', flexDirection:'column', gap:2 }}>
         {loading
           ? <p style={{ padding:24, color:'#555f6e', fontSize:13 }}>Loading…</p>
           : logs.length === 0
@@ -570,7 +578,7 @@ function GenerationLogsTab() {
                 const sc = STATUS_COLOR[log.status] || '#8a95a3';
                 return (
                   <div key={log.id} onClick={() => setSelectedLog(log)} style={{
-                    display:'grid', gridTemplateColumns:'20px 140px 1fr 100px 110px 60px 55px 55px 14px',
+                    display:'grid', gridTemplateColumns:'20px 120px 1fr 90px 100px 55px 50px 50px 14px',
                     gap:10, padding:'10px 12px', background:'#0d0f16',
                     border:'1px solid rgba(255,255,255,0.05)', borderRadius:9,
                     cursor:'pointer', alignItems:'center',
@@ -594,6 +602,7 @@ function GenerationLogsTab() {
                 );
               })
         }
+      </div>
       </div>
     </>
   );
@@ -750,7 +759,7 @@ function ApiStatusChecker() {
           const isChecking = checking[api.key];
           return (
             <div key={api.key} style={{ display:'flex', alignItems:'center', gap:12, padding:'11px 16px', background:'#0d0f16', border:`1px solid ${api.accent}22`, borderRadius:9 }}>
-              <span style={{ fontSize:12, fontWeight:600, color:api.accent, minWidth:160 }}>{api.label}</span>
+              <span style={{ fontSize:12, fontWeight:600, color:api.accent, minWidth:120 }}>{api.label}</span>
               <button onClick={() => checkOne(api.key, api.endpoint)} disabled={isChecking} style={{
                 padding:'4px 12px', borderRadius:6, border:`1px solid ${api.accent}44`,
                 background:`${api.accent}11`, color:api.accent, fontSize:11, fontWeight:600,
@@ -801,7 +810,7 @@ function AIUsageTab() {
   return (
     <>
       {/* totals */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:24 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))', gap:10, marginBottom:20 }}>
         <StatCard label={`Total Spend — ${month}`} value={data?.totalCost != null ? `$${data.totalCost.toFixed(3)}` : '—'} loading={false} />
         <StatCard label="Pending Credits (NVIDIA)" value={data?.pendingCredits != null ? `$${data.pendingCredits.toFixed(3)}` : '—'} color="#fbbf24" loading={false} />
         <StatCard label="Total Tokens Used" value={data?.totalTokens != null ? `${(data.totalTokens/1000).toFixed(1)}k` : '—'} color="#60a5fa" loading={false} />
@@ -835,13 +844,14 @@ function AIUsageTab() {
       )}
 
       {/* header */}
-      <div style={{ display:'grid', gridTemplateColumns:'32px 1fr 80px 70px 60px 80px 70px', gap:12, padding:'0 14px 8px' }}>
+      <div style={{ overflowX:'auto', WebkitOverflowScrolling:'touch' as any }}>
+      <div style={{ minWidth:520, display:'grid', gridTemplateColumns:'32px 1fr 80px 70px 60px 80px 70px', gap:12, padding:'0 14px 8px' }}>
         {['','SERVICE','TYPE','CALLS','OK%','COST','TOKENS'].map((h,i) => (
           <span key={i} style={{ fontSize:10, color:'#555f6e', fontWeight:700, letterSpacing:'0.1em', fontFamily:'monospace' }}>{h}</span>
         ))}
       </div>
 
-      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+      <div style={{ minWidth:520, display:'flex', flexDirection:'column', gap:2 }}>
         {Object.entries(engines).map(([key, eng]: [string, any]) => {
           const meta = SERVICE_META[key];
           if (!meta) return null;
@@ -886,6 +896,7 @@ function AIUsageTab() {
           <p style={{ padding:24, color:'#555f6e', fontSize:13 }}>No usage data yet for {month}. Generate some posts first.</p>
         )}
       </div>
+      </div>
     </>
   );
 }
@@ -906,7 +917,7 @@ export default function MonitoringPage() {
     <div>
       <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#34d399', marginBottom: 6 }}>Admin</p>
       <h1 style={{ fontSize: 26, fontWeight: 600, marginBottom: 20 }}>Monitoring</h1>
-      <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 0, flexWrap:'wrap' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
         <TabBtn active={tab === 'genlog'}  onClick={() => setTab('genlog')}>⚡ Generation Logs</TabBtn>
         <TabBtn active={tab === 'engines'} onClick={() => setTab('engines')}>⚙️ Engine Control</TabBtn>
         <TabBtn active={tab === 'usage'}   onClick={() => setTab('usage')}>📊 AI Usage & Spend</TabBtn>
