@@ -87,7 +87,7 @@ Design a professional social media poster. Return ONLY valid JSON:
   "subtext": "1 short line of supporting text on the poster (10-15 words max)",
   "cta": "Short call to action button text (2-4 words)",
   "caption": "Full social media post caption with hashtags for ${platform}",
-  "poster_prompt": "FLUX image generation prompt for a ${isStory ? 'vertical 9:16 portrait' : 'square 1:1'} social media background. Style: dark cinematic gradient background blending ${primary} into deep black, dramatic studio lighting. CENTER-RIGHT: large photorealistic 3D hero object relevant to ${client.industry} (NOT coins unless finance) with metallic reflections and soft glow. LEFT SIDE: intentionally dark and empty for text overlay. Color accent: ${secondary} neon glow rim lighting on the 3D object. Background: subtle bokeh depth, volumetric light rays, premium luxury aesthetic. Composition: rule of thirds, professional graphic design layout. NO text, NO logos, NO watermarks, NO people. Ultra detailed, 8K, octane render quality."
+  "poster_prompt": "Professional social media poster background for ${client.industry} brand. RIGHT HALF: one large dramatic 3D hero object filling 60% of right side, relevant to ${client.industry}, photorealistic with ${secondary} neon rim lighting, metallic surface, floating with soft shadow. LEFT HALF: dark gradient fade to near-black, completely empty for text. Background: rich ${primary} to deep black diagonal gradient, subtle light rays from top-right. Overall mood: premium, cinematic, high-contrast. Style: luxury brand advertisement. NO text, NO logos, NO watermarks, NO people, NO faces. 8K quality, sharp focus on hero object."
 }`;
 
     const aiRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
