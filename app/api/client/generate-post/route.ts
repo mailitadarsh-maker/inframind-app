@@ -222,22 +222,7 @@ Design a professional social media poster. Return ONLY valid JSON:
         const fontSize = hl.length > 30 ? 58 : hl.length > 20 ? 68 : 80;
         // Dynamic spacing: calculate headline line count first, then flow subtext + CTA below it
         const hlWords = hl.split(' ');
-        const maxCharsHL = fontSize > 68 ? 12 : fontSize > 58 ? 15 : 18;
-        let hlLines = 0, hlCurrent = '';
-        for (const w of hlWords) {
-          if ((hlCurrent + ' ' + w).trim().length > maxCharsHL && hlCurrent) { hlLines++; hlCurrent = w; }
-          else { hlCurrent = (hlCurrent + ' ' + w).trim(); }
-        }
-        if (hlCurrent) hlLines++;
-        const hlStartY = Math.round(height * 0.28);
-        const hlEndY = hlStartY + hlLines * Math.round(fontSize * 1.15);
-        const subtextStartY = hlEndY + 28;
-        const panelY = Math.round(height * 0.22);
-        const panelH = Math.round(height * 0.65);
-        const ctaY = subtextStartY + 80;
-
-          .jpeg({ quality: 95 })
-          .toBuffer()) as any;
+        imageBuffer = await sharp(imageBuffer as any).jpeg({ quality: 95 }).toBuffer();
 
         const fileName = `social-${client_id}-${Date.now()}.jpg`;
         const { error: uploadErr } = await supabase.storage
