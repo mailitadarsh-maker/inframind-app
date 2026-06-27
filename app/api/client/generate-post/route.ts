@@ -124,22 +124,34 @@ Design a professional social media poster. Return ONLY valid JSON:
     const heroVisual = industryHero[heroTheme];
 
     // Detect if brand is light or dark based on primary color
-    const isLightBrand = ['#f', '#e', '#d', '#c', '#b', '#ff', '#fe', '#fd', '#fc', '#fb', '#fa', '#df', '#de', '#dd', '#dc', '#db', '#da', 'gold', 'yell', 'fff', 'ffd', 'ffe', 'deca', 'f1af'].some(l => primary.toLowerCase().includes(l));
+    // Light brand = genuinely light/gold/yellow colors only
+    const h = primary.replace('#','').toLowerCase();
+    const r = parseInt(h.slice(0,2),16) || 0;
+    const g = parseInt(h.slice(2,4),16) || 0;
+    const b2 = parseInt(h.slice(4,6),16) || 0;
+    const isLightBrand = (r > 180 && g > 140) || primary.toLowerCase().includes('gold') || primary.toLowerCase().includes('ffd') || primary.toLowerCase().includes('ffc');
     console.log('Brand colors — primary:', primary, '| secondary:', secondary, '| isLightBrand:', isLightBrand);
 
     // Convert hex to readable color name for flux (flux responds better to color words than hex codes)
     const colorDesc = (hex: string) => {
-      const h = hex.toLowerCase().replace('#','');
-      if (h.startsWith('ff') || h.startsWith('fd') || h.startsWith('fe')) return 'bright golden yellow';
-      if (h.startsWith('d4af') || h.startsWith('ffd7') || h.startsWith('ffc') || h.includes('gold')) return 'rich gold';
-      if (h.startsWith('f') && parseInt(h[1],16) < 8) return 'warm amber gold';
-      if (h.startsWith('1a') || h.startsWith('0a') || h.startsWith('00')) return 'deep navy black';
-      return 'warm golden';
+      const hx = hex.toLowerCase().replace('#','');
+      const rv = parseInt(hx.slice(0,2),16)||0, gv = parseInt(hx.slice(2,4),16)||0, bv = parseInt(hx.slice(4,6),16)||0;
+      if (rv > 200 && gv > 180 && bv < 100) return 'rich gold and amber';
+      if (rv > 200 && gv > 150 && bv < 80) return 'warm golden yellow';
+      if (rv < 50 && gv < 80 && bv > 150) return 'deep electric blue';
+      if (rv < 60 && gv < 60 && bv < 60) return 'deep charcoal black';
+      if (rv < 80 && gv < 80 && bv > 100) return 'deep navy blue';
+      if (rv > 150 && gv < 80 && bv < 80) return 'bold crimson red';
+      if (rv < 80 && gv > 120 && bv < 80) return 'vibrant green';
+      if (rv > 100 && gv < 80 && bv > 150) return 'deep violet purple';
+      if (rv > 180 && gv > 180 && bv > 180) return 'clean white silver';
+      return `color #${hx}`;
     };
     const primaryDesc = colorDesc(primary);
+    const industry = (client.industry || 'technology').toLowerCase();
     const fullPosterPrompt = isLightBrand
-      ? `Luxury fintech poster background. ${primaryDesc} warm gradient, darker at bottom. CENTER-RIGHT: large prominent stack of 3D gold coins or gold bars, occupying upper-right quadrant, realistic metallic reflections, soft drop shadow, floating above surface. Coins are BIG and clearly visible. Lower-left area intentionally darker and empty for text. Studio lighting, premium minimal. No text, no people, no phones, no logos.`
-      : `Premium fintech poster background. ${heroVisual} centered right. ${primaryDesc} glow lighting. Dark background, cinematic. Empty left side for text. 3D render, photorealistic. No text, no logos, no people.`;
+      ? `Professional ${industry} social media poster background. ${primaryDesc} warm gradient, darker at bottom. CENTER-RIGHT: ${heroVisual}, realistic reflections, soft drop shadow, floating above surface. Lower-left area intentionally empty for text overlay. Studio lighting, premium minimal. No text, no people, no logos, no watermarks.`
+      : `Professional ${industry} social media poster background. ${heroVisual} centered right. ${primaryDesc} glow accent lighting. Dark cinematic background. Empty left-bottom area for text overlay. 3D render, photorealistic, 8K quality. No text, no logos, no people, no watermarks.`;
 
     // Step 3: Generate poster — NVIDIA FLUX (schnell → dev), no fallback
     let image_url: string | null = null;
