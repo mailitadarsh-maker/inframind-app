@@ -8,7 +8,6 @@ const supabase = createClient(
 );
 
 export async function POST(request: Request) {
-  const logStart = Date.now();
   try {
     const { client_id, platform, format, suggestion, special_day } = await request.json();
     if (!client_id) return NextResponse.json({ error: 'client_id required' }, { status: 400 });
@@ -22,17 +21,6 @@ export async function POST(request: Request) {
       .from('social_posts').select('*', { count: 'exact', head: true })
       .eq('client_id', client_id).gte('created_at', todayStart.toISOString());
     if ((todayCount || 0) >= (client.social_posts_per_day ?? 4)) {
-      await supabase.from('generation_logs').insert({
-        client_id,
-        client_name: client.company_name,
-        type: 'image',
-        status: 'skipped',
-        engine: client.image_engine || 'flux',
-        topic: suggestion || special_day || 'Auto post',
-        error_message: `Daily limit reached (${todayCount}/${client.social_posts_per_day ?? 4} posts today)`,
-        duration_ms: Date.now() - logStart,
-        cost_usd: 0,
-      });
       return NextResponse.json({ error: 'Daily post limit reached.', limitReached: true }, { status: 429 });
     }
 
@@ -99,7 +87,7 @@ Design a professional social media poster. Return ONLY valid JSON:
   "subtext": "1 short line of supporting text on the poster (10-15 words max)",
   "cta": "Short call to action button text (2-4 words)",
   "caption": "Full social media post caption with hashtags for ${platform}",
-  "poster_prompt": "Cinematic background image only for a ${isStory ? 'vertical 9:16' : 'square 1:1'} social media poster. Background style using colors ${primary} and ${secondary}. 3D visual elements relevant to ${client.industry}. Cinematic lighting, premium quality. NO TEXT, NO WORDS, NO LETTERS, NO TYPOGRAPHY, NO LOGOS anywhere in the image. Clean empty space on left side for text overlay. Photorealistic, 8K quality."
+  "poster_prompt": "Extremely detailed FLUX image generation prompt for a professional ${isStory ? 'vertical 9:16' : 'square 1:1'} social media poster. Include: exact background style using colors ${primary} and ${secondary}, 3D visual elements relevant to ${client.industry}, bold typography placement areas, cinematic lighting, premium quality. The poster must have visible bold text '${client.company_name}' and a headline area. Style like top Pinterest social media designs. No watermarks. 8K quality photorealistic poster design."
 }`;
 
     const aiRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -149,13 +137,9 @@ Design a professional social media poster. Return ONLY valid JSON:
       return 'warm golden';
     };
     const primaryDesc = colorDesc(primary);
-    // Use Llama poster_prompt if available, else build from brand + industry data
-    const brandColors = `primary color ${primaryDesc} (${primary}), secondary color ${secondary}`;
-    const fullPosterPrompt = concept.poster_prompt
-      ? `${concept.poster_prompt}. Brand palette: ${brandColors}. ${client.brand_flux_suffix ? 'Visual style: ' + client.brand_flux_suffix + '.' : ''} CRITICAL: NO TEXT, NO WORDS, NO LETTERS, NO TYPOGRAPHY anywhere in image. No logos, no people, no watermarks. Clean background only.`
-      : isLightBrand
-        ? `Professional ${client.industry} social media poster background. ${heroVisual}. ${brandColors} color scheme, light elegant background, studio lighting, premium minimal. No text, no logos, no people.`
-        : `Professional ${client.industry} social media poster background. ${heroVisual}. ${brandColors} color scheme, dark cinematic background, empty left side for text overlay. 3D render, photorealistic. No text, no logos, no people.`;
+    const fullPosterPrompt = isLightBrand
+      ? `Luxury fintech poster background. ${primaryDesc} warm gradient, darker at bottom. CENTER-RIGHT: large prominent stack of 3D gold coins or gold bars, occupying upper-right quadrant, realistic metallic reflections, soft drop shadow, floating above surface. Coins are BIG and clearly visible. Lower-left area intentionally darker and empty for text. Studio lighting, premium minimal. No text, no people, no phones, no logos.`
+      : `Premium fintech poster background. ${heroVisual} centered right. ${primaryDesc} glow lighting. Dark background, cinematic. Empty left side for text. 3D render, photorealistic. No text, no logos, no people.`;
 
     // Step 3: Generate poster — NVIDIA FLUX (schnell → dev), no fallback
     let image_url: string | null = null;
@@ -167,7 +151,8 @@ Design a professional social media poster. Return ONLY valid JSON:
       let imageBuffer: any = null;
 
       const nvConfigs = [
-        { url: 'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell', body: { prompt: fullPosterPrompt, width: isStory ? 1024 : 1024, height: isStory ? 1344 : 1024, seed: Math.floor(Math.random() * 9999) } },
+        { url: 'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell', body: { prompt: fullPosterPrompt, width, height, seed: Math.floor(Math.random() * 9999), steps: 4 } },
+        { url: 'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev', body: { prompt: fullPosterPrompt, mode: 'base', cfg_scale: 3.5, width, height, seed: Math.floor(Math.random() * 9999), steps: 30 } },
       ];
       for (const { url, body } of nvConfigs) {
         if (imageBuffer) break;
@@ -184,7 +169,7 @@ Design a professional social media poster. Return ONLY valid JSON:
           console.log(`Post image ${url.split('/').pop()} status:`, fluxRes.status);
           if (fluxRes.ok) {
             const fluxData = await fluxRes.json();
-            const b64 = fluxData.artifacts?.[0]?.base64 ?? fluxData.data?.[0]?.b64_json ?? fluxData[0]?.base64 ?? fluxData.image;
+            const b64 = fluxData.artifacts?.[0]?.base64 ?? fluxData[0]?.base64 ?? fluxData.image;
             if (b64) { imageBuffer = Buffer.from(b64, 'base64'); imageProvider = 'nvidia_flux'; console.log('Image: NVIDIA', url.split('/').pop()); }
           } else {
             const errText = await fluxRes.text().catch(() => '');
@@ -208,13 +193,6 @@ Design a professional social media poster. Return ONLY valid JSON:
       if (imageBuffer) {
         // Resize to exact dimensions so SVG overlay matches
         imageBuffer = await sharp(imageBuffer).resize(width, height, { fit: 'cover' }).toBuffer();
-        const imagePipeline = [
-          imageProvider === 'nvidia_flux' ? 'FLUX generate ✓' : 'FLUX generate ✗',
-          imageProvider === 'pollinations' ? 'Fallback → Pollinations ✓' : null,
-          client.logo_url ? 'Logo composite' : null,
-          'SVG text overlay',
-          'Supabase upload',
-        ].filter(Boolean);
 
         // Step 4: Overlay logo if client has one
         if (client.logo_url) {
@@ -383,66 +361,8 @@ Design a professional social media poster. Return ONLY valid JSON:
       last_social_error: generationError || null,
     }).eq('id', client_id);
 
-    // ── Generation log ──────────────────────────────────────────────
-    const contentEngine = client.content_engine || 'llama';
-    const engineVersionMap: Record<string,string> = {
-      llama: 'meta/llama-4-maverick-17b-128e-instruct',
-      gpt4: 'gpt-4o',
-      claude: 'claude-sonnet-4-6',
-    };
-    const imageEngineVersion = imageProvider === 'nvidia_flux' ? 'FLUX.1-schnell' : imageProvider === 'pollinations' ? 'Pollinations v2' : 'unknown';
-
-    // Log the image generation
-    await supabase.from('generation_logs').insert({
-      client_id,
-      client_name: client.company_name,
-      type: 'image',
-      status: image_url ? 'success' : (generationError ? 'failed' : 'skipped'),
-      engine: imageProvider || 'flux',
-      engine_version: imageEngineVersion,
-      topic: concept.headline || suggestion || special_day || 'Auto post',
-      prompt: fullPosterPrompt?.slice(0, 1000) || null,
-      brand_suffix: client.brand_flux_suffix || null,
-      post_text: concept.caption || null,
-      image_url: image_url || null,
-      pipeline: (typeof imagePipeline !== 'undefined' ? imagePipeline : null),
-      error_message: generationError || null,
-      duration_ms: Date.now() - logStart,
-      cost_usd: imageProvider === 'nvidia_flux' ? 0.002 : 0,
-      resolution: image_url ? '1024x1024' : null,
-    });
-
-    // Log the content generation (Llama/GPT concept)
-    await supabase.from('generation_logs').insert({
-      client_id,
-      client_name: client.company_name,
-      type: platform === 'blog' ? 'blog' : 'social',
-      status: concept.caption ? 'success' : 'failed',
-      engine: contentEngine,
-      engine_version: engineVersionMap[contentEngine] || contentEngine,
-      topic: concept.headline || suggestion || 'Auto post',
-      post_text: concept.caption || null,
-      duration_ms: Date.now() - logStart,
-      tokens: 800,
-      cost_usd: contentEngine === 'gpt4' ? 0.024 : contentEngine === 'claude' ? 0.012 : 0.004,
-    });
-    // ────────────────────────────────────────────────────────────────
-
     return NextResponse.json({ success: true, post_id: post.id, caption: concept.caption, image_url });
   } catch(e: any) {
-    // Log the failure
-    try {
-      await supabase.from('generation_logs').insert({
-        client_id: (await request.json().catch(() => ({})) as any).client_id || null,
-        type: 'image',
-        status: 'failed',
-        engine: 'unknown',
-        topic: 'Generation failed',
-        error_message: e.message,
-        duration_ms: Date.now() - logStart,
-        cost_usd: 0,
-      });
-    } catch(_) {}
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

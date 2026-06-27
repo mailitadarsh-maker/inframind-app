@@ -359,6 +359,17 @@ export default function SocialDashboard() {
               </button>
             ))}
           </div>
+          {/* Brand Style Upgrade for existing clients */}
+          {!client?.brand_flux_suffix && (
+            <div className="mb-4 p-4 rounded-xl bg-[#a78bfa]/5 border border-[#a78bfa]/20">
+              <p className="text-xs text-[#a78bfa] font-semibold mb-1">✨ Upgrade your image quality</p>
+              <p className="text-xs text-white/40 mb-3">Add brand style analysis to get better-matched AI images.</p>
+              <button onClick={() => router.push('/dashboard/social/onboarding')}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#a78bfa]/10 hover:bg-[#a78bfa]/20 text-[#a78bfa] transition-colors">
+                Update Brand Style →
+              </button>
+            </div>
+          )}
           <button disabled={savingRegion} onClick={async () => {
             if (!client) return;
             setSavingRegion(true);

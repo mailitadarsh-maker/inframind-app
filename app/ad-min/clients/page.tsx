@@ -335,8 +335,10 @@ export default function AdminClientsPage() {
                             }}
                           >
                             <option value="unsplash">Unsplash (free)</option>
-                            <option value="dalle">NVIDIA FLUX (free)</option>
-                            <option value="dalle_openai">DALL·E (paid)</option>
+                            <option value="dalle">⚡ FLUX schnell (fast, free)</option>
+                            <option value="flux_dev">⚡ FLUX dev (quality, paid)</option>
+                            <option value="pollinations">🌸 Pollinations (free)</option>
+                            <option value="dalle_openai">🤖 DALL·E 3 (OpenAI, paid)</option>
                           </select>
                         </div>
 
@@ -352,6 +354,7 @@ export default function AdminClientsPage() {
                             <option value="global">Global default</option>
                             <option value="nvidia">⚡ NVIDIA (Llama 4)</option>
                             <option value="openai">🤖 OpenAI (GPT-4o)</option>
+                            <option value="claude">◇ Anthropic Claude</option>
                           </select>
                         </div>
 
@@ -367,6 +370,7 @@ export default function AdminClientsPage() {
                             <option value="global">Global default</option>
                             <option value="nvidia">⚡ NVIDIA (Llama 4)</option>
                             <option value="openai">🤖 OpenAI (GPT-4o)</option>
+                            <option value="claude">◇ Anthropic Claude</option>
                           </select>
                         </div>
 
@@ -382,6 +386,7 @@ export default function AdminClientsPage() {
                             <option value="global">Global default</option>
                             <option value="nvidia">⚡ NVIDIA (Llama 4)</option>
                             <option value="openai">🤖 OpenAI (GPT-4o)</option>
+                            <option value="claude">◇ Anthropic Claude</option>
                           </select>
                         </div>
                       </div>
@@ -444,6 +449,21 @@ export default function AdminClientsPage() {
                         <option value="global">Global default</option>
                         <option value="nvidia">⚡ NVIDIA (Llama 4)</option>
                         <option value="openai">🤖 OpenAI (GPT-4o)</option>
+                        <option value="claude">◇ Anthropic Claude</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11, color: '#8a95a3', marginBottom: 6 }}>Image Engine</label>
+                      <select
+                        value={c?.image_engine || 'flux'}
+                        onChange={e => c && updateClient(c.id, a.user_id, { image_engine: e.target.value })}
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 10px', fontSize: 12,
+                          color: c?.image_engine === 'pollinations' ? '#60a5fa' : '#a78bfa' }}
+                      >
+                        <option value="flux">⚡ FLUX schnell (fast, free)</option>
+                        <option value="flux_dev">⚡ FLUX dev (quality, paid)</option>
+                        <option value="pollinations">🌸 Pollinations (free)</option>
+                        <option value="dalle">🤖 DALL·E 3 (OpenAI, paid)</option>
                       </select>
                     </div>
                     <div>

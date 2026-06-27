@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
-type Step = 'details' | 'analyzing' | 'analysis' | 'palette' | 'photos' | 'plan' | 'done';
+type Step = 'details' | 'analyzing' | 'analysis' | 'palette' | 'photos' | 'upload' | 'style' | 'weekly' | 'plan' | 'done';
 
 const socialPlans = [
   {
@@ -52,6 +52,13 @@ export default function SocialOnboarding() {
   const [topics, setTopics] = useState<any[]>([]);
   const [weekTheme, setWeekTheme] = useState('');
   const [checking, setChecking] = useState(true);
+  const [pexelsPhotos, setPexelsPhotos] = useState<any[]>([]);
+  const [selectedPexels, setSelectedPexels] = useState<string[]>([]);
+  const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+  const [brandStyle, setBrandStyle] = useState<any>(null);
+  const [analysingStyle, setAnalysingStyle] = useState(false);
+  const [weeklyConfirmed, setWeeklyConfirmed] = useState(false);
+  const [loadingPexels, setLoadingPexels] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -113,6 +120,7 @@ export default function SocialOnboarding() {
     if (!user) return;
     setSaving(true);
     const chosenPalette = palettes[selectedPalette];
+    const allRefPhotos = [...uploadedPhotos, ...selectedPexels];
     await supabase.from('clients').upsert({
       user_id: user.id,
       company_name: form.company_name,
@@ -124,7 +132,10 @@ export default function SocialOnboarding() {
       social_onboarded: true,
       social_plan: selectedPlan,
       social_palette: chosenPalette,
-      social_brand_photos: selectedPhotos,
+      social_brand_photos: allRefPhotos.length > 0 ? allRefPhotos : selectedPhotos,
+      brand_style_keywords: brandStyle?.styleKeywords || null,
+      brand_flux_suffix: brandStyle?.fluxStyleSuffix || null,
+      brand_photo_style: brandStyle?.photoStyle || null,
       topic_suggestions: topics,
       topic_suggestions_at: new Date().toISOString(),
       topic_week_theme: weekTheme,
@@ -269,9 +280,9 @@ export default function SocialOnboarding() {
           ))}
         </div>
 
-        <button onClick={() => setStep(brandPhotos.length > 0 ? 'photos' : 'plan')}
+        <button onClick={async () => { setStep('upload'); setLoadingPexels(true); const r = await fetch('/api/client/brand-photos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ industry: form.industry, company_name: form.company_name }) }); const d = await r.json(); setPexelsPhotos(d.photos || []); setLoadingPexels(false); }}
           className="w-full bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold py-3 rounded-xl text-sm transition-colors">
-          {brandPhotos.length > 0 ? 'Choose Brand Photos →' : 'Choose Plan →'}
+          {'Upload Brand Photos →'}
         </button>
       </div>
     </div>
@@ -312,7 +323,163 @@ export default function SocialOnboarding() {
     </div>
   );
 
+  // ── STEP: Upload brand photos ──
+  if (step === 'upload') return (
+    <div className="min-h-screen bg-[#1e2128] px-4 py-12">
+      <div className="max-w-lg mx-auto">
+        <p className="text-xs text-white/30 uppercase tracking-widest mb-2">Step 3 of 5</p>
+        <h1 className="text-2xl font-bold text-white mb-1">Upload your brand photos</h1>
+        <p className="text-sm text-white/40 mb-6">Upload 3–5 photos that represent your brand style. We'll use Claude Vision to extract your visual identity.</p>
+
+        <label className="block w-full border-2 border-dashed border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:border-[#4ade80]/40 transition-colors mb-6">
+          <input type="file" multiple accept="image/*" className="hidden" onChange={async (e) => {
+            const files = Array.from(e.target.files || []);
+            const urls: string[] = [];
+            for (const file of files.slice(0, 5)) {
+              const reader = new FileReader();
+              await new Promise<void>(resolve => {
+                reader.onload = (ev) => { urls.push(ev.target?.result as string); resolve(); };
+                reader.readAsDataURL(file);
+              });
+            }
+            setUploadedPhotos(prev => [...prev, ...urls].slice(0, 5));
+          }} />
+          <div className="text-3xl mb-2">📸</div>
+          <p className="text-sm text-white/60">Click to upload photos</p>
+          <p className="text-xs text-white/30 mt-1">JPG, PNG up to 5 photos</p>
+        </label>
+
+        {uploadedPhotos.length > 0 && (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {uploadedPhotos.map((url, i) => (
+              <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-white/10">
+                <img src={url} alt="" className="w-full h-full object-cover" />
+                <button onClick={() => setUploadedPhotos(prev => prev.filter((_, j) => j !== i))}
+                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center">×</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {loadingPexels ? (
+          <p className="text-xs text-white/30 text-center mb-6">Loading style suggestions...</p>
+        ) : pexelsPhotos.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xs text-white/40 mb-3">Or pick a style from these industry photos:</p>
+            <div className="grid grid-cols-3 gap-3">
+              {pexelsPhotos.map((p: any) => (
+                <button key={p.id} onClick={() => setSelectedPexels(prev =>
+                  prev.includes(p.url) ? prev.filter(x => x !== p.url) : prev.length < 3 ? [...prev, p.url] : prev
+                )} className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${selectedPexels.includes(p.url) ? 'border-[#4ade80]' : 'border-transparent'}`}>
+                  <img src={p.thumb} alt="" className="w-full h-full object-cover" />
+                  {selectedPexels.includes(p.url) && (
+                    <div className="absolute inset-0 bg-[#4ade80]/20 flex items-center justify-center">
+                      <span className="text-white font-bold">✓</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button onClick={async () => {
+          const allPhotos = [...uploadedPhotos, ...selectedPexels];
+          if (allPhotos.length === 0) { setStep('weekly'); return; }
+          setAnalysingStyle(true);
+          setStep('style');
+          try {
+            const res = await fetch('/api/client/analyze-brand-style', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                image_urls: selectedPexels,
+                company_name: form.company_name,
+                industry: form.industry,
+                client_id: client?.id,
+              }),
+            });
+            const data = await res.json();
+            setBrandStyle(data);
+          } catch(e) { console.error(e); }
+          setAnalysingStyle(false);
+          setStep('weekly');
+        }} className="w-full bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold py-3 rounded-xl text-sm transition-colors">
+          {uploadedPhotos.length > 0 || selectedPexels.length > 0 ? 'Analyse Style & Continue →' : 'Skip — Use AI Style →'}
+        </button>
+      </div>
+    </div>
+  );
+
+  // ── STEP: Style analysing ──
+  if (step === 'style') return (
+    <div className="min-h-screen bg-[#1e2128] flex items-center justify-center px-4">
+      <div className="text-center">
+        <div className="w-16 h-16 rounded-full border-2 border-[#a78bfa]/30 border-t-[#a78bfa] animate-spin mx-auto mb-6" />
+        <h2 className="text-white font-semibold mb-2">Analysing your visual style...</h2>
+        <p className="text-white/40 text-sm">Claude Vision is extracting your brand aesthetic</p>
+      </div>
+    </div>
+  );
+
+  // ── STEP: Weekly content confirmation ──
+  if (step === 'weekly') return (
+    <div className="min-h-screen bg-[#1e2128] px-4 py-12">
+      <div className="max-w-lg mx-auto">
+        <p className="text-xs text-white/30 uppercase tracking-widest mb-2">Step 4 of 5</p>
+        <h1 className="text-2xl font-bold text-white mb-1">Confirm this week's content</h1>
+        <p className="text-sm text-white/40 mb-2">These topics will guide your AI-generated posts this week.</p>
+        {weekTheme && <p className="text-xs text-[#4ade80] mb-6 italic">Theme: {weekTheme}</p>}
+
+        {brandStyle && (
+          <div className="bg-[#1a1d23] border border-[#a78bfa]/20 rounded-2xl p-4 mb-6">
+            <p className="text-xs text-[#a78bfa] font-semibold uppercase tracking-widest mb-2">Visual Style Extracted ✓</p>
+            <p className="text-xs text-white/60 mb-2">{brandStyle.brandSummary}</p>
+            <div className="flex flex-wrap gap-2">
+              {brandStyle.styleKeywords?.map((k: string) => (
+                <span key={k} className="px-2 py-1 rounded-lg bg-[#a78bfa]/10 text-[#a78bfa] text-xs">{k}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 mb-8">
+          {topics.map((t: any, i: number) => (
+            <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-[#1a1d23] border border-white/[0.06]">
+              <span className="text-xs font-bold text-[#f59e0b] mt-0.5 shrink-0">#{i+1}</span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-white">{t.title}</p>
+                <p className="text-xs text-white/40 mt-1">{t.description}</p>
+                <span className="inline-block mt-2 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                  style={{ background: t.type === 'educational' ? '#1e3a5f' : t.type === 'promotional' ? '#1a3a2a' : t.type === 'story' ? '#3a2a1a' : '#2a1a3a', color: t.type === 'educational' ? '#60a5fa' : t.type === 'promotional' ? '#4ade80' : t.type === 'story' ? '#f59e0b' : '#a78bfa' }}>
+                  {t.type}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button onClick={() => { setWeeklyConfirmed(true); setStep('plan'); }}
+          className="w-full bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold py-3 rounded-xl text-sm transition-colors">
+          Confirm & Choose Plan →
+        </button>
+        <button onClick={async () => {
+          const res = await fetch('/api/client/social-analysis', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...form }),
+          });
+          const data = await res.json();
+          setTopics(data.topics || []);
+          setWeekTheme(data.week_theme || '');
+        }} className="w-full mt-2 text-white/30 hover:text-white/60 text-xs py-2 transition-colors">
+          ↻ Regenerate topics
+        </button>
+      </div>
+    </div>
+  );
+
   // ── STEP: Plan ──
+
   if (step === 'plan') return (
     <div className="min-h-screen bg-[#1e2128] px-4 py-12">
       <div className="max-w-3xl mx-auto">
