@@ -9,6 +9,8 @@ const supabase = createClient(
 
 export async function POST(request: Request) {
   const logStart = Date.now();
+  // Tell sharp/librsvg where to find bundled fonts (fixes Malayalam fallback on Vercel)
+  process.env.FONTCONFIG_PATH = '/var/task/public/fonts';
   try {
     const { client_id, platform, format, suggestion, special_day } = await request.json();
     if (!client_id) return NextResponse.json({ error: 'client_id required' }, { status: 400 });
@@ -282,7 +284,7 @@ Design a professional social media poster. Return ONLY valid JSON:
           <!-- Company name top left — only show text if no logo -->
           ${!client.logo_url ? `
           <rect x="44" y="34" width="4" height="24" rx="2" fill="${primary}" opacity="0.9"/>
-          <text x="58" y="53" font-family="DejaVu Sans, Liberation Sans, FreeSans, sans-serif" font-size="22" font-weight="700" fill="white" opacity="0.95" filter="url(#shadow)">${client.company_name}</text>
+          <text x="58" y="53" font-family="Roboto" font-size="22" font-weight="700" fill="white" opacity="0.95" filter="url(#shadow)">${client.company_name}</text>
           ` : ''}
 
           <!-- Accent line above headline -->
@@ -306,7 +308,7 @@ Design a professional social media poster. Return ONLY valid JSON:
             const lineHeight = fontSize * 1.15;
             const startY = hlStartY;
             return lines.map((line, i) =>
-              `<text x="60" y="${startY + i * lineHeight}" font-family="DejaVu Sans, Liberation Sans, FreeSans, sans-serif" font-size="${fontSize}" font-weight="900" fill="white" filter="url(#shadow)">${line}</text>`
+              `<text x="60" y="${startY + i * lineHeight}" font-family="Roboto" font-size="${fontSize}" font-weight="900" fill="white" filter="url(#shadow)">${line}</text>`
             ).join('\n');
           })()}
 
@@ -326,7 +328,7 @@ Design a professional social media poster. Return ONLY valid JSON:
             if (current) lines.push(current.trim());
             const startY = subtextStartY;
             return lines.map((line, i) =>
-              `<text x="60" y="${startY + i * 34}" font-family="DejaVu Sans, Liberation Sans, FreeSans, sans-serif" font-size="24" font-weight="400" fill="rgba(255,255,255,0.88)" filter="url(#shadow)">${line}</text>`
+              `<text x="60" y="${startY + i * 34}" font-family="Roboto" font-size="24" font-weight="400" fill="rgba(255,255,255,0.88)" filter="url(#shadow)">${line}</text>`
             ).join('\n');
           })()}
 
@@ -336,13 +338,13 @@ Design a professional social media poster. Return ONLY valid JSON:
             const ctaWidth = Math.max(170, ctaText.length * 13 + 64);
             const ctaCenterX = 58 + ctaWidth / 2;
             return `<rect x="58" y="${ctaY}" width="${ctaWidth}" height="56" rx="28" fill="url(#ctaGrad)" filter="url(#glow)"/>
-          <text x="${ctaCenterX}" y="${ctaY + 36}" font-family="DejaVu Sans, Liberation Sans, FreeSans, sans-serif" font-size="21" font-weight="700" fill="white" text-anchor="middle" letter-spacing="0.3" filter="url(#shadow)">${ctaText}</text>`;
+          <text x="${ctaCenterX}" y="${ctaY + 36}" font-family="Roboto" font-size="21" font-weight="700" fill="white" text-anchor="middle" letter-spacing="0.3" filter="url(#shadow)">${ctaText}</text>`;
           })()}
 
           <!-- Brand color bottom bar -->
           <rect x="0" y="${height - 52}" width="${width}" height="52" fill="${primary}" opacity="0.92"/>
           <!-- Website bottom center -->
-          <text x="${width / 2}" y="${height - 18}" font-family="DejaVu Sans, Liberation Sans, FreeSans, sans-serif" font-size="19" font-weight="600" fill="white" text-anchor="middle">${websiteClean}</text>
+          <text x="${width / 2}" y="${height - 18}" font-family="Roboto" font-size="19" font-weight="600" fill="white" text-anchor="middle">${websiteClean}</text>
         </svg>`;
         imageBuffer = (await sharp(Buffer.from(imageBuffer))
           .composite([{ input: Buffer.from(textSvg), blend: 'over' }])
