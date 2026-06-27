@@ -87,7 +87,7 @@ Design a professional social media poster. Return ONLY valid JSON:
   "subtext": "1 short line of supporting text on the poster (10-15 words max)",
   "cta": "Short call to action button text (2-4 words)",
   "caption": "Full social media post caption with hashtags for ${platform}",
-  "poster_prompt": "Extremely detailed FLUX image generation prompt for a professional ${isStory ? 'vertical 9:16' : 'square 1:1'} social media poster. Include: exact background style using colors ${primary} and ${secondary}, 3D visual elements relevant to ${client.industry}, bold typography placement areas, cinematic lighting, premium quality. The poster must have visible bold text '${client.company_name}' and a headline area. Style like top Pinterest social media designs. No watermarks. 8K quality photorealistic poster design."
+  "poster_prompt": "FLUX image generation prompt for a ${isStory ? 'vertical 9:16 portrait' : 'square 1:1'} social media background. Style: dark cinematic gradient background blending ${primary} into deep black, dramatic studio lighting. CENTER-RIGHT: large photorealistic 3D hero object relevant to ${client.industry} (NOT coins unless finance) with metallic reflections and soft glow. LEFT SIDE: intentionally dark and empty for text overlay. Color accent: ${secondary} neon glow rim lighting on the 3D object. Background: subtle bokeh depth, volumetric light rays, premium luxury aesthetic. Composition: rule of thirds, professional graphic design layout. NO text, NO logos, NO watermarks, NO people. Ultra detailed, 8K, octane render quality."
 }`;
 
     const aiRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -149,9 +149,11 @@ Design a professional social media poster. Return ONLY valid JSON:
     };
     const primaryDesc = colorDesc(primary);
     const industry = (client.industry || 'technology').toLowerCase();
-    const fullPosterPrompt = isLightBrand
-      ? `Professional ${industry} social media poster background. ${primaryDesc} warm gradient, darker at bottom. CENTER-RIGHT: ${heroVisual}, realistic reflections, soft drop shadow, floating above surface. Lower-left area intentionally empty for text overlay. Studio lighting, premium minimal. No text, no people, no logos, no watermarks.`
-      : `Professional ${industry} social media poster background. ${heroVisual} centered right. ${primaryDesc} glow accent lighting. Dark cinematic background. Empty left-bottom area for text overlay. 3D render, photorealistic, 8K quality. No text, no logos, no people, no watermarks.`;
+    const fullPosterPrompt = concept.poster_prompt
+      ? `${concept.poster_prompt}`
+      : isLightBrand
+        ? `Square social media poster background. Warm ${primaryDesc} gradient from top-right to bottom-left, darker moody bottom. CENTER-RIGHT: ${heroVisual}, large and prominent, photorealistic metallic reflections, soft drop shadow, floating. LEFT SIDE: intentionally dark and empty for text. Bokeh background, volumetric light, luxury premium feel. NO text, NO logos, NO people, NO watermarks. 8K octane render.`
+        : `Square social media poster background. Deep dark background with subtle ${primaryDesc} gradient glow from top-right. CENTER-RIGHT: ${heroVisual}, large glowing 3D object, neon ${primaryDesc} rim lighting, metallic reflections. LEFT-BOTTOM: dark empty space for text overlay. Volumetric light rays, cinematic depth of field, premium tech aesthetic. NO text, NO logos, NO people, NO watermarks. 8K octane render.`;
 
     // Step 3: Generate poster — NVIDIA FLUX (schnell → dev), no fallback
     let image_url: string | null = null;
