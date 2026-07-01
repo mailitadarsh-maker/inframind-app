@@ -6,40 +6,36 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Daily regen cap for the company blog (no per-client limit table here, so hardcode a sane default).
+const REGEN_LIMIT = 5;
+
 export async function POST(request: Request) {
   const { blog_id } = await request.json();
 
   const { data: blog } = await supabase
-    .from('client_blogs')
-    .select('title, client_id')
+    .from('blog_posts')
+    .select('id, title, description')
     .eq('id', blog_id)
     .single();
 
-  if (!blog) return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
-
-  const { data: client } = await supabase
-    .from('clients')
-    .select('id, company_name, industry, brand_images, regen_limit, brand_flux_suffix')
-    .eq('id', blog.client_id)
-    .single();
+  if (!blog) return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
-  const regenLimit = client?.regen_limit ?? 3;
   const { count: regenCount } = await supabase
-    .from('client_blogs')
+    .from('blog_posts')
     .select('*', { count: 'exact', head: true })
-    .eq('client_id', blog.client_id)
     .not('cover_image', 'is', null)
     .gte('updated_at', todayStart.toISOString());
-  if ((regenCount || 0) >= regenLimit) {
+  if ((regenCount || 0) >= REGEN_LIMIT) {
     return NextResponse.json({
-      error: `Daily image regeneration limit reached (${regenLimit}/day). Try again tomorrow.`,
+      error: `Daily image regeneration limit reached (${REGEN_LIMIT}/day). Try again tomorrow.`,
     }, { status: 429 });
   }
 
-  const styleSuffix = client?.brand_flux_suffix ? `, ${client.brand_flux_suffix}` : (client?.brand_images?.length > 0 ? ', warm gold tones, premium feel, dark rich backgrounds, cinematic lighting' : ', dark background, modern professional aesthetic');
-  const prompt = `Professional blog cover image for "${blog.title}". Company: ${client?.company_name}, Industry: ${client?.industry}${styleSuffix}. Clean composition. CRITICAL: NO TEXT, NO WORDS, NO LETTERS, no logos, no watermarks.`;
+  // Single-brand company blog — fixed Inframind style suffix instead of per-client brand_flux_suffix.
+  const styleSuffix = ', dark rich background, sleek AI/tech aesthetic, cinematic lighting, premium modern feel';
+  const prompt = `Professional blog cover image for "${blog.title}". ${blog.description ? `Topic: ${blog.description}. ` : ''}Context: Inframind, an AI automation and software agency${styleSuffix}. Clean composition. CRITICAL: NO TEXT, NO WORDS, NO LETTERS, no logos, no watermarks.`;
 
   let buffer: Buffer | null = null;
   const nvEndpoints = [
@@ -58,33 +54,34 @@ export async function POST(request: Request) {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
-      console.log('NVIDIA regen status:', cfg.url.split('/').pop(), res.status);
+      console.log('NVIDIA blog-post regen status:', cfg.url.split('/').pop(), res.status);
       if (res.ok) {
         const data = await res.json();
         const b64 = data.artifacts?.[0]?.base64;
         if (b64) buffer = Buffer.from(b64, 'base64');
       } else {
-        console.log('NVIDIA regen error body:', (await res.text()).slice(0, 300));
+        console.log('NVIDIA blog-post regen error body:', (await res.text()).slice(0, 300));
       }
-    } catch (e) { console.log('NVIDIA regen failed:', cfg.url, e); }
+    } catch (e) { console.log('NVIDIA blog-post regen failed:', cfg.url, e); }
   }
   if (!buffer) {
-    console.log('Regen image: NVIDIA failed, falling back to Pollinations');
+    console.log('Regen blog-post image: NVIDIA failed, falling back to Pollinations');
     const encodedPrompt = encodeURIComponent(prompt.slice(0, 500));
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         const polRes = await fetch(`https://image.pollinations.ai/prompt/${encodedPrompt}?width=1344&height=768&nologo=true&seed=${Math.floor(Math.random()*99999)}`);
-        if (polRes.ok) { buffer = Buffer.from(await polRes.arrayBuffer()); console.log('Regen image: Pollinations OK'); break; }
+        if (polRes.ok) { buffer = Buffer.from(await polRes.arrayBuffer()); console.log('Regen blog-post image: Pollinations OK'); break; }
       } catch (e) { if (attempt < 2) await new Promise(r => setTimeout(r, 2000)); }
     }
   }
   if (!buffer) return NextResponse.json({ error: 'Image generation failed on all providers' }, { status: 500 });
-  const fileName = `blog-regen-${client?.id}-${Date.now()}.jpg`;
+
+  const fileName = `blog-post-regen-${blog.id}-${Date.now()}.jpg`;
   await supabase.storage.from('brand-images').upload(fileName, buffer, { contentType: 'image/jpeg', upsert: true });
   const { data: urlData } = supabase.storage.from('brand-images').getPublicUrl(fileName);
   const cover_image = urlData.publicUrl;
 
-  await supabase.from('client_blogs').update({ cover_image }).eq('id', blog_id);
+  await supabase.from('blog_posts').update({ cover_image, updated_at: new Date().toISOString() }).eq('id', blog_id);
 
   return NextResponse.json({ cover_image });
 }

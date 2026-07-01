@@ -9,7 +9,7 @@ const supabaseAdmin = createClient(
 export async function GET() {
   const { data, error } = await supabaseAdmin
     .from('blog_posts')
-    .select('slug, title, description, content, cover_image, published, created_at')
+    .select('id, slug, title, description, content, cover_image, published, created_at')
     .order('created_at', { ascending: false });
 
   return NextResponse.json({ data, error });

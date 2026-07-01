@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 
 type Post = {
+  id: string;
   slug: string;
   title: string;
   description: string;
@@ -63,12 +64,12 @@ export default function AdminBlogPage() {
     setLoading(false);
   }
 
-  async function regenerateImage(slug: string, title: string) {
+  async function regenerateImage(slug: string, title: string, blogId: string) {
     setActionLoading(slug + '-regen');
-    const res = await fetch('/api/admin/regenerate-image', {
+    const res = await fetch('/api/admin/regenerate-blog-post-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug, title }),
+      body: JSON.stringify({ blog_id: blogId }),
     });
     const result = await res.json();
     await fetchPosts();
@@ -220,7 +221,7 @@ export default function AdminBlogPage() {
                   <div style={{ marginBottom: '12px', borderRadius: '8px', overflow: 'hidden', height: '140px', position: 'relative' }}>
                     <img src={post.cover_image} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 }}>
-                      <button onClick={() => regenerateImage(post.slug, post.title)}
+                      <button onClick={() => regenerateImage(post.slug, post.title, post.id)}
                         disabled={actionLoading === post.slug + '-regen'}
                         style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(52,211,153,0.4)', color: '#34d399', borderRadius: 6, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}>
                         {actionLoading === post.slug + '-regen' ? '...' : '🔄 Regenerate'}
@@ -235,7 +236,7 @@ export default function AdminBlogPage() {
                 {!post.cover_image && editingImage !== post.slug && (
                   <div style={{ marginBottom: '12px', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>No image</span>
-                    <button onClick={() => regenerateImage(post.slug, post.title)}
+                    <button onClick={() => regenerateImage(post.slug, post.title, post.id)}
                       disabled={actionLoading === post.slug + '-regen'}
                       style={{ background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399', borderRadius: 6, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}>
                       {actionLoading === post.slug + '-regen' ? 'Finding...' : '🔄 Generate Image'}
