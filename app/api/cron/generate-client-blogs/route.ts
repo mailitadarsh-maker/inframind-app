@@ -172,49 +172,76 @@ Respond ONLY with valid JSON, no markdown fences:
 }
 
 
-// ── Get cover image (Unsplash or DALL·E based on client setting) ─────────────
+// ── Get cover image (NVIDIA FLUX dual-endpoint with Pollinations fallback) ───
 async function getCoverImage(client: any, title: string): Promise<string | null> {
-  const mode = client.image_generation || 'unsplash';
+  const styleSuffix = (client.brand_images && client.brand_images.length > 0)
+    ? ', warm gold tones, premium feel, dark rich backgrounds, cinematic lighting'
+    : ', dark background, modern professional aesthetic';
+  const prompt = `Professional blog cover image for "${title}". Company: ${client.company_name}, Industry: ${client.industry}${styleSuffix}. Clean composition. CRITICAL: NO TEXT, NO WORDS, NO LETTERS, no logos, no watermarks.`;
 
-  if (mode === 'dalle') {
+  let buffer: Buffer | null = null;
+  const nvEndpoints = [
+    { url: 'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell', body: { prompt, width: 1344, height: 768, seed: Math.floor(Math.random() * 9999), steps: 4 } },
+    { url: 'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev', body: { prompt, mode: 'base', cfg_scale: 3.5, width: 1344, height: 768, seed: Math.floor(Math.random() * 9999), steps: 30 } },
+  ];
+  for (const cfg of nvEndpoints) {
+    if (buffer) break;
     try {
-      const imgPrompt = `Professional blog cover image for "${title}". Company: ${client.company_name}, Industry: ${client.industry}. ${(client.brand_images && client.brand_images.length > 0) ? 'Warm gold tones, premium feel, dark rich backgrounds, cinematic lighting.' : 'Dark background, modern professional aesthetic.'} Clean composition, no text, no logos.`;
-      const res = await fetch('https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell', {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000);
+      const res = await fetch(cfg.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
-        body: JSON.stringify({ prompt: imgPrompt, width: 1024, height: 1024 }),
+        body: JSON.stringify(cfg.body),
+        signal: controller.signal,
       });
-      const data = await res.json();
-      const b64 = data.artifacts?.[0]?.base64;
-      if (!b64) return null;
-
-      const buffer = Buffer.from(b64, 'base64');
-      const fileName = `flux-${client.id}-${Date.now()}.jpg`;
-      const { error: uploadError } = await supabase.storage
-        .from('brand-images')
-        .upload(fileName, buffer, { contentType: 'image/jpeg', upsert: true });
-      if (uploadError) { console.log('Upload error:', uploadError.message); return null; }
-
-      const { data: urlData } = supabase.storage.from('brand-images').getPublicUrl(fileName);
-      return urlData.publicUrl || null;
+      clearTimeout(timeoutId);
+      console.log('CRON NVIDIA status:', cfg.url.split('/').pop(), res.status);
+      if (res.ok) {
+        const data = await res.json();
+        const b64 = data.artifacts?.[0]?.base64;
+        if (b64) buffer = Buffer.from(b64, 'base64');
+      } else {
+        console.log('CRON NVIDIA error body:', (await res.text()).slice(0, 300));
+      }
     } catch (e: any) {
-      console.log('FLUX error:', e.message);
-      return null;
+      console.log('CRON NVIDIA failed:', cfg.url, e.message);
     }
   }
 
-  // Default: Unsplash
-  try {
-    const query = encodeURIComponent(title.split(' ').slice(0, 4).join(' '));
-    const res = await fetch(
-      `https://api.unsplash.com/photos/random?query=${query}&orientation=landscape`,
-      { headers: { Authorization: `Client-ID ${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}` } }
-    );
-    const data = await res.json();
-    return data.urls?.regular || null;
-  } catch {
+  if (!buffer) {
+    console.log('CRON cover image: NVIDIA failed, falling back to Pollinations');
+    const encodedPrompt = encodeURIComponent(prompt.slice(0, 500));
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const polRes = await fetch(`https://image.pollinations.ai/prompt/${encodedPrompt}?width=1344&height=768&nologo=true&seed=${Math.floor(Math.random() * 99999)}`);
+        if (polRes.ok) {
+          buffer = Buffer.from(await polRes.arrayBuffer());
+          console.log('CRON cover image: Pollinations OK');
+          break;
+        }
+      } catch (e) {
+        if (attempt < 2) await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
+  }
+
+  if (!buffer) {
+    console.log('CRON cover image: all providers failed, leaving cover_image null');
     return null;
   }
+
+  const fileName = `cron-blog-${client.id}-${Date.now()}.jpg`;
+  const { error: uploadError } = await supabase.storage
+    .from('brand-images')
+    .upload(fileName, buffer, { contentType: 'image/jpeg', upsert: true });
+  if (uploadError) {
+    console.log('CRON upload error:', uploadError.message);
+    return null;
+  }
+
+  const { data: urlData } = supabase.storage.from('brand-images').getPublicUrl(fileName);
+  return urlData.publicUrl || null;
 }
 
 // ── Main cron handler ────────────────────────────────────────────────────────
